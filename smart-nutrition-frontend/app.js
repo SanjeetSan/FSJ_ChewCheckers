@@ -6676,11 +6676,25 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       const student = students.find(s => s.id === meal.studentId) || { name: meal.studentName || 'Student', studentCode: 'STU-' + meal.studentId };
       const items = meal.foodItems || [];
       const packedCal = meal.packedCalories || items.reduce((acc, f) => acc + (f.calories || 0), 0) || 450;
-      const consumedCal = meal.totalConsumedCalories !== null && meal.totalConsumedCalories !== undefined
-        ? Number(meal.totalConsumedCalories)
-        : Math.round(packedCal * ((meal.overallConsumptionPercentage || 100) / 100));
-      const rawProtein = meal.totalConsumedProteinG || items.reduce((acc, f) => acc + (f.proteinG || 0), 0) || 14;
       const pct = meal.overallConsumptionPercentage !== null && meal.overallConsumptionPercentage !== undefined ? Number(meal.overallConsumptionPercentage) : 100;
+      
+      let consumedCal = Math.round(packedCal * (pct / 100));
+      if (pct === 0) {
+        consumedCal = 0;
+      } else if (pct === 100) {
+        consumedCal = packedCal;
+      } else if (meal.totalConsumedCalories !== null && meal.totalConsumedCalories !== undefined) {
+        const val = Number(meal.totalConsumedCalories);
+        if (val > 0 && val <= packedCal) consumedCal = val;
+      }
+
+      const packedProtein = items.reduce((acc, f) => acc + (parseFloat(f.proteinG) || 0), 0) || (meal.totalConsumedProteinG ? parseFloat(meal.totalConsumedProteinG) : 14);
+      let consumedProtein = pct === 0 ? 0 : (pct === 100 ? packedProtein : (packedProtein * (pct / 100)));
+      if (meal.totalConsumedProteinG !== null && meal.totalConsumedProteinG !== undefined && pct > 0 && pct < 100) {
+        const pVal = parseFloat(meal.totalConsumedProteinG);
+        if (pVal > 0 && pVal <= packedProtein) consumedProtein = pVal;
+      }
+
       const mealDateTs = meal.mealDate ? new Date(meal.mealDate).getTime() : 0;
       const foodNames = items.map(f => f.foodName).join(', ');
 
@@ -6690,7 +6704,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         items,
         packedCal,
         consumedCal,
-        rawProtein: parseFloat(rawProtein) || 0,
+        rawProtein: consumedProtein,
         pct,
         mealDateTs,
         foodNames
@@ -9038,13 +9052,18 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       }
     }
 
-    // Populate Food Items
+    // Populate Food Items with clean bullet formatting
     const foodsList = document.getElementById('detailFoodsList');
     if (foodsList) {
       if (items.length > 0) {
         foodsList.innerHTML = items.map(f => {
-          const fCal = f.calories ? `${f.calories} kcal` : '';
-          const fProt = f.proteinG ? `• ${f.proteinG}g prot` : '';
+          const metaParts = [];
+          if (f.quantity) metaParts.push(f.quantity);
+          if (f.calories) metaParts.push(`${f.calories} kcal`);
+          if (f.proteinG) metaParts.push(`${f.proteinG}g prot`);
+          if (f.carbsG) metaParts.push(`${f.carbsG}g carbs`);
+          const metaStr = metaParts.length > 0 ? `(${metaParts.join(' • ')})` : '';
+
           const fPct = f.consumptionPercentage !== null && f.consumptionPercentage !== undefined ? Number(f.consumptionPercentage) : 100;
           const badgeStyle = fPct >= 75
             ? 'background:rgba(16,185,129,0.1); color:var(--accent-green);'
@@ -9053,7 +9072,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem; padding-bottom:0.45rem; border-bottom:1px dashed var(--border-subtle);">
               <div>
                 <strong style="color:var(--text-primary); font-size:0.875rem;">${f.foodName}</strong>
-                <span style="font-size:0.75rem; color:var(--text-muted); margin-left:0.35rem;">(${f.quantity || '1 serving'} ${fCal} ${fProt})</span>
+                <span style="font-size:0.75rem; color:var(--text-muted); margin-left:0.35rem;">${metaStr}</span>
               </div>
               <span style="font-size:0.72rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:999px; ${badgeStyle}">
                 ${fPct}% eaten
@@ -9066,7 +9085,31 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       }
     }
 
-    const totalWeight = items.length > 0 ? items.length * 150 : 350;
+    // Realistic estimated weight calculation
+    let calculatedWeight = 0;
+    items.forEach(f => {
+      const q = (f.quantity || '').toLowerCase();
+      const gMatch = q.match(/(\d+)\s*g/);
+      if (gMatch) {
+        calculatedWeight += parseInt(gMatch[1]);
+      } else if (q.includes('paratha')) {
+        calculatedWeight += 160;
+      } else if (q.includes('egg')) {
+        calculatedWeight += 50;
+      } else if (q.includes('orange') || q.includes('apple') || q.includes('fruit')) {
+        calculatedWeight += 120;
+      } else if (q.includes('sandwich')) {
+        calculatedWeight += 180;
+      } else if (q.includes('cup') || q.includes('paneer') || q.includes('curry') || q.includes('sabzi')) {
+        calculatedWeight += 200;
+      } else if (f.calories) {
+        calculatedWeight += Math.round(parseFloat(f.calories) * 0.85);
+      } else {
+        calculatedWeight += 150;
+      }
+    });
+    const totalWeight = calculatedWeight > 0 ? calculatedWeight : 350;
+
     const elWeight = document.getElementById('detailEstWeight');
     if (elWeight) elWeight.textContent = `${totalWeight}g`;
 
@@ -9074,20 +9117,45 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     if (elEaten) elEaten.textContent = `${totalEatenPercent}%`;
 
     const totalCal = items.reduce((acc, f) => acc + (parseFloat(f.calories) || 0), 0) || (meal.packedCalories || 450);
-    const totalProt = items.reduce((acc, f) => acc + (parseFloat(f.proteinG) || 0), 0) || 14;
-    const totalCarb = items.reduce((acc, f) => acc + (parseFloat(f.carbsG) || 0), 0) || 45;
-    const totalFib = items.reduce((acc, f) => acc + (parseFloat(f.fiberG) || 0), 0) || 5;
+    const totalProt = items.reduce((acc, f) => acc + (parseFloat(f.proteinG) || 0), 0) || (meal.totalConsumedProteinG ? parseFloat(meal.totalConsumedProteinG) : 14);
+
+    let totalCarb = items.reduce((acc, f) => acc + (parseFloat(f.carbsG) || 0), 0);
+    if (!totalCarb) {
+      totalCarb = Math.round((totalCal * 0.55) / 4);
+    }
+
+    let totalFib = items.reduce((acc, f) => acc + (parseFloat(f.fiberG) || 0), 0);
+    if (!totalFib) {
+      totalFib = Math.max(2, Math.round(totalCarb * 0.08));
+    }
 
     const consumedRatio = totalEatenPercent / 100;
+    let consumedCalVal = Math.round(totalCal * consumedRatio);
+    let consumedProtVal = (totalProt * consumedRatio).toFixed(1).replace(/\.0$/, '');
+
+    if (totalEatenPercent === 0) {
+      consumedCalVal = 0;
+      consumedProtVal = '0';
+    } else if (totalEatenPercent === 100) {
+      consumedCalVal = Math.round(totalCal);
+      consumedProtVal = totalProt.toFixed(1).replace(/\.0$/, '');
+    } else if (meal.totalConsumedCalories !== null && meal.totalConsumedCalories !== undefined) {
+      const dbC = Number(meal.totalConsumedCalories);
+      if (dbC > 0 && dbC <= totalCal) consumedCalVal = dbC;
+    }
+
+    const consumedCarbVal = (totalCarb * consumedRatio).toFixed(1).replace(/\.0$/, '');
+    const consumedFibVal = (totalFib * consumedRatio).toFixed(1).replace(/\.0$/, '');
+
     const elConsCal = document.getElementById('detailConsumedCal');
     const elConsProt = document.getElementById('detailConsumedProt');
     const elConsCarbs = document.getElementById('detailConsumedCarbs');
     const elConsFib = document.getElementById('detailConsumedFib');
 
-    if (elConsCal) elConsCal.textContent = `${meal.totalConsumedCalories || Math.round(totalCal * consumedRatio)} kcal`;
-    if (elConsProt) elConsProt.textContent = `${(meal.totalConsumedProteinG || (totalProt * consumedRatio)).toFixed(1).replace(/\.0$/, '')} g`;
-    if (elConsCarbs) elConsCarbs.textContent = `${(totalCarb * consumedRatio).toFixed(1).replace(/\.0$/, '')} g`;
-    if (elConsFib) elConsFib.textContent = `${(totalFib * consumedRatio).toFixed(1).replace(/\.0$/, '')} g`;
+    if (elConsCal) elConsCal.textContent = `${consumedCalVal} kcal`;
+    if (elConsProt) elConsProt.textContent = `${consumedProtVal}g`;
+    if (elConsCarbs) elConsCarbs.textContent = `${consumedCarbVal}g`;
+    if (elConsFib) elConsFib.textContent = `${consumedFibVal}g`;
 
     modal.classList.add('open');
   }

@@ -1361,14 +1361,24 @@ export async function supabaseGetClassMeals(classCode) {
         overallConsumptionPercentage: overallCons,
         preMealImageUrl: m.pre_meal_image_url,
         postMealImageUrl: m.post_meal_image_url,
-        nutritionScore: scoreObj.score || null,
+        totalConsumedCalories: m.total_consumed_calories,
+        totalConsumedProteinG: m.total_consumed_protein_g,
+        packedCalories: m.packed_calories,
         foodItems: items.map(it => ({
           id: it.id,
           foodName: it.food_name,
           quantity: it.quantity,
           calories: it.calories,
           proteinG: it.protein_g,
-          consumptionPercentage: it.consumption_percentage
+          carbsG: it.carbs_g,
+          fatG: it.fat_g,
+          fiberG: it.fiber_g,
+          consumptionPercentage: it.consumption_percentage,
+          consumedCalories: it.consumed_calories,
+          consumedProteinG: it.consumed_protein_g,
+          consumedCarbsG: it.consumed_carbs_g,
+          consumedFatG: it.consumed_fat_g,
+          consumedFiberG: it.consumed_fiber_g
         }))
       };
     });

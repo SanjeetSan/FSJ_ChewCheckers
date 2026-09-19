@@ -7348,6 +7348,32 @@ body.dark-theme .preset-ghost-icon {
   white-space: nowrap;
 }
 
+/* Select & Dropdown Option Theming (Ensures visible high-contrast options on all OS/browsers) */
+select, 
+select.form-input,
+#teacherReportsSortSelect,
+#teacherReportsStatusFilter {
+  color-scheme: dark !important;
+  background-color: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+}
+
+select option,
+select.form-input option,
+#teacherReportsSortSelect option,
+#teacherReportsStatusFilter option {
+  background-color: #1E293B !important;
+  color: #F8FAFC !important;
+  padding: 8px 12px;
+}
+
+select option:hover,
+select option:focus,
+select option:checked {
+  background-color: #334155 !important;
+  color: #38BDF8 !important;
+}
+
 /* Compact Food Items Pill */
 .btn-food-more {
   display: inline-flex;
