@@ -1431,8 +1431,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
 
           if (submitBtn) setButtonLoading(submitBtn, true);
-          let sentCount = 0;
-          const fullMsgText = ` [CLASS ANNOUNCEMENT]: ${text}`;
+          const fullMsgText = `[CLASS ANNOUNCEMENT]: ${text.trim()}`;
           for (const pid of parentIds) {
             try {
               const res = await safeFetch('/api/messages', {
@@ -1773,6 +1772,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           if (isAnnouncement) {
             const cleanContent = m.messageText
+              .replace(/ðŸ“¢\s*/g, '')
               .replace(/📢\s*/g, '')
               .replace(/\[CLASS ANNOUNCEMENT\]:\s*/gi, '')
               .replace(/\[ANNOUNCEMENT\]:\s*/gi, '')
@@ -1810,10 +1810,11 @@ document.addEventListener('DOMContentLoaded', () => {
           const rowClass = isMine ? "msg-row mine" : "msg-row theirs";
           const groupedClass = isGroupedWithPrev ? "msg-grouped" : "";
           const isTurnStart = !isGroupedWithPrev;
+          const cleanBubble = (m.messageText || '').replace(/ðŸ“¢\s*/g, '').replace(/📢\s*/g, '');
 
           htmlContent += `
             <div class="${rowClass} ${isTurnStart ? 'turn-start' : ''} ${groupedClass}">
-              <div class="msg-bubble">${m.messageText}</div>
+              <div class="msg-bubble">${cleanBubble}</div>
               ${!isGroupedWithNext ? `
                 <div class="msg-meta-row">
                   <span class="msg-time">${timeStr}</span>
