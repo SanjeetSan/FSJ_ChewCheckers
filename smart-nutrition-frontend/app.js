@@ -3306,23 +3306,7 @@ INTELLIGENCE & PERSONALIZATION RULES:
         const body = typeof options.body === 'string' ? JSON.parse(options.body) : (options.body || {});
         const newChild = await supabaseAddChild(pId, body);
         return new Response(JSON.stringify(newChild), { status: 201, headers: { 'Content-Type': 'application/json' } });
-      } else if (path.startsWith('/api/parent/student/') && options.method === 'DELETE') {
-        const pId = state.user?.id || (state.user?.email === 'pradeep@gmail.com' ? 83 : 4);
-        const childId = path.split('/')[4];
-        await supabaseDeleteChild(childId, pId);
-        return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
-      } else if (path.startsWith('/api/parent/student/') && options.method === 'PUT') {
-        const childId = path.split('/')[4];
-        if (path.includes('/class')) {
-          const urlObj = new URL('http://dummy.com' + path);
-          const classCode = urlObj.searchParams.get('classCode') || '';
-          const updated = await supabaseLinkClassCode(childId, classCode);
-          return new Response(JSON.stringify(updated), { status: 200, headers: { 'Content-Type': 'application/json' } });
-        } else {
-          const body = typeof options.body === 'string' ? JSON.parse(options.body) : (options.body || {});
-          const updated = await supabaseUpdateChild(childId, body);
-          return new Response(JSON.stringify(updated), { status: 200, headers: { 'Content-Type': 'application/json' } });
-        }
+      // 1. Lunchbox Presets endpoints (Evaluated first to prevent /api/parent/student prefix collision)
       } else if (path.includes('/lunchbox-presets') && path.includes('/set-default') && options.method === 'PUT') {
         const parts = path.split('/');
         const studentId = parts[4];
@@ -3341,6 +3325,25 @@ INTELLIGENCE & PERSONALIZATION RULES:
         const studentId = path.split('/').filter(p => !isNaN(p) && p !== '').pop() || (state.selectedChild?.id || 34);
         const presets = await supabaseGetPresetsForStudent(studentId);
         return new Response(JSON.stringify(presets || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+
+      // 2. Child Profile endpoints (Guarded against /lunchbox-presets paths)
+      } else if (path.startsWith('/api/parent/student/') && !path.includes('/lunchbox-presets') && options.method === 'DELETE') {
+        const pId = state.user?.id || (state.user?.email === 'pradeep@gmail.com' ? 83 : 4);
+        const childId = path.split('/')[4];
+        await supabaseDeleteChild(childId, pId);
+        return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path.startsWith('/api/parent/student/') && !path.includes('/lunchbox-presets') && options.method === 'PUT') {
+        const childId = path.split('/')[4];
+        if (path.includes('/class')) {
+          const urlObj = new URL('http://dummy.com' + path);
+          const classCode = urlObj.searchParams.get('classCode') || '';
+          const updated = await supabaseLinkClassCode(childId, classCode);
+          return new Response(JSON.stringify(updated), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        } else {
+          const body = typeof options.body === 'string' ? JSON.parse(options.body) : (options.body || {});
+          const updated = await supabaseUpdateChild(childId, body);
+          return new Response(JSON.stringify(updated), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
       } else if (path.startsWith('/api/meals/student/')) {
         const studentId = path.split('/').pop();
         const meals = await supabaseGetMealsForStudent(studentId);
