@@ -1163,38 +1163,60 @@
         <!-- PANE 5: TEACHER CLASS OVERVIEW (CLEAN SCHOOL ERP REFINEMENT) -->
         <div class="pane-container" id="pane-teacher-roster">
           
-          <!-- 1. SIMPLIFIED CLASS HEADER (COMPACT HORIZONTAL BAR) -->
+          <!-- 1. COMPACT SINGLE-ROW CLASS HEADER -->
           <div class="teacher-header-banner">
-            <div class="teacher-header-info">
-              <h2 id="teacherHeaderClassName">Grade 5 Class</h2>
-              <div class="teacher-header-meta">
-                <span>Class Code: <strong id="teacherHeaderClassCode">CLS-6070</strong></span>
-                <span class="meta-dot">•</span>
-                <span>Teacher: <strong id="teacherHeaderTeacherName">Jothi Prakash V</strong></span>
-                <span id="teacherHeaderTeacherEmail" style="display:none;">jothi@gmail.com</span>
-              </div>
+            <div class="teacher-header-left">
+              <span class="teacher-header-grade" id="teacherHeaderClassName">Grade 5 Class</span>
+              <span class="teacher-header-sep">·</span>
+              <span class="teacher-header-meta">Code: <strong id="teacherHeaderClassCode">CLS-6070</strong></span>
+              <span class="teacher-header-sep">·</span>
+              <span class="teacher-header-meta">Teacher: <strong id="teacherHeaderTeacherName">Jothi Prakash V</strong></span>
+              <span id="teacherHeaderTeacherEmail" style="display:none;">jothi@gmail.com</span>
             </div>
-            <div class="teacher-header-actions">
+            <div class="teacher-header-right">
               <div class="teacher-date-picker-wrap">
                 <i class="fa-regular fa-calendar"></i>
                 <input type="date" id="teacherSelectedDate" title="Select Date to View Meal Records" />
               </div>
-              <button class="btn-action-ghost" id="btnRefreshTeacherMeals" title="Refresh meal records">
+              <button class="btn-compact-refresh" id="btnRefreshTeacherMeals" title="Refresh meal records">
                 <i class="fa-solid fa-rotate"></i> Refresh
               </button>
             </div>
           </div>
 
-          <!-- 2. STUDENTS REQUIRING ACTION / PENDING REVIEW QUEUE (FIRST IN HIERARCHY, CLEAN ALERT STYLE) -->
+          <!-- 2. SUMMARY STATISTICS (DIRECTLY BELOW CLASS HEADER) -->
+          <div class="teacher-kpi-strip">
+            <div class="teacher-kpi-card">
+              <span class="teacher-kpi-label">Students in Class</span>
+              <div class="teacher-kpi-val" id="teacherMetricStudents">0</div>
+            </div>
+
+            <div class="teacher-kpi-card">
+              <span class="teacher-kpi-label">Meals Submitted</span>
+              <div class="teacher-kpi-val" id="teacherMetricSubmitted">0</div>
+            </div>
+
+            <div class="teacher-kpi-card">
+              <span class="teacher-kpi-label">Pending Reviews</span>
+              <div class="teacher-kpi-val" id="teacherMetricPendingReviews">0</div>
+            </div>
+
+            <div class="teacher-kpi-card">
+              <span class="teacher-kpi-label">Average Consumption</span>
+              <div class="teacher-kpi-val" id="teacherMetricAvgConsumption">0%</div>
+            </div>
+          </div>
+
+          <!-- 3. PENDING REVIEW QUEUE (SUBTLE CARD DIRECTLY AFTER METRICS) -->
           <div class="teacher-pending-section" id="teacherPendingQueueCard">
             <div class="teacher-section-header">
               <div class="teacher-section-title">
-                <h3><i class="fa-solid fa-clock-rotate-left"></i> Pending Meal Reviews</h3>
+                <h3>Pending Meal Reviews</h3>
                 <span class="teacher-count-badge" id="badgePendingQueueCount">0 Pending</span>
               </div>
               <div style="display:flex; gap:0.5rem; align-items:center;">
-                <button class="btn-action-subtle" id="btnBulkMarkFullEaten" style="display:none;">
-                  <i class="fa-solid fa-check-double"></i> Mark All 100% Eaten
+                <button class="btn-action-outline" id="btnBulkMarkFullEaten" style="display:none; padding:0.32rem 0.75rem; font-size:0.775rem;">
+                  <i class="fa-solid fa-check"></i> Mark All 100% Eaten
                 </button>
               </div>
             </div>
@@ -1203,10 +1225,10 @@
               <table class="table-chewcheckers teacher-roster-table">
                 <thead>
                   <tr>
-                    <th>STUDENT</th>
-                    <th>PACKED MEAL</th>
-                    <th>STATUS</th>
-                    <th style="text-align:right;">ACTION REQUIRED</th>
+                    <th>Student</th>
+                    <th>Packed Meal</th>
+                    <th>Status</th>
+                    <th style="text-align:right;">Action</th>
                   </tr>
                 </thead>
                 <tbody id="teacherPendingQueueBody">
@@ -1216,11 +1238,11 @@
             </div>
           </div>
 
-          <!-- 3. MASTER CLASSROOM STUDENT ROSTER & DAILY MEAL LOG -->
+          <!-- 4. MASTER CLASSROOM STUDENT ROSTER & DAILY MEAL LOG -->
           <div class="teacher-roster-section">
             <div class="teacher-section-header">
               <div class="teacher-section-title">
-                <h3><i class="fa-solid fa-users"></i> Classroom Student Roster</h3>
+                <h3>Classroom Student Roster</h3>
               </div>
               <div style="display:flex; gap:0.5rem; align-items:center;">
                 <button class="btn-action-primary" id="btnBulkMarkSelectedFull" style="display:none; padding:0.35rem 0.75rem; font-size:0.8rem;">
@@ -1274,29 +1296,6 @@
                   </tr>
                 </tbody>
               </table>
-            </div>
-          </div>
-
-          <!-- 4. KPI SUMMARY (PLACED BELOW ROSTER AS COMPACT SUMMARY STRIP) -->
-          <div class="teacher-kpi-strip">
-            <div class="teacher-kpi-card">
-              <span class="teacher-kpi-label">Students In Class</span>
-              <div class="teacher-kpi-val" id="teacherMetricStudents">0</div>
-            </div>
-
-            <div class="teacher-kpi-card">
-              <span class="teacher-kpi-label">Meals Submitted</span>
-              <div class="teacher-kpi-val" id="teacherMetricSubmitted">0</div>
-            </div>
-
-            <div class="teacher-kpi-card">
-              <span class="teacher-kpi-label">Pending Reviews</span>
-              <div class="teacher-kpi-val" id="teacherMetricPendingReviews">0</div>
-            </div>
-
-            <div class="teacher-kpi-card">
-              <span class="teacher-kpi-label">Average Consumption</span>
-              <div class="teacher-kpi-val" id="teacherMetricAvgConsumption">0%</div>
             </div>
           </div>
         </div>

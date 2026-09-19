@@ -4809,6 +4809,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         return meal && (meal.status === 'PRE_MEAL_UPLOADED' || meal.status === 'PENDING_LEFTOVER_ANALYSIS');
       });
 
+      if (cardPending) {
+        cardPending.style.display = pendingStudents.length > 0 ? 'block' : 'none';
+      }
+
       if (pendingBody) {
         if (pendingStudents.length === 0) {
           pendingBody.innerHTML = `
@@ -4824,20 +4828,20 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             const totalCal = items.reduce((acc, i) => acc + (i.calories || 0), 0);
             const escapedName = (s.name || 'Student').replace(/'/g, "\\'");
 
-            let statusBadge = `<span class="badge-erp-pending"><i class="fa-solid fa-clock"></i> Pending Review</span>`;
+            let statusBadge = `<span class="badge-status-pending"><i class="fa-solid fa-clock"></i> Pending Review</span>`;
             let actionCell = `
               <div style="display:flex; justify-content:flex-end; gap:0.4rem; align-items:center;">
-                <button class="btn-action-primary" onclick="openPortionChangeModal(${meal.id}, '${escapedName}')" style="padding:0.32rem 0.75rem; font-size:0.775rem; font-weight:600;"><i class="fa-solid fa-clipboard-check"></i> Review Meal</button>
-                <button class="btn-action-subtle" onclick="recordTeacherQuickConsumption(${meal.id}, 100)" title="Quick mark as 100% clean plate" style="padding:0.32rem 0.6rem; font-size:0.775rem;"><i class="fa-solid fa-check"></i> 100% Eaten</button>
+                <button class="btn-action-primary" onclick="openPortionChangeModal(${meal.id}, '${escapedName}')" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600;">Review Meal</button>
+                <button class="btn-action-outline" onclick="recordTeacherQuickConsumption(${meal.id}, 100)" title="Quick mark as 100% clean plate" style="padding:0.35rem 0.7rem; font-size:0.775rem;">100% Eaten</button>
               </div>
             `;
 
             if (meal.status === 'PENDING_LEFTOVER_ANALYSIS') {
-              statusBadge = `<span class="badge-erp-pending"><i class="fa-solid fa-camera"></i> Photo Needed</span>`;
+              statusBadge = `<span class="badge-status-attention"><i class="fa-solid fa-triangle-exclamation"></i> Photo Needed</span>`;
               actionCell = `
                 <div style="display:flex; justify-content:flex-end; gap:0.4rem; align-items:center;">
-                  <button class="btn-action-primary" onclick="openLeftoverModalForMeal(${meal.id})" style="padding:0.32rem 0.75rem; font-size:0.775rem; font-weight:600;"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Leftovers</button>
-                  <button class="btn-subtle-ghost" onclick="openPortionChangeModal(${meal.id}, '${escapedName}')" style="font-size:0.75rem;">Change %</button>
+                  <button class="btn-action-primary" onclick="openLeftoverModalForMeal(${meal.id})" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600;">Upload Leftover Photo</button>
+                  <button class="btn-action-outline" onclick="openPortionChangeModal(${meal.id}, '${escapedName}')" style="padding:0.35rem 0.7rem; font-size:0.775rem;">Change %</button>
                 </div>
               `;
             }
@@ -4845,11 +4849,11 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             return `
               <tr>
                 <td>
-                  <strong style="color:var(--text-primary); font-size:0.875rem;">${s.name}</strong>
-                  <div style="font-size:0.75rem; color:var(--text-muted);">${s.studentCode}</div>
+                  <div style="font-size:0.95rem; font-weight:700; color:var(--text-primary); line-height:1.25;">${s.name}</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); font-family:monospace; margin-top:0.1rem;">${s.studentCode}</div>
                 </td>
                 <td>
-                  <div style="font-weight:600; color:var(--text-primary); font-size:0.825rem;">${totalCal > 0 ? totalCal + ' kcal' : 'Packed Baseline'}</div>
+                  <div><strong style="font-size:0.85rem; color:var(--text-primary);">${totalCal > 0 ? totalCal + ' kcal' : 'Packed'}</strong></div>
                   <div style="font-size:0.75rem; margin-top:0.15rem;">${formatFoodItemList(items, meal.id)}</div>
                 </td>
                 <td>${statusBadge}</td>
@@ -5066,12 +5070,27 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const elCountFull = document.getElementById('countFilterFull');
     if (elCountFull) elCountFull.textContent = countFull;
 
-    // Active Filter State Handling
+    // Active Filter State Handling & Zero-Count De-emphasis
     const activeFilter = state.teacherRosterFilter || 'all';
     document.querySelectorAll('.teacher-filter-chip').forEach(chip => {
-      chip.classList.toggle('active', chip.getAttribute('data-filter') === activeFilter);
+      const filterType = chip.getAttribute('data-filter');
+      let count = 0;
+      if (filterType === 'all') count = students.length;
+      else if (filterType === 'attention') count = countAttention;
+      else if (filterType === 'pending') count = countPending;
+      else if (filterType === 'partial') count = countPartial;
+      else if (filterType === 'full') count = countFull;
+
+      const isZero = (count === 0 && filterType !== 'all');
+      chip.classList.toggle('filter-zero', isZero);
+
+      // Only highlight if active AND has students (or 'all' when no specific category is selected)
+      const isActive = (filterType === activeFilter) && (!isZero || filterType === 'all');
+      chip.classList.toggle('active', isActive);
+
       chip.onclick = () => {
-        state.teacherRosterFilter = chip.getAttribute('data-filter');
+        if (isZero) return;
+        state.teacherRosterFilter = filterType;
         renderTeacherRoster(students, meals);
       };
     });
@@ -5110,13 +5129,13 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       const meal = meals.find(m => m.studentId === s.id && m.status !== 'MEAL_NOT_PACKED');
       const initials = (s.name || 'S').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
-      let mealSummaryHTML = `<div style="color:var(--text-muted); font-size:0.825rem; font-style:italic;">Meal not packed</div>`;
-      let statusBadgeHTML = `<span class="badge-erp-muted"><i class="fa-regular fa-circle"></i> Not Packed</span>`;
+      let mealSummaryHTML = `<span style="color:var(--text-muted); font-size:0.825rem;">No meal recorded</span>`;
+      let statusBadgeHTML = `<span class="badge-status-neutral"><i class="fa-regular fa-circle"></i> Not Packed</span>`;
 
       const isActionable = meal && (meal.status === 'PRE_MEAL_UPLOADED' || meal.status === 'PENDING_LEFTOVER_ANALYSIS');
 
       if (isAbsent) {
-        statusBadgeHTML = `<span class="badge-erp-muted"><i class="fa-solid fa-user-slash"></i> Absent</span>`;
+        statusBadgeHTML = `<span class="badge-status-neutral"><i class="fa-solid fa-user-slash"></i> Absent</span>`;
       } else if (meal) {
         const items = meal.foodItems || [];
         const calcPacked = meal.packedCalories || (items.reduce((acc, i) => acc + (i.calories || 0), 0)) || 400;
@@ -5132,41 +5151,37 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
         if (meal.status === 'FULLY_CONSUMED' || pct === 100) {
           mealSummaryHTML = `
-            <div style="font-weight:600; color:var(--text-primary); font-size:0.825rem;">
-              ${calcPacked} kcal <span style="color:var(--text-muted); font-weight:400;">→</span> <span style="color:var(--accent-green); font-weight:700;">${calcConsumed} kcal (100%)</span>
-            </div>
+            <div><strong style="color:var(--text-primary); font-size:0.85rem;">${calcPacked} kcal</strong> <span style="color:var(--text-muted); font-size:0.8rem;">· 100% eaten</span></div>
             <div style="font-size:0.75rem; margin-top:0.15rem;">${formatFoodItemList(items, meal.id)}</div>
           `;
-          statusBadgeHTML = `<span class="badge-erp-verified"><i class="fa-solid fa-check"></i> Fully Consumed</span>`;
+          statusBadgeHTML = `<span class="badge-status-consumed"><i class="fa-solid fa-check"></i> Fully Consumed</span>`;
         } else if (meal.status === 'PARTIALLY_CONSUMED' || (pct > 0 && pct < 100)) {
           mealSummaryHTML = `
-            <div style="font-weight:600; color:var(--text-primary); font-size:0.825rem;">
-              ${calcPacked} kcal <span style="color:var(--text-muted); font-weight:400;">→</span> <span style="color:var(--accent-amber); font-weight:700;">${calcConsumed} kcal (${pct}%)</span>
-            </div>
+            <div><strong style="color:var(--text-primary); font-size:0.85rem;">${calcPacked} kcal</strong> <span style="color:var(--accent-amber); font-size:0.8rem; font-weight:600;">· ${pct}% eaten</span></div>
             <div style="font-size:0.75rem; margin-top:0.15rem;">${formatFoodItemList(items, meal.id)}</div>
           `;
-          statusBadgeHTML = `<span class="badge-erp-partial"><i class="fa-solid fa-chart-pie"></i> ${pct}% Consumed</span>`;
+          statusBadgeHTML = `<span class="badge-status-partial"><i class="fa-solid fa-chart-pie"></i> ${pct}% Consumed</span>`;
         } else if (meal.status === 'PENDING_LEFTOVER_ANALYSIS') {
           mealSummaryHTML = `
-            <div style="font-weight:600; color:var(--text-primary); font-size:0.825rem;">${calcPacked} kcal packed</div>
+            <div><strong style="color:var(--text-primary); font-size:0.85rem;">${calcPacked} kcal</strong> <span style="color:var(--accent-rose); font-size:0.8rem; font-weight:600;">· photo needed</span></div>
             <div style="font-size:0.75rem; margin-top:0.15rem;">${formatFoodItemList(items, meal.id)}</div>
           `;
-          statusBadgeHTML = `<span class="badge-erp-pending"><i class="fa-solid fa-camera"></i> Photo Needed</span>`;
+          statusBadgeHTML = `<span class="badge-status-attention"><i class="fa-solid fa-triangle-exclamation"></i> Photo Needed</span>`;
         } else {
           mealSummaryHTML = `
-            <div style="font-weight:600; color:var(--text-primary); font-size:0.825rem;">${calcPacked} kcal packed</div>
+            <div><strong style="color:var(--text-primary); font-size:0.85rem;">${calcPacked} kcal</strong> <span style="color:var(--text-muted); font-size:0.8rem;">· packed</span></div>
             <div style="font-size:0.75rem; margin-top:0.15rem;">${formatFoodItemList(items, meal.id)}</div>
           `;
-          statusBadgeHTML = `<span class="badge-erp-pending"><i class="fa-solid fa-clock"></i> Pending Review</span>`;
+          statusBadgeHTML = `<span class="badge-status-pending"><i class="fa-solid fa-clock"></i> Pending Review</span>`;
         }
       }
 
       const escapedName = (s.name || 'Student').replace(/'/g, "\\'");
       const actionsHTML = `
-        <div style="display:flex; gap:0.35rem; justify-content:flex-end; align-items:center;">
-          ${meal ? `<button class="btn-action-primary" onclick="openPortionChangeModal(${meal.id}, '${escapedName}')" style="padding:0.3rem 0.65rem; font-size:0.75rem; font-weight:600;" title="Review or correct meal consumption"><i class="fa-solid fa-clipboard-check"></i> Review Meal</button>` : ''}
-          <button class="btn-subtle-ghost btn-view-profile" data-student-id="${s.id}" title="View Student Profile"><i class="fa-solid fa-user"></i> Profile</button>
-          <button class="btn-subtle-ghost btn-mark-absent" data-student-id="${s.id}" data-student-name="${escapedName}" title="Toggle Attendance" style="color:${isAbsent ? 'var(--accent-amber)' : 'var(--text-muted)'};"><i class="fa-solid ${isAbsent ? 'fa-user-check' : 'fa-user-slash'}"></i> ${isAbsent ? 'Present' : 'Absent'}</button>
+        <div style="display:flex; gap:0.4rem; justify-content:flex-end; align-items:center;">
+          ${meal ? `<button class="btn-action-primary" onclick="openPortionChangeModal(${meal.id}, '${escapedName}')" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600;">Review Meal</button>` : ''}
+          <button class="btn-action-outline btn-view-profile" data-student-id="${s.id}" style="padding:0.35rem 0.65rem; font-size:0.775rem; font-weight:500;">Profile</button>
+          <button class="btn-action-outline btn-mark-absent" data-student-id="${s.id}" data-student-name="${escapedName}" style="padding:0.35rem 0.65rem; font-size:0.775rem; font-weight:500;">${isAbsent ? 'Present' : 'Absent'}</button>
         </div>
       `;
 
@@ -5176,18 +5191,18 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             <input type="checkbox" class="student-select-chk" data-meal-id="${meal ? meal.id : ''}" data-student-id="${s.id}" ${isActionable ? '' : 'disabled style="opacity:0.25; cursor:not-allowed;"'}>
           </td>
           <td>
-            <div style="display:flex; align-items:center; gap:0.6rem;">
+            <div style="display:flex; align-items:center; gap:0.65rem;">
               <div style="width:30px; height:30px; border-radius:50%; background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-secondary); font-weight:700; font-size:0.75rem; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                 ${initials}
               </div>
               <div>
-                <strong style="font-size:0.875rem; color:var(--text-primary); display:block; line-height:1.2;">${s.name}</strong>
-                <span style="font-size:0.725rem; color:var(--text-muted);">Roll #${s.rollNumber || 'N/A'}</span>
+                <div style="font-size:0.95rem; font-weight:700; color:var(--text-primary); line-height:1.25;">${s.name}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.1rem;">Roll #${s.rollNumber || 'N/A'}</div>
               </div>
             </div>
           </td>
           <td>
-            <code style="font-size:0.75rem; background:var(--bg-page); padding:0.2rem 0.45rem; border-radius:var(--r-sm); color:var(--text-secondary); font-weight:700; white-space:nowrap; border:1px solid var(--border-subtle);">${s.studentCode}</code>
+            <span style="font-size:0.8rem; color:var(--text-muted); font-family:monospace;">${s.studentCode}</span>
           </td>
           <td>${mealSummaryHTML}</td>
           <td>${statusBadgeHTML}</td>
