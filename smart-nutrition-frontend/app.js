@@ -5397,27 +5397,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         const studentId = parseInt(btn.getAttribute('data-student-id'));
         const s = students.find(x => x.id === studentId);
         if (!s) return;
-
-        document.getElementById('profileAvatar').textContent = s.name.charAt(0).toUpperCase();
-        document.getElementById('profileStudentName').textContent = s.name;
-        document.getElementById('profileStudentCode').textContent = s.studentCode;
-        document.getElementById('profileGender').textContent = s.gender || 'N/A';
-        document.getElementById('profileDOB').textContent = s.dateOfBirth ? formatDateDDMMYYYY(s.dateOfBirth) : 'N/A';
-        const standardBloodTypes = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
-        const isBloodType = s.bloodGroup && standardBloodTypes.includes(s.bloodGroup.toUpperCase().trim());
-        document.getElementById('profileBloodGroup').textContent = isBloodType ? s.bloodGroup.toUpperCase().trim() : 'N/A';
-        document.getElementById('profileAllergy').textContent = (!isBloodType && s.bloodGroup && s.bloodGroup.toLowerCase() !== 'none' && s.bloodGroup.toLowerCase() !== 'n/a') ? s.bloodGroup : 'None';
-        document.getElementById('profileClass').textContent = s.className || 'N/A';
-
-        document.getElementById('profileTargetCal').textContent = s.dailyCalories || 'N/A';
-        document.getElementById('profileTargetProt').textContent = s.dailyProtein ? `${s.dailyProtein}g` : 'N/A';
-        document.getElementById('profileTargetCarbs').textContent = s.dailyCarbs ? `${s.dailyCarbs}g` : 'N/A';
-        document.getElementById('profileTargetFat').textContent = s.dailyFat ? `${s.dailyFat}g` : 'N/A';
-        document.getElementById('profileTargetFiber').textContent = s.dailyFiber ? `${s.dailyFiber}g` : 'N/A';
-
-        populateProfileIntakeAnalysis(s);
-
-        document.getElementById('studentProfileModal').classList.add('open');
+        openStudentProfileModal(s);
       });
     });
 
@@ -5516,27 +5496,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         const studentId = parseInt(btn.getAttribute('data-student-id'));
         const s = students.find(x => x.id === studentId);
         if (!s) return;
-
-        document.getElementById('profileAvatar').textContent = s.name.charAt(0).toUpperCase();
-        document.getElementById('profileStudentName').textContent = s.name;
-        document.getElementById('profileStudentCode').textContent = s.studentCode;
-        document.getElementById('profileGender').textContent = s.gender || 'N/A';
-        document.getElementById('profileDOB').textContent = s.dateOfBirth ? formatDateDDMMYYYY(s.dateOfBirth) : 'N/A';
-        const standardBloodTypes = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
-        const isBloodType = s.bloodGroup && standardBloodTypes.includes(s.bloodGroup.toUpperCase().trim());
-        document.getElementById('profileBloodGroup').textContent = isBloodType ? s.bloodGroup.toUpperCase().trim() : 'N/A';
-        document.getElementById('profileAllergy').textContent = (!isBloodType && s.bloodGroup && s.bloodGroup.toLowerCase() !== 'none' && s.bloodGroup.toLowerCase() !== 'n/a') ? s.bloodGroup : 'None';
-        document.getElementById('profileClass').textContent = s.className || 'N/A';
-
-        document.getElementById('profileTargetCal').textContent = s.dailyCalories || 'N/A';
-        document.getElementById('profileTargetProt').textContent = s.dailyProtein ? `${s.dailyProtein}g` : 'N/A';
-        document.getElementById('profileTargetCarbs').textContent = s.dailyCarbs ? `${s.dailyCarbs}g` : 'N/A';
-        document.getElementById('profileTargetFat').textContent = s.dailyFat ? `${s.dailyFat}g` : 'N/A';
-        document.getElementById('profileTargetFiber').textContent = s.dailyFiber ? `${s.dailyFiber}g` : 'N/A';
-
-        populateProfileIntakeAnalysis(s);
-
-        document.getElementById('studentProfileModal').classList.add('open');
+        openStudentProfileModal(s);
       });
     });
 
@@ -5578,6 +5538,54 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     });
   }
 
+  function openStudentProfileModal(s) {
+    if (!s) return;
+    const modal = document.getElementById('studentProfileModal');
+    if (!modal) return;
+
+    document.getElementById('profileAvatar').textContent = (s.name || 'S').trim().charAt(0).toUpperCase();
+    document.getElementById('profileStudentName').textContent = s.name || 'Student';
+    document.getElementById('profileStudentCode').textContent = s.studentCode || ('STU-' + s.id);
+    document.getElementById('profileGender').textContent = s.gender || 'N/A';
+    document.getElementById('profileDOB').textContent = s.dateOfBirth ? formatDateDDMMYYYY(s.dateOfBirth) : 'N/A';
+
+    const standardBloodTypes = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
+    const isBloodType = s.bloodGroup && standardBloodTypes.includes(s.bloodGroup.toUpperCase().trim());
+    document.getElementById('profileBloodGroup').textContent = isBloodType ? s.bloodGroup.toUpperCase().trim() : (s.bloodGroup || 'N/A');
+
+    // Retrieve Food Allergies accurately from s.allergies, persistent storage, or fallback
+    const rawAllergy = s.allergies || getStoredStudentAllergies(s.id) || ((!isBloodType && s.bloodGroup && s.bloodGroup.toLowerCase() !== 'none' && s.bloodGroup.toLowerCase() !== 'n/a') ? s.bloodGroup : '');
+    const allergyText = (rawAllergy && rawAllergy.trim() && rawAllergy.toLowerCase() !== 'none' && rawAllergy.toLowerCase() !== 'no known allergens') ? rawAllergy.trim() : 'None';
+    const elAllergy = document.getElementById('profileAllergy');
+    if (elAllergy) {
+      if (allergyText !== 'None') {
+        elAllergy.innerHTML = `<span style="color:var(--accent-rose); font-weight:700;"><i class="fa-solid fa-triangle-exclamation" style="margin-right:0.35rem;"></i>${allergyText}</span>`;
+      } else {
+        elAllergy.textContent = 'None';
+      }
+    }
+
+    document.getElementById('profileClass').textContent = s.className || (state.activeClass ? `${state.activeClass.className} - ${state.activeClass.section}` : 'N/A');
+
+    // Calibrated lunch nutrient targets
+    const targets = (typeof calculateLunchTargets === 'function') ? calculateLunchTargets(s) : {};
+    const cal = s.lunchCalories || targets.lunchCalTarget || s.dailyCalories || 550;
+    const prot = s.lunchProtein || targets.lunchProteinTarget || s.dailyProtein || 20;
+    const carbs = s.lunchCarbs || targets.lunchCarbsTarget || s.dailyCarbs || 75;
+    const fat = s.lunchFat || targets.lunchFatTarget || s.dailyFat || 18;
+    const fiber = s.lunchFiber || targets.lunchFibreTarget || s.dailyFiber || 8;
+
+    document.getElementById('profileTargetCal').textContent = `${cal} kcal`;
+    document.getElementById('profileTargetProt').textContent = `${prot}g`;
+    document.getElementById('profileTargetCarbs').textContent = `${carbs}g`;
+    document.getElementById('profileTargetFat').textContent = `${fat}g`;
+    document.getElementById('profileTargetFiber').textContent = `${fiber}g`;
+
+    populateProfileIntakeAnalysis(s);
+
+    modal.classList.add('open');
+  }
+
   function populateProfileIntakeAnalysis(s) {
     const dateEl = document.getElementById('profileIntakeDate');
     const blockEl = document.getElementById('profileIntakeAnalysisBlock');
@@ -5588,7 +5596,9 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       dateEl.textContent = formatDateDDMMYYYY(targetDate);
     }
 
-    const meal = (state.currentMeals || []).find(m => m.studentId === s.id && m.status !== 'MEAL_NOT_PACKED');
+    const meal = (state.currentMeals || []).find(m => m.studentId === s.id && m.status !== 'MEAL_NOT_PACKED')
+      || (state.teacherClassOverviewMeals || []).find(m => m.studentId === s.id && m.status !== 'MEAL_NOT_PACKED');
+
     if (!meal) {
       blockEl.innerHTML = `<div style="color:var(--text-muted); font-size:0.85rem;"><i class="fa-solid fa-circle-info"></i> No meal records found for this date.</div>`;
       return;
@@ -5599,44 +5609,49 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       return;
     }
 
-    // Consumption percent
-    const items = meal.foodItems || [];
-    const totalCalPacked = items.reduce((acc, i) => acc + (i.calories || 0), 0);
-    const totalCalConsumed = items.reduce((acc, i) => acc + (i.consumedCalories || 0), 0);
-    const validItems = items.filter(i => i.consumptionPercentage !== null && i.consumptionPercentage !== undefined);
-    const avgPct = validItems.length > 0 ? Math.round(validItems.reduce((acc, i) => acc + Number(i.consumptionPercentage), 0) / validItems.length) : null;
+    // Targets
+    const targets = (typeof calculateLunchTargets === 'function') ? calculateLunchTargets(s) : {};
+    const calTarget = s.lunchCalories || targets.lunchCalTarget || s.dailyCalories || 550;
+    const protTarget = s.lunchProtein || targets.lunchProteinTarget || s.dailyProtein || 20;
+    const carbsTarget = s.lunchCarbs || targets.lunchCarbsTarget || s.dailyCarbs || 75;
+    const fatTarget = s.lunchFat || targets.lunchFatTarget || s.dailyFat || 18;
+    const fiberTarget = s.lunchFiber || targets.lunchFibreTarget || s.dailyFiber || 8;
 
+    // Food items & packed baseline
+    const items = meal.foodItems || [];
+    let totalCalPacked = items.reduce((acc, i) => acc + (parseFloat(i.calories) || 0), 0);
+    if (!totalCalPacked || totalCalPacked <= 0) {
+      totalCalPacked = meal.packedCalories || calTarget || 550;
+    }
+    const totalProtPacked = items.reduce((acc, i) => acc + (parseFloat(i.proteinG || i.protein) || 0), 0) || protTarget || 20;
+    const totalCarbsPacked = items.reduce((acc, i) => acc + (parseFloat(i.carbsG || i.carbs) || 0), 0) || carbsTarget || 75;
+    const totalFatPacked = items.reduce((acc, i) => acc + (parseFloat(i.fatG || i.fat) || 0), 0) || fatTarget || 18;
+    const totalFiberPacked = items.reduce((acc, i) => acc + (parseFloat(i.fiberG || i.fiber) || 0), 0) || fiberTarget || 8;
+
+    // Consumption percentage
     let pct = (meal.overallConsumptionPercentage !== null && meal.overallConsumptionPercentage !== undefined) ? Number(meal.overallConsumptionPercentage) : null;
     if (pct === null) {
-      if (totalCalConsumed > 0 && totalCalPacked > 0) {
-        pct = Math.round((totalCalConsumed / totalCalPacked) * 100);
+      const validItems = items.filter(i => i.consumptionPercentage !== null && i.consumptionPercentage !== undefined);
+      if (validItems.length > 0) {
+        pct = Math.round(validItems.reduce((acc, i) => acc + Number(i.consumptionPercentage), 0) / validItems.length);
       } else if (meal.status === 'FULLY_CONSUMED') {
         pct = 100;
-      } else if (avgPct !== null) {
-        pct = avgPct;
       } else {
         pct = 0;
       }
     }
 
-    const totalProtPacked = items.reduce((acc, i) => acc + (i.protein || 0), 0);
-    const totalCarbsPacked = items.reduce((acc, i) => acc + (i.carbs || 0), 0);
-    const totalFatPacked = items.reduce((acc, i) => acc + (i.fat || 0), 0);
-    const totalFiberPacked = items.reduce((acc, i) => acc + (i.fiber || 0), 0);
+    const totalCalConsumed = items.reduce((acc, i) => acc + (parseFloat(i.consumedCalories) || 0), 0);
+    const totalProtConsumed = items.reduce((acc, i) => acc + (parseFloat(i.consumedProteinG) || 0), 0);
+    const totalCarbsConsumed = items.reduce((acc, i) => acc + (parseFloat(i.consumedCarbsG) || 0), 0);
+    const totalFatConsumed = items.reduce((acc, i) => acc + (parseFloat(i.consumedFatG) || 0), 0);
+    const totalFiberConsumed = items.reduce((acc, i) => acc + (parseFloat(i.consumedFiberG) || 0), 0);
 
-    const hasConsumedValues = items.some(i => (i.consumedCalories !== null && i.consumedCalories > 0) || (i.consumedProteinG !== null && i.consumedProteinG > 0) || (i.consumptionPercentage !== null && i.consumptionPercentage > 0));
-
-    const caloriesAchieved = hasConsumedValues ? Math.round(totalCalConsumed) : Math.round(totalCalPacked * (pct / 100));
-    const proteinAchieved = hasConsumedValues ? Math.round(items.reduce((acc, i) => acc + (i.consumedProteinG || 0), 0)) : Math.round(totalProtPacked * (pct / 100));
-    const carbsAchieved = hasConsumedValues ? Math.round(items.reduce((acc, i) => acc + (i.consumedCarbsG || 0), 0)) : Math.round(totalCarbsPacked * (pct / 100));
-    const fatAchieved = hasConsumedValues ? Math.round(items.reduce((acc, i) => acc + (i.consumedFatG || 0), 0)) : Math.round(totalFatPacked * (pct / 100));
-    const fiberAchieved = hasConsumedValues ? Math.round(items.reduce((acc, i) => acc + (i.consumedFiberG || 0), 0)) : Math.round(totalFiberPacked * (pct / 100));
-
-    const calTarget = s.dailyCalories || 0;
-    const protTarget = s.dailyProtein || 0;
-    const carbsTarget = s.dailyCarbs || 0;
-    const fatTarget = s.dailyFat || 0;
-    const fiberTarget = s.dailyFiber || 0;
+    const caloriesAchieved = totalCalConsumed > 0 ? Math.round(totalCalConsumed) : Math.round(totalCalPacked * (pct / 100));
+    const proteinAchieved = totalProtConsumed > 0 ? Math.round(totalProtConsumed) : Math.round(totalProtPacked * (pct / 100));
+    const carbsAchieved = totalCarbsConsumed > 0 ? Math.round(totalCarbsConsumed) : Math.round(totalCarbsPacked * (pct / 100));
+    const fatAchieved = totalFatConsumed > 0 ? Math.round(totalFatConsumed) : Math.round(totalFatPacked * (pct / 100));
+    const fiberAchieved = totalFiberConsumed > 0 ? Math.round(totalFiberConsumed) : Math.round(totalFiberPacked * (pct / 100));
 
     const deficits = [];
     if (calTarget > 0 && caloriesAchieved < calTarget) {
@@ -5694,8 +5709,8 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           <span style="background:var(--bg-card); border:1px solid var(--border-subtle); padding:0.2rem 0.5rem; border-radius:var(--r-sm); font-size:0.75rem; color:var(--text-secondary);"> Cal: <strong style="color:var(--text-primary);">${caloriesAchieved} kcal</strong></span>
           <span style="background:var(--bg-card); border:1px solid var(--border-subtle); padding:0.2rem 0.5rem; border-radius:var(--r-sm); font-size:0.75rem; color:var(--text-secondary);"> Prot: <strong style="color:var(--text-primary);">${proteinAchieved}g</strong></span>
           <span style="background:var(--bg-card); border:1px solid var(--border-subtle); padding:0.2rem 0.5rem; border-radius:var(--r-sm); font-size:0.75rem; color:var(--text-secondary);"> Carbs: <strong style="color:var(--text-primary);">${carbsAchieved}g</strong></span>
-          <span style="background:var(--bg-card); border:1px solid var(--border-subtle); padding:0.2rem 0.5rem; border-radius:var(--r-sm); font-size:0.75rem; color:var(--text-secondary);">Fat: <strong style="color:var(--text-primary);">${fatAchieved}g</strong></span>
-          <span style="background:var(--bg-card); border:1px solid var(--border-subtle); padding:0.2rem 0.5rem; border-radius:var(--r-sm); font-size:0.75rem; color:var(--text-secondary);">Fiber: <strong style="color:var(--text-primary);">${fiberAchieved}g</strong></span>
+          <span style="background:var(--bg-card); border:1px solid var(--border-subtle); padding:0.2rem 0.5rem; border-radius:var(--r-sm); font-size:0.75rem; color:var(--text-secondary);"> Fat: <strong style="color:var(--text-primary);">${fatAchieved}g</strong></span>
+          <span style="background:var(--bg-card); border:1px solid var(--border-subtle); padding:0.2rem 0.5rem; border-radius:var(--r-sm); font-size:0.75rem; color:var(--text-secondary);"> Fiber: <strong style="color:var(--text-primary);">${fiberAchieved}g</strong></span>
         </div>
       </div>
       ${deficitsHTML}
