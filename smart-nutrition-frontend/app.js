@@ -3180,8 +3180,12 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const dropzone = document.getElementById('dropzone');
     const quickBar = document.getElementById('scannerQuickActionBar');
     const fileInput = document.getElementById('imageFileInput');
+    const matchedNotice = document.getElementById('scannerMatchedPresetNotice');
+    const newPrompt = document.getElementById('scannerNewLunchboxPrompt');
     if (card) card.classList.add('hidden');
     if (quickBar) quickBar.classList.add('hidden');
+    if (matchedNotice) matchedNotice.classList.add('hidden');
+    if (newPrompt) newPrompt.classList.add('hidden');
     if (dropzone) {
       dropzone.style.display = '';
       if (dropzone.dataset.originalHtml) {
@@ -3661,43 +3665,230 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     };
   }
 
-  async function autoRegisterDetectedContainerPreset(studentId, container) {
-    if (!studentId || !container || !state.token) return;
-    try {
-      const presets = await fetchPresetsForStudent(studentId);
-      const exists = (presets || []).some(p =>
-        p.presetName && p.presetName.toLowerCase().trim() === container.name.toLowerCase().trim()
-      );
-      if (!exists) {
-        const payload = {
-          studentId: studentId,
-          presetName: container.name,
-          lengthCm: container.lengthCm || 15.0,
-          widthCm: container.widthCm || 12.0,
-          heightCm: container.heightCm || 4.2,
-          notes: "Auto-detected by AI during lunch scan (Editable under Children > Lunchbox Presets)",
-          isDefault: (presets || []).length === 0
-        };
-        const res = await safeFetch(`/api/parent/student/${studentId}/lunchbox-presets`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${state.token}`
-          },
-          body: JSON.stringify(payload)
-        });
-        if (res.ok) {
-          const created = await res.json();
-          if (created && created.id) {
-            state.currentDetectedContainer.presetId = created.id;
-            localStorage.setItem(`chewchecker_last_preset_${studentId}`, String(created.id));
-          }
-          showToast(`✨ ${container.name} registered to presets (editable anytime under Children > Lunchbox Presets)`, "info");
-          await updateScannerPresetDropdown(studentId);
+  function findMatchingPreset(detected, presets) {
+    if (!detected || !presets || presets.length === 0) return null;
+
+    const detLen = parseFloat(detected.lengthCm) || 16.0;
+    const detWid = parseFloat(detected.widthCm) || 12.0;
+    const detHgt = parseFloat(detected.heightCm) || 4.0;
+    const detVol = parseInt(detected.volumeMl) || Math.round(detLen * detWid * detHgt);
+    const detName = (detected.name || "").toLowerCase().trim();
+
+    // Extract significant keywords
+    const ignoreWords = new Set(['the', 'and', 'with', 'for', 'box', 'lunchbox', 'lunch', 'tray', 'dish', 'plate', 'detected', 'custom']);
+    const getTokens = (str) => {
+      return (str || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, ' ')
+        .split(/\s+/)
+        .filter(t => t.length >= 3 && !ignoreWords.has(t));
+    };
+
+    const detTokens = getTokens(detName);
+
+    let bestMatch = null;
+    let highestScore = 0;
+
+    for (const p of presets) {
+      const pLen = parseFloat(p.lengthCm) || 16.0;
+      const pWid = parseFloat(p.widthCm) || 12.0;
+      const pHgt = parseFloat(p.heightCm) || 4.0;
+      const pVol = parseInt(p.volumeCm3) || Math.round(pLen * pWid * pHgt);
+      const pName = (p.presetName || "").toLowerCase().trim();
+      const pTokens = getTokens(pName);
+
+      let score = 0;
+
+      // 1. Exact or Substring Name Match
+      if (detName && pName && detName === pName) {
+        score += 100;
+      } else if (detName && pName && (detName.includes(pName) || pName.includes(detName))) {
+        score += 70;
+      } else {
+        // Keyword overlap
+        const sharedTokens = detTokens.filter(t => pTokens.includes(t));
+        if (sharedTokens.length > 0) {
+          score += sharedTokens.length * 35;
         }
       }
-    } catch (e) {
-      console.warn("Could not auto-register container preset:", e);
+
+      // 2. Volume Proximity
+      const volDiffRatio = Math.abs(detVol - pVol) / Math.max(detVol, pVol, 1);
+      if (volDiffRatio <= 0.10) {
+        score += 45;
+      } else if (volDiffRatio <= 0.20) {
+        score += 30;
+      } else if (volDiffRatio <= 0.30) {
+        score += 15;
+      }
+
+      // 3. Dimensional Proximity
+      const lenDiff = Math.abs(detLen - pLen);
+      const widDiff = Math.abs(detWid - pWid);
+      const hgtDiff = Math.abs(detHgt - pHgt);
+
+      if (lenDiff <= 2.0 && widDiff <= 2.0 && hgtDiff <= 1.5) {
+        score += 40;
+      } else if (lenDiff <= 3.5 && widDiff <= 3.5 && hgtDiff <= 2.5) {
+        score += 20;
+      }
+
+      // 4. If single preset registered and geometry is plausible
+      if (presets.length === 1 && volDiffRatio <= 0.35) {
+        score += 25;
+      }
+
+      if (score > highestScore) {
+        highestScore = score;
+        bestMatch = p;
+      }
+    }
+
+    return highestScore >= 45 ? bestMatch : null;
+  }
+
+  async function handleContainerDetection(studentId, detectedContainer) {
+    if (!studentId || !detectedContainer) return;
+
+    const matchedNotice = document.getElementById('scannerMatchedPresetNotice');
+    const matchedNameText = document.getElementById('matchedPresetNameText');
+    const matchedDimsText = document.getElementById('matchedPresetDimsText');
+    const newPrompt = document.getElementById('scannerNewLunchboxPrompt');
+    const newDesc = document.getElementById('newLunchboxPromptDesc');
+    const btnSave = document.getElementById('btnSaveDetectedPreset');
+    const btnCustomize = document.getElementById('btnCustomizeDetectedPreset');
+    const btnDismiss = document.getElementById('btnDismissDetectedPreset');
+    const detectedContainerText = document.getElementById('detectedContainerText');
+
+    const presets = await fetchPresetsForStudent(studentId);
+
+    // Check if parent has explicitly chosen a preset beforehand in the dropdown
+    const presetSelect = document.getElementById('scannerPresetSelect');
+    let manualPreset = null;
+    if (presetSelect && presetSelect.value && presetSelect.value !== 'AI_AUTO') {
+      const pId = parseInt(presetSelect.value);
+      manualPreset = (presets || []).find(p => p.id === pId);
+    }
+
+    const matchedPreset = manualPreset || findMatchingPreset(detectedContainer, presets);
+
+    if (matchedPreset) {
+      // 1. REUSE EXISTING PRESET — NEVER CREATE A DUPLICATE PRESET!
+      const vol = matchedPreset.volumeCm3 || Math.round(matchedPreset.lengthCm * matchedPreset.widthCm * matchedPreset.heightCm);
+      state.currentDetectedContainer = {
+        ...detectedContainer,
+        presetId: matchedPreset.id,
+        name: matchedPreset.presetName,
+        lengthCm: matchedPreset.lengthCm,
+        widthCm: matchedPreset.widthCm,
+        heightCm: matchedPreset.heightCm,
+        volumeMl: vol,
+        label: `${matchedPreset.presetName} (${matchedPreset.lengthCm}×${matchedPreset.widthCm}×${matchedPreset.heightCm} cm • ~${vol} ml)`
+      };
+
+      // Select preset in dropdown and persist for next sessions
+      selectPresetInScannerDropdown(matchedPreset.id, studentId);
+
+      if (detectedContainerText) {
+        detectedContainerText.textContent = state.currentDetectedContainer.label;
+      }
+
+      if (newPrompt) newPrompt.classList.add('hidden');
+      if (matchedNotice) {
+        if (matchedNameText) matchedNameText.textContent = matchedPreset.presetName;
+        if (matchedDimsText) {
+          matchedDimsText.textContent = `${matchedPreset.lengthCm} × ${matchedPreset.widthCm} × ${matchedPreset.heightCm} cm (~${vol} ml)`;
+        }
+        matchedNotice.classList.remove('hidden');
+      }
+
+      showToast(`🍱 Auto-detected saved lunchbox: ${matchedPreset.presetName}`, "info");
+
+    } else {
+      // 2. GENUINELY NEW LUNCHBOX DETECTED — DO NOT AUTOMATICALLY INSERT A ROW
+      // Inform the user first time so they can save or update it in presets
+      if (matchedNotice) matchedNotice.classList.add('hidden');
+      if (newPrompt) {
+        const vol = detectedContainer.volumeMl || Math.round(detectedContainer.lengthCm * detectedContainer.widthCm * detectedContainer.heightCm);
+        if (newDesc) {
+          newDesc.textContent = `Detected: "${detectedContainer.name}" (${detectedContainer.lengthCm}×${detectedContainer.widthCm}×${detectedContainer.heightCm} cm • ~${vol} ml). Save to presets for automatic detection next time.`;
+        }
+        newPrompt.classList.remove('hidden');
+
+        if (btnSave) {
+          btnSave.onclick = async () => {
+            btnSave.disabled = true;
+            btnSave.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving...`;
+            try {
+              const payload = {
+                studentId: studentId,
+                presetName: detectedContainer.name,
+                lengthCm: detectedContainer.lengthCm || 16.0,
+                widthCm: detectedContainer.widthCm || 12.0,
+                heightCm: detectedContainer.heightCm || 4.2,
+                notes: "Saved from lunchbox scan",
+                isDefault: (presets || []).length === 0
+              };
+              const res = await safeFetch(`/api/parent/student/${studentId}/lunchbox-presets`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${state.token}`
+                },
+                body: JSON.stringify(payload)
+              });
+              if (res.ok) {
+                const created = await res.json().catch(() => ({}));
+                const newPreset = created?.preset || created?.data || created;
+                const newId = newPreset?.id || (created && created.id);
+                if (newId) {
+                  state.currentDetectedContainer.presetId = newId;
+                  localStorage.setItem(`chewchecker_last_preset_${studentId}`, String(newId));
+                }
+                showToast(`✨ "${detectedContainer.name}" saved to presets! It will now be auto-detected.`, "success");
+                await updateScannerPresetDropdown(studentId);
+                if (newId) selectPresetInScannerDropdown(newId, studentId);
+
+                // Transition prompt into matched notice
+                newPrompt.classList.add('hidden');
+                if (matchedNotice) {
+                  if (matchedNameText) matchedNameText.textContent = detectedContainer.name;
+                  if (matchedDimsText) matchedDimsText.textContent = `${detectedContainer.lengthCm} × ${detectedContainer.widthCm} × ${detectedContainer.heightCm} cm (~${vol} ml)`;
+                  matchedNotice.classList.remove('hidden');
+                }
+              } else {
+                showToast("Could not save preset", "error");
+              }
+            } catch (err) {
+              console.error("Error saving preset:", err);
+              showToast("Network error saving preset", "error");
+            } finally {
+              btnSave.disabled = false;
+              btnSave.innerHTML = `<i class="fa-solid fa-plus"></i> Save to Presets`;
+            }
+          };
+        }
+
+        if (btnCustomize) {
+          btnCustomize.onclick = () => {
+            childrenModuleData.selectedStudentId = studentId;
+            openPresetModal({
+              presetName: detectedContainer.name,
+              lengthCm: detectedContainer.lengthCm,
+              widthCm: detectedContainer.widthCm,
+              heightCm: detectedContainer.heightCm,
+              notes: "Configured from lunch scan",
+              isDefault: false
+            });
+          };
+        }
+
+        if (btnDismiss) {
+          btnDismiss.onclick = () => {
+            newPrompt.classList.add('hidden');
+          };
+        }
+      }
     }
   }
 
@@ -3750,7 +3941,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
     const targetChild = state.selectedChild || (state.children && state.children.length > 0 ? state.children[0] : null);
     if (targetChild && state.currentDetectedContainer) {
-      autoRegisterDetectedContainerPreset(targetChild.id, state.currentDetectedContainer);
+      await handleContainerDetection(targetChild.id, state.currentDetectedContainer);
     }
   }
 
@@ -9202,6 +9393,52 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           customDropdown.classList.remove('open');
         }
       });
+    }
+  }
+
+  function selectPresetInScannerDropdown(presetId, studentId) {
+    const presetSelect = document.getElementById('scannerPresetSelect');
+    const customDropdown = document.getElementById('scannerCustomPresetDropdown');
+    const customMenu = document.getElementById('scannerCustomPresetDropdownMenu');
+    const customName = document.getElementById('scannerCustomPresetName');
+    const customDimensions = document.getElementById('scannerCustomPresetDimensions');
+    const customAvatar = document.getElementById('scannerCustomPresetAvatar');
+
+    const sId = studentId || (state.selectedChild ? state.selectedChild.id : null);
+    const presets = sId ? (childrenModuleData.presetsMap.get(sId) || []) : [];
+
+    if (!presetId || presetId === 'AI_AUTO') {
+      if (presetSelect) presetSelect.value = "";
+      if (customName) customName.textContent = 'AI Auto-Detection';
+      if (customDimensions) customDimensions.textContent = 'Auto-calibrated from photo scale';
+      if (customAvatar) {
+        customAvatar.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i>`;
+        customAvatar.style.background = `linear-gradient(135deg, #059669 0%, #10B981 100%)`;
+      }
+      if (customMenu) {
+        customMenu.querySelectorAll('.custom-child-option').forEach(o => {
+          o.classList.toggle('selected', o.getAttribute('data-preset-id') === 'AI_AUTO');
+        });
+      }
+      return;
+    }
+
+    const matched = presets.find(p => String(p.id) === String(presetId));
+    if (matched) {
+      if (presetSelect) presetSelect.value = String(matched.id);
+      if (customName) customName.textContent = matched.presetName || 'Lunchbox';
+      const vol = matched.volumeCm3 || Math.round(matched.lengthCm * matched.widthCm * matched.heightCm);
+      if (customDimensions) customDimensions.textContent = `${matched.lengthCm} × ${matched.widthCm} × ${matched.heightCm} cm (~${vol} ml)`;
+      if (customAvatar) {
+        customAvatar.innerHTML = `<i class="fa-solid fa-box"></i>`;
+        customAvatar.style.background = `linear-gradient(135deg, #4F46E5 0%, #6366F1 100%)`;
+      }
+      if (customMenu) {
+        customMenu.querySelectorAll('.custom-child-option').forEach(o => {
+          o.classList.toggle('selected', String(o.getAttribute('data-preset-id')) === String(matched.id));
+        });
+      }
+      if (sId) localStorage.setItem(`chewchecker_last_preset_${sId}`, String(matched.id));
     }
   }
 
