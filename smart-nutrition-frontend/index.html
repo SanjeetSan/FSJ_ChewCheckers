@@ -2081,54 +2081,230 @@
 
   <!-- MODAL 4: APPLICATION SETTINGS -->
   <div class="modal-backdrop" id="settingsModal">
-    <div class="modal-container" style="max-width:440px;">
-      <div class="modal-title-row">
-        <h3 style="font-size:1.15rem;"><i class="fa-solid fa-gear" style="color:var(--primary)"></i> Application Settings</h3>
+    <div class="modal-container" style="max-width:540px; width:95%;">
+      <div class="modal-title-row" style="margin-bottom:1rem;">
+        <h3 style="font-size:1.15rem; display:flex; align-items:center; gap:0.55rem;">
+          <span style="display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:var(--r-sm); background:rgba(99,102,241,0.12); color:var(--primary); font-size:0.95rem;">
+            <i class="fa-solid fa-gear"></i>
+          </span>
+          Application Settings
+        </h3>
         <button class="modal-close-btn" id="btnCloseSettingsModal">&times;</button>
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:1.25rem; margin-top:0.75rem;">
-        <!-- Theme Toggle Segmented Control -->
-        <div class="form-group">
-          <label class="form-label" style="margin-bottom:0.5rem; font-weight:700;">Appearance & Color Theme</label>
-          <div class="theme-segmented-control" id="themeSegmentedControl">
-            <div class="theme-slider-pill" id="themeSliderPill"></div>
-            <button type="button" class="theme-segment-btn" id="btnThemeLight"><i class="fa-solid fa-sun"></i> Light Theme</button>
-            <button type="button" class="theme-segment-btn" id="btnThemeDark"><i class="fa-solid fa-moon"></i> Dark Theme</button>
-          </div>
-        </div>
+      <!-- Segmented Navigation Tabs -->
+      <div class="settings-nav-tabs">
+        <button type="button" class="settings-tab-btn active" data-settings-tab="tab-settings-appearance">
+          <i class="fa-solid fa-palette"></i> Appearance
+        </button>
+        <button type="button" class="settings-tab-btn" data-settings-tab="tab-settings-nutrition">
+          <i class="fa-solid fa-apple-whole"></i> Nutrition &amp; AI
+        </button>
+        <button type="button" class="settings-tab-btn" data-settings-tab="tab-settings-alerts">
+          <i class="fa-solid fa-bell"></i> Reminders &amp; Sync
+        </button>
+      </div>
 
-        <!-- Notification & Alert Preferences -->
-        <div class="form-group">
-          <label class="form-label" style="margin-bottom:0.5rem; font-weight:700;">Notification & Alert Preferences</label>
-          <div style="display:flex; flex-direction:column; gap:0.75rem; background:var(--bg-page); padding:0.85rem 1rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
-            
-            <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer; font-size:0.85rem; color:var(--text-primary); font-weight:600;">
-              <span><i class="fa-solid fa-bell" style="color:var(--primary); margin-right:0.4rem;"></i> In-App Message Alerts</span>
+      <!-- TAB 1: APPEARANCE & DISPLAY -->
+      <div class="settings-tab-pane" id="tab-settings-appearance">
+        <div style="display:flex; flex-direction:column; gap:1.15rem;">
+          
+          <!-- Theme Toggle Segmented Control -->
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" style="margin-bottom:0.4rem; font-weight:700; display:flex; align-items:center; justify-content:space-between;">
+              <span>Color Theme</span>
+              <span style="font-size:0.75rem; color:var(--text-muted); font-weight:500;">Persistent Across Sessions</span>
+            </label>
+            <div class="theme-segmented-control" id="themeSegmentedControl">
+              <div class="theme-slider-pill" id="themeSliderPill"></div>
+              <button type="button" class="theme-segment-btn" id="btnThemeLight"><i class="fa-solid fa-sun"></i> Light Theme</button>
+              <button type="button" class="theme-segment-btn" id="btnThemeDark"><i class="fa-solid fa-moon"></i> Dark Theme</button>
+            </div>
+          </div>
+
+          <!-- Measurement Unit System -->
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" style="margin-bottom:0.4rem; font-weight:700;">Measurement Unit System</label>
+            <div class="settings-unit-grid">
+              <label class="settings-unit-card active" id="unitCardMetric">
+                <input type="radio" name="settingsUnitSystem" value="metric" checked style="display:none;">
+                <div class="settings-unit-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+                <div class="settings-unit-info">
+                  <strong>Metric (Standard)</strong>
+                  <span>Grams (g), Milliliters (ml), kcal</span>
+                </div>
+                <i class="fa-solid fa-circle-check settings-unit-check"></i>
+              </label>
+
+              <label class="settings-unit-card" id="unitCardImperial">
+                <input type="radio" name="settingsUnitSystem" value="imperial" style="display:none;">
+                <div class="settings-unit-icon"><i class="fa-solid fa-ruler"></i></div>
+                <div class="settings-unit-info">
+                  <strong>Imperial</strong>
+                  <span>Ounces (oz), Fl. oz, kcal</span>
+                </div>
+                <i class="fa-solid fa-circle-check settings-unit-check"></i>
+              </label>
+            </div>
+          </div>
+
+          <!-- Application System Info -->
+          <div class="settings-info-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.5rem; margin-bottom:0.5rem;">
+              <span style="color:var(--text-secondary);"><i class="fa-solid fa-code-commit" style="color:var(--primary); margin-right:0.35rem;"></i> ChewCheckers Build</span>
+              <strong style="color:var(--text-primary); font-family:monospace;">v2.4.2-enterprise</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
+              <span style="color:var(--text-secondary);"><i class="fa-solid fa-brain" style="color:var(--accent-teal); margin-right:0.35rem;"></i> AI Vision Engine</span>
+              <span class="badge-status-consumed" style="font-size:0.7rem; font-weight:700;">Gemini 2.5 Pro Vision Active</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TAB 2: NUTRITION & AI -->
+      <div class="settings-tab-pane" id="tab-settings-nutrition" style="display:none;">
+        <div style="display:flex; flex-direction:column; gap:1.15rem;">
+          
+          <!-- Low-Intake Alert Threshold -->
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" style="margin-bottom:0.3rem; font-weight:700;">
+              Low-Intake Alert Threshold
+            </label>
+            <p style="font-size:0.775rem; color:var(--text-muted); margin:0 0 0.6rem 0; line-height:1.35;">
+              Flags students under "Students Requiring Attention" and sends teacher follow-up prompts when consumption drops below this target.
+            </p>
+            <div class="settings-threshold-pills">
+              <label class="settings-threshold-pill active" id="thresholdPill50">
+                <input type="radio" name="settingsThreshold" value="50" checked style="display:none;">
+                <span class="threshold-badge">&lt; 50%</span>
+                <span class="threshold-label">Recommended (Balanced Intake Target)</span>
+              </label>
+              <label class="settings-threshold-pill" id="thresholdPill40">
+                <input type="radio" name="settingsThreshold" value="40" style="display:none;">
+                <span class="threshold-badge">&lt; 40%</span>
+                <span class="threshold-label">Moderate Intake Target</span>
+              </label>
+              <label class="settings-threshold-pill" id="thresholdPill25">
+                <input type="radio" name="settingsThreshold" value="25" style="display:none;">
+                <span class="threshold-badge">&lt; 25%</span>
+                <span class="threshold-label">Critical Warning Only</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Camera & AI Optimization Box -->
+          <div class="settings-box-card">
+            <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem;">
+              <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent-teal);"></i> Vision Intelligence
+            </div>
+
+            <!-- Auto-Compress Meal Photos -->
+            <label class="settings-switch-row">
+              <div class="settings-switch-text">
+                <div class="settings-switch-title">
+                  <i class="fa-solid fa-compress" style="color:var(--primary); margin-right:0.35rem;"></i>
+                  Auto-Compress Meal Photos
+                </div>
+                <div class="settings-switch-sub">Reduces capture payload for faster Gemini AI upload without loss of food recognition fidelity.</div>
+              </div>
+              <input type="checkbox" id="settingCompressPhotos" class="custom-checkbox" checked>
+            </label>
+
+            <!-- Allergen Warning Shield -->
+            <label class="settings-switch-row" style="border-top:1px solid var(--border-subtle); padding-top:0.75rem; margin-top:0.75rem;">
+              <div class="settings-switch-text">
+                <div class="settings-switch-title">
+                  <i class="fa-solid fa-shield-virus" style="color:var(--accent-amber); margin-right:0.35rem;"></i>
+                  Classroom Allergen Shield
+                </div>
+                <div class="settings-switch-sub">Display top allergy alerts whenever student lunchboxes contain potential peanut, dairy, or gluten allergens.</div>
+              </div>
+              <input type="checkbox" id="settingAllergenShield" class="custom-checkbox" checked>
+            </label>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TAB 3: REMINDERS & SYNC -->
+      <div class="settings-tab-pane" id="tab-settings-alerts" style="display:none;">
+        <div style="display:flex; flex-direction:column; gap:1.15rem;">
+          
+          <!-- Daily Reminder Timers -->
+          <div class="settings-box-card">
+            <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem;">
+              <i class="fa-solid fa-clock" style="color:var(--accent-amber);"></i> Automated Daily Timers
+            </div>
+
+            <!-- Morning Pack-Lunch Reminder -->
+            <div class="settings-timer-row">
+              <div style="display:flex; align-items:flex-start; gap:0.65rem; flex:1;">
+                <input type="checkbox" id="settingMorningReminder" class="custom-checkbox" checked style="margin-top:0.25rem;">
+                <div>
+                  <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Morning Pack-Lunch Reminder</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.3;">Notifies parents to verify and photograph prepared lunchbox.</div>
+                </div>
+              </div>
+              <input type="time" id="settingMorningReminderTime" class="settings-time-input" value="07:30">
+            </div>
+
+            <!-- Afternoon Clearance Reminder -->
+            <div class="settings-timer-row" style="border-top:1px solid var(--border-subtle); padding-top:0.75rem; margin-top:0.75rem;">
+              <div style="display:flex; align-items:flex-start; gap:0.65rem; flex:1;">
+                <input type="checkbox" id="settingAfternoonReminder" class="custom-checkbox" checked style="margin-top:0.25rem;">
+                <div>
+                  <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Afternoon Leftover Audit Reminder</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.3;">Prompts teachers to conduct post-meal leftover inspection.</div>
+                </div>
+              </div>
+              <input type="time" id="settingAfternoonReminderTime" class="settings-time-input" value="13:30">
+            </div>
+          </div>
+
+          <!-- Live Sync & Message Alerts -->
+          <div class="settings-box-card">
+            <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem;">
+              <i class="fa-solid fa-rotate" style="color:var(--primary);"></i> Live Connectivity
+            </div>
+
+            <label class="settings-switch-row">
+              <div class="settings-switch-text">
+                <div class="settings-switch-title"><i class="fa-solid fa-bell" style="color:var(--primary); margin-right:0.35rem;"></i> In-App Message Alerts</div>
+                <div class="settings-switch-sub">Instant notifications when teachers or parents send direct inquiries.</div>
+              </div>
               <input type="checkbox" id="settingMsgAlerts" class="custom-checkbox" checked>
             </label>
 
-            <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer; font-size:0.85rem; color:var(--text-primary); font-weight:600;">
-              <span><i class="fa-solid fa-clock" style="color:var(--accent-amber); margin-right:0.4rem;"></i> Daily Meal Log Reminders</span>
-              <input type="checkbox" id="settingMealReminders" class="custom-checkbox" checked>
-            </label>
-
-            <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer; font-size:0.85rem; color:var(--text-primary); font-weight:600;">
-              <span><i class="fa-solid fa-rotate" style="color:var(--accent-teal); margin-right:0.4rem;"></i> Real-Time Live Sync (5s)</span>
+            <label class="settings-switch-row" style="border-top:1px solid var(--border-subtle); padding-top:0.75rem; margin-top:0.75rem;">
+              <div class="settings-switch-text">
+                <div class="settings-switch-title"><i class="fa-solid fa-bolt" style="color:var(--accent-teal); margin-right:0.35rem;"></i> Real-Time Live Sync (5s)</div>
+                <div class="settings-switch-sub">Background polling to reflect attendance and meal audits across devices.</div>
+              </div>
               <input type="checkbox" id="settingAutoRefresh" class="custom-checkbox" checked>
             </label>
-
           </div>
-        </div>
 
-        <!-- Technical Gateway URL (Admin Only) -->
-        <div class="form-group" id="adminGatewaySettingBlock" style="display:none;">
-          <label class="form-label" for="settingGatewayUrl" style="font-weight:700;">Spring Cloud Gateway URL <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Admin Configuration)</span></label>
-          <input type="text" id="settingGatewayUrl" class="form-input" value="http://localhost:8088">
-        </div>
+          <!-- Technical Gateway URL (Admin Only) -->
+          <div class="form-group" id="adminGatewaySettingBlock" style="display:none; margin-bottom:0;">
+            <label class="form-label" for="settingGatewayUrl" style="font-weight:700;">Spring Cloud Gateway URL <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Admin Configuration)</span></label>
+            <input type="text" id="settingGatewayUrl" class="form-input" value="http://localhost:8088">
+          </div>
 
-        <button type="button" class="btn-submit-primary" id="btnSaveSettings" style="margin-top:0.25rem; font-weight:700;">Save Settings</button>
+        </div>
       </div>
+
+      <!-- MODAL FOOTER ACTIONS -->
+      <div class="settings-modal-footer">
+        <button type="button" class="btn-clear-cache" id="btnClearMediaCache" title="Clear offline image preview cache and temporary states">
+          <i class="fa-solid fa-broom"></i> Clear Cache
+        </button>
+        <button type="button" class="btn-submit-primary" id="btnSaveSettings">
+          <i class="fa-solid fa-floppy-disk"></i> Save Settings
+        </button>
+      </div>
+
     </div>
   </div>
 

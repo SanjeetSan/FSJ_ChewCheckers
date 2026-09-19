@@ -313,6 +313,86 @@ document.addEventListener('DOMContentLoaded', () => {
     syncThemeToggleUI();
   }
 
+  function getLowIntakeThreshold() {
+    const val = parseInt(localStorage.getItem('chewchecker_low_intake_threshold') || '50', 10);
+    return isNaN(val) ? 50 : val;
+  }
+
+  async function compressImageForAI(file) {
+    if (!file || !file.type || !file.type.startsWith('image/')) return file;
+    // Skip compression if file size is under 350KB
+    if (file.size < 350 * 1024) return file;
+
+    return new Promise((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const maxDim = 1280;
+        let width = img.width;
+        let height = img.height;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => {
+          if (blob && blob.size < file.size) {
+            const compressedFile = new File([blob], (file.name || "meal_photo").replace(/\.[^/.]+$/, "") + ".jpg", {
+              type: 'image/jpeg',
+              lastModified: Date.now()
+            });
+            resolve(compressedFile);
+          } else {
+            resolve(file);
+          }
+        }, 'image/jpeg', 0.82);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(file);
+      };
+      img.src = url;
+    });
+  }
+
+  function setupReminderTimers() {
+    setInterval(() => {
+      const now = new Date();
+      const currentHHMM = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+      const todayDateStr = now.toISOString().split('T')[0];
+
+      // Morning Pack-Lunch Reminder
+      const morningEnabled = localStorage.getItem('chewchecker_morning_reminder') !== 'false';
+      const morningTime = localStorage.getItem('chewchecker_morning_reminder_time') || '07:30';
+      const lastMorningDate = localStorage.getItem('chewchecker_last_morning_reminder');
+
+      if (morningEnabled && currentHHMM === morningTime && lastMorningDate !== todayDateStr) {
+        localStorage.setItem('chewchecker_last_morning_reminder', todayDateStr);
+        showToast("☀️ Morning Reminder: Time to pack lunch and photograph the meal!");
+      }
+
+      // Afternoon Clearance Reminder
+      const afternoonEnabled = localStorage.getItem('chewchecker_afternoon_reminder') !== 'false';
+      const afternoonTime = localStorage.getItem('chewchecker_afternoon_reminder_time') || '13:30';
+      const lastAfternoonDate = localStorage.getItem('chewchecker_last_afternoon_reminder');
+
+      if (afternoonEnabled && currentHHMM === afternoonTime && lastAfternoonDate !== todayDateStr) {
+        localStorage.setItem('chewchecker_last_afternoon_reminder', todayDateStr);
+        showToast("🥗 Afternoon Reminder: Time to inspect leftovers and verify plate clearance!");
+      }
+    }, 30000);
+  }
+
   function setupThemeSystem() {
     applyTheme();
 
@@ -322,8 +402,77 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnThemeLight = document.getElementById('btnThemeLight');
     const btnThemeDark = document.getElementById('btnThemeDark');
     const btnSaveSettings = document.getElementById('btnSaveSettings');
+    const btnClearMediaCache = document.getElementById('btnClearMediaCache');
     const settingGatewayUrl = document.getElementById('settingGatewayUrl');
 
+    // Unit System Cards
+    const unitCardMetric = document.getElementById('unitCardMetric');
+    const unitCardImperial = document.getElementById('unitCardImperial');
+
+    function syncUnitSystemUI(unit) {
+      if (unit === 'imperial') {
+        unitCardImperial?.classList.add('active');
+        unitCardMetric?.classList.remove('active');
+        const radio = unitCardImperial?.querySelector('input[type="radio"]');
+        if (radio) radio.checked = true;
+      } else {
+        unitCardMetric?.classList.add('active');
+        unitCardImperial?.classList.remove('active');
+        const radio = unitCardMetric?.querySelector('input[type="radio"]');
+        if (radio) radio.checked = true;
+      }
+    }
+
+    if (unitCardMetric) unitCardMetric.addEventListener('click', () => syncUnitSystemUI('metric'));
+    if (unitCardImperial) unitCardImperial.addEventListener('click', () => syncUnitSystemUI('imperial'));
+
+    // Threshold Pills (<50%, <40%, <25%)
+    const thresholdPill50 = document.getElementById('thresholdPill50');
+    const thresholdPill40 = document.getElementById('thresholdPill40');
+    const thresholdPill25 = document.getElementById('thresholdPill25');
+
+    function syncThresholdUI(val) {
+      [thresholdPill50, thresholdPill40, thresholdPill25].forEach(pill => {
+        if (!pill) return;
+        const input = pill.querySelector('input[type="radio"]');
+        if (input && String(input.value) === String(val)) {
+          pill.classList.add('active');
+          input.checked = true;
+        } else {
+          pill.classList.remove('active');
+          if (input) input.checked = false;
+        }
+      });
+    }
+
+    if (thresholdPill50) thresholdPill50.addEventListener('click', () => syncThresholdUI('50'));
+    if (thresholdPill40) thresholdPill40.addEventListener('click', () => syncThresholdUI('40'));
+    if (thresholdPill25) thresholdPill25.addEventListener('click', () => syncThresholdUI('25'));
+
+    // Tab Navigation within Settings Modal
+    if (settingsModal) {
+      const tabBtns = settingsModal.querySelectorAll('.settings-tab-btn');
+      const tabPanes = settingsModal.querySelectorAll('.settings-tab-pane');
+
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetTabId = btn.getAttribute('data-settings-tab');
+          tabBtns.forEach(b => b.classList.remove('active'));
+          tabPanes.forEach(p => {
+            p.classList.remove('active');
+            p.style.display = 'none';
+          });
+          btn.classList.add('active');
+          const targetPane = document.getElementById(targetTabId);
+          if (targetPane) {
+            targetPane.classList.add('active');
+            targetPane.style.display = 'block';
+          }
+        });
+      });
+    }
+
+    // Modal Open & Populate State
     if (btnOpenSettings) btnOpenSettings.addEventListener('click', () => {
       if (settingGatewayUrl) settingGatewayUrl.value = state.gatewayUrl;
       
@@ -332,11 +481,34 @@ document.addEventListener('DOMContentLoaded', () => {
         adminGatewaySettingBlock.style.display = (state.role === 'ADMIN') ? 'block' : 'none';
       }
 
+      // Unit System
+      const currentUnit = localStorage.getItem('chewchecker_unit_system') || 'metric';
+      syncUnitSystemUI(currentUnit);
+
+      // Threshold
+      const currentThreshold = localStorage.getItem('chewchecker_low_intake_threshold') || '50';
+      syncThresholdUI(currentThreshold);
+
+      // Vision Intelligence
+      const settingCompressPhotos = document.getElementById('settingCompressPhotos');
+      const settingAllergenShield = document.getElementById('settingAllergenShield');
+      if (settingCompressPhotos) settingCompressPhotos.checked = localStorage.getItem('chewchecker_compress_photos') !== 'false';
+      if (settingAllergenShield) settingAllergenShield.checked = localStorage.getItem('chewchecker_allergen_shield') !== 'false';
+
+      // Timers
+      const settingMorningReminder = document.getElementById('settingMorningReminder');
+      const settingMorningReminderTime = document.getElementById('settingMorningReminderTime');
+      const settingAfternoonReminder = document.getElementById('settingAfternoonReminder');
+      const settingAfternoonReminderTime = document.getElementById('settingAfternoonReminderTime');
+      if (settingMorningReminder) settingMorningReminder.checked = localStorage.getItem('chewchecker_morning_reminder') !== 'false';
+      if (settingMorningReminderTime) settingMorningReminderTime.value = localStorage.getItem('chewchecker_morning_reminder_time') || '07:30';
+      if (settingAfternoonReminder) settingAfternoonReminder.checked = localStorage.getItem('chewchecker_afternoon_reminder') !== 'false';
+      if (settingAfternoonReminderTime) settingAfternoonReminderTime.value = localStorage.getItem('chewchecker_afternoon_reminder_time') || '13:30';
+
+      // Connectivity & Sync
       const settingMsgAlerts = document.getElementById('settingMsgAlerts');
-      const settingMealReminders = document.getElementById('settingMealReminders');
       const settingAutoRefresh = document.getElementById('settingAutoRefresh');
       if (settingMsgAlerts) settingMsgAlerts.checked = localStorage.getItem('chewchecker_msg_alerts') !== 'false';
-      if (settingMealReminders) settingMealReminders.checked = localStorage.getItem('chewchecker_meal_reminders') !== 'false';
       if (settingAutoRefresh) settingAutoRefresh.checked = localStorage.getItem('chewchecker_auto_refresh') !== 'false';
 
       if (settingsModal) settingsModal.classList.add('open');
@@ -344,6 +516,30 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (btnCloseSettingsModal) btnCloseSettingsModal.addEventListener('click', () => settingsModal?.classList.remove('open'));
+
+    // Clear Cache Button
+    if (btnClearMediaCache) {
+      btnClearMediaCache.addEventListener('click', async () => {
+        try {
+          if ('caches' in window) {
+            const cacheKeys = await caches.keys();
+            await Promise.all(cacheKeys.map(k => caches.delete(k)));
+          }
+          const keysToRemove = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.startsWith('chewchecker_cache_') || key.startsWith('chewchecker_photo_'))) {
+              keysToRemove.push(key);
+            }
+          }
+          keysToRemove.forEach(k => localStorage.removeItem(k));
+          showToast("Media & offline cache cleared successfully!");
+        } catch (err) {
+          console.warn("Error clearing cache:", err);
+          showToast("Offline cache cleared.");
+        }
+      });
+    }
 
     if (btnThemeLight) btnThemeLight.addEventListener('click', () => {
       state.theme = 'light';
@@ -365,16 +561,50 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('chewchecker_gateway', state.gatewayUrl);
       }
 
+      // Unit System
+      const selectedUnit = document.querySelector('input[name="settingsUnitSystem"]:checked')?.value || 'metric';
+      localStorage.setItem('chewchecker_unit_system', selectedUnit);
+
+      // Low Intake Alert Threshold
+      const selectedThreshold = document.querySelector('input[name="settingsThreshold"]:checked')?.value || '50';
+      localStorage.setItem('chewchecker_low_intake_threshold', selectedThreshold);
+
+      // Vision Intelligence
+      const settingCompressPhotos = document.getElementById('settingCompressPhotos');
+      const settingAllergenShield = document.getElementById('settingAllergenShield');
+      if (settingCompressPhotos) localStorage.setItem('chewchecker_compress_photos', settingCompressPhotos.checked);
+      if (settingAllergenShield) localStorage.setItem('chewchecker_allergen_shield', settingAllergenShield.checked);
+
+      // Timers
+      const settingMorningReminder = document.getElementById('settingMorningReminder');
+      const settingMorningReminderTime = document.getElementById('settingMorningReminderTime');
+      const settingAfternoonReminder = document.getElementById('settingAfternoonReminder');
+      const settingAfternoonReminderTime = document.getElementById('settingAfternoonReminderTime');
+      if (settingMorningReminder) localStorage.setItem('chewchecker_morning_reminder', settingMorningReminder.checked);
+      if (settingMorningReminderTime) localStorage.setItem('chewchecker_morning_reminder_time', settingMorningReminderTime.value || '07:30');
+      if (settingAfternoonReminder) localStorage.setItem('chewchecker_afternoon_reminder', settingAfternoonReminder.checked);
+      if (settingAfternoonReminderTime) localStorage.setItem('chewchecker_afternoon_reminder_time', settingAfternoonReminderTime.value || '13:30');
+
+      // Connectivity & Sync
       const settingMsgAlerts = document.getElementById('settingMsgAlerts');
-      const settingMealReminders = document.getElementById('settingMealReminders');
       const settingAutoRefresh = document.getElementById('settingAutoRefresh');
       if (settingMsgAlerts) localStorage.setItem('chewchecker_msg_alerts', settingMsgAlerts.checked);
-      if (settingMealReminders) localStorage.setItem('chewchecker_meal_reminders', settingMealReminders.checked);
       if (settingAutoRefresh) localStorage.setItem('chewchecker_auto_refresh', settingAutoRefresh.checked);
 
       showToast("Settings saved successfully!");
       settingsModal?.classList.remove('open');
+
+      // Dynamically re-evaluate views with new threshold and settings
+      if (state.role === 'TEACHER' && typeof loadTeacherReports === 'function') {
+        loadTeacherReports();
+      }
+      if (state.role === 'PARENT' && typeof loadParentDashboard === 'function') {
+        loadParentDashboard();
+      }
     });
+
+    // Start background reminder timers
+    setupReminderTimers();
 
     // Wire Profile Management modal triggers (Avatar / Name / Profile Badge)
     setupProfileManagement();
@@ -3668,6 +3898,13 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
   }
 
   async function callGeminiVisionApi(file) {
+    if (localStorage.getItem('chewchecker_compress_photos') !== 'false') {
+      try {
+        file = await compressImageForAI(file);
+      } catch (e) {
+        console.warn('Image compression skipped:', e);
+      }
+    }
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onloadend = async () => {
@@ -5237,8 +5474,9 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
     const allergyBanner = document.getElementById('classAllergyAlertBanner');
     const allergyText = document.getElementById('classAllergyAlertText');
+    const showAllergenShield = localStorage.getItem('chewchecker_allergen_shield') !== 'false';
     if (allergyBanner && allergyText) {
-      if (studentsWithAllergies.length > 0) {
+      if (showAllergenShield && studentsWithAllergies.length > 0) {
         allergyBanner.style.display = 'flex';
         const allergyListStr = studentsWithAllergies.map(s => {
           const al = s.allergies || getStoredStudentAllergies(s.id);
@@ -5256,7 +5494,9 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       if (isAbsent) return 5;
       const meal = meals.find(m => m.studentId === s.id && m.status !== 'MEAL_NOT_PACKED');
       if (!meal) return 5;
+      const lowThreshold = getLowIntakeThreshold();
       if (meal.status === 'PENDING_LEFTOVER_ANALYSIS') return 1; // Needs Attention
+      if (meal.overallConsumptionPercentage !== null && Number(meal.overallConsumptionPercentage) < lowThreshold) return 1; // Needs Attention (Low Intake)
       if (meal.status === 'PRE_MEAL_UPLOADED') return 2; // Pending Review
       if (meal.status === 'PARTIALLY_CONSUMED') return 3; // Leftovers Recorded
       if (meal.status === 'FULLY_CONSUMED' || (meal.overallConsumptionPercentage !== null && Number(meal.overallConsumptionPercentage) === 100)) return 4; // Fully Consumed
@@ -6533,8 +6773,9 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         });
 
         const allergyBanner = document.getElementById('teacherClassroomAllergyBanner');
+        const showAllergenShield = localStorage.getItem('chewchecker_allergen_shield') !== 'false';
         if (allergyBanner) {
-          if (allergyStudents.length === 0) {
+          if (!showAllergenShield || allergyStudents.length === 0) {
             allergyBanner.style.display = 'none';
             allergyBanner.innerHTML = '';
           } else {
@@ -6555,10 +6796,11 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         }
 
         // --- SECTION 2: STUDENTS REQUIRING ATTENTION ---
+        const lowThreshold = getLowIntakeThreshold();
         const lowConsStudents = students.filter(s => {
           const studentMeal = classMeals.find(m => m.studentId === s.id);
           if (studentMeal) {
-            if (studentMeal.overallConsumptionPercentage !== null && studentMeal.overallConsumptionPercentage < 50) return true;
+            if (studentMeal.overallConsumptionPercentage !== null && studentMeal.overallConsumptionPercentage < lowThreshold) return true;
             if (studentMeal.status === 'PRE_MEAL_UPLOADED' || studentMeal.status === 'PENDING_LEFTOVER_ANALYSIS') return true;
           }
           if (report.studentsNeedingAttentionNotes && report.studentsNeedingAttentionNotes.some(n => n.toLowerCase().includes(s.name.toLowerCase()))) return true;
@@ -6591,11 +6833,11 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           } else {
             studentsListContainer.innerHTML = lowConsStudents.map(s => {
               const studentMeal = classMeals.find(m => m.studentId === s.id);
-              let reasonText = "Low intake (< 50% target)";
+              let reasonText = `Low intake (< ${lowThreshold}% target)`;
               if (studentMeal && (studentMeal.status === 'PRE_MEAL_UPLOADED' || studentMeal.status === 'PENDING_LEFTOVER_ANALYSIS')) {
                 reasonText = "Meal review pending clearance";
               }
-              const currentPct = (studentMeal && studentMeal.overallConsumptionPercentage !== null) ? Math.round(Number(studentMeal.overallConsumptionPercentage)) : 50;
+              const currentPct = (studentMeal && studentMeal.overallConsumptionPercentage !== null) ? Math.round(Number(studentMeal.overallConsumptionPercentage)) : lowThreshold;
               const escapedName = (s.name || 'Student').replace(/'/g, "\\'");
               const initial = (s.name || 'S').trim().charAt(0).toUpperCase();
 
@@ -7018,7 +7260,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       let statusBadge = `<span class="badge-status-consumed" style="white-space:nowrap;"><i class="fa-solid fa-check"></i> Clean Plate</span>`;
       if (meal.status === 'PRE_MEAL_UPLOADED' || meal.status === 'PENDING_LEFTOVER_ANALYSIS') {
         statusBadge = `<span class="badge-status-pending" style="white-space:nowrap;"><i class="fa-solid fa-clock"></i> Review Pending</span>`;
-      } else if (meal.pct < 50) {
+      } else if (meal.pct < getLowIntakeThreshold()) {
         statusBadge = `<span class="badge-status-attention" style="white-space:nowrap;"><i class="fa-solid fa-triangle-exclamation"></i> Low Intake</span>`;
       } else if (meal.pct < 100) {
         statusBadge = `<span class="badge-status-partial" style="white-space:nowrap;"><i class="fa-solid fa-chart-pie"></i> Partial</span>`;
@@ -8864,11 +9106,12 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       } else {
         const eatenPercent = getEffectiveMealConsumption(latestMeal);
         const displayPct = eatenPercent !== null ? Math.round(eatenPercent) : 100;
+        const lowThreshold = getLowIntakeThreshold();
         let badgeHtml = '';
         if (displayPct >= 90) {
           badgeHtml = `<span class="badge-status-consumed" style="font-size:0.75rem; font-weight:700; padding:0.2rem 0.55rem; vertical-align:middle; text-transform:none;"><i class="fa-solid fa-check"></i> Clean Plate</span>`;
           elLatestStatus.style.color = 'var(--accent-green)';
-        } else if (displayPct >= 50) {
+        } else if (displayPct >= lowThreshold) {
           badgeHtml = `<span class="badge-status-partial" style="font-size:0.75rem; font-weight:700; padding:0.2rem 0.55rem; vertical-align:middle; text-transform:none;"><i class="fa-solid fa-chart-pie"></i> Partial</span>`;
           elLatestStatus.style.color = 'var(--accent-teal)';
         } else {
@@ -9050,17 +9293,18 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           const eatenCal = eatenPercent !== null ? (eatenPercent === 0 ? 0 : Math.round(totalCal * (eatenPercent / 100))) : totalCal;
           const protein = Math.round(items.reduce((acc, f) => acc + (parseFloat(f.proteinG || f.protein) || 0), 0)) || 12;
 
+          const lowThreshold = getLowIntakeThreshold();
           let statusBadge = `<span class="badge-status-consumed"><i class="fa-solid fa-check"></i> Clean Plate</span>`;
           let verdict = 'Optimal Clearance (≥ 90%)';
           if (isPending || eatenPercent === null) {
             statusBadge = `<span class="badge-status-pending"><i class="fa-solid fa-clock"></i> Pending</span>`;
             verdict = 'Awaiting Teacher Review';
-          } else if (eatenPercent < 50) {
+          } else if (eatenPercent < lowThreshold) {
             statusBadge = `<span class="badge-status-attention"><i class="fa-solid fa-triangle-exclamation"></i> Low Intake</span>`;
-            verdict = 'High Plate Waste (< 50%)';
+            verdict = `High Plate Waste (< ${lowThreshold}%)`;
           } else if (eatenPercent < 90) {
             statusBadge = `<span class="badge-status-partial"><i class="fa-solid fa-chart-pie"></i> Partial</span>`;
-            verdict = 'Balanced Intake (50-89%)';
+            verdict = `Balanced Intake (${lowThreshold}-89%)`;
           }
 
           return `

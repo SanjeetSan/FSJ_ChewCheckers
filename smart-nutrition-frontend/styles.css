@@ -7644,4 +7644,302 @@ select option:checked {
   flex-shrink: 0;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   MODERN APPLICATION SETTINGS MODAL STYLING
+   ═══════════════════════════════════════════════════════════════════ */
+
+.settings-nav-tabs {
+  display: flex;
+  background: var(--bg-page);
+  padding: 4px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 1.25rem;
+  gap: 4px;
+}
+
+.settings-tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 0.55rem 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-radius: calc(var(--r-md) - 3px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.settings-tab-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.settings-tab-btn.active {
+  background: var(--primary);
+  color: #FFFFFF;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+.settings-tab-pane {
+  animation: settingsFadeIn 0.2s ease-out;
+}
+
+@keyframes settingsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Unit selector grid */
+.settings-unit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+
+@media (max-width: 440px) {
+  .settings-unit-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.settings-unit-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--bg-page);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  padding: 0.75rem 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-unit-card:hover {
+  border-color: rgba(99, 102, 241, 0.35);
+  background: rgba(99, 102, 241, 0.02);
+}
+
+.settings-unit-card.active {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.settings-unit-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-sm);
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.settings-unit-card.active .settings-unit-icon {
+  background: var(--primary);
+  color: #FFFFFF;
+}
+
+.settings-unit-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-unit-info strong {
+  font-size: 0.825rem;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.settings-unit-info span {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.settings-unit-check {
+  font-size: 0.85rem;
+  color: var(--primary);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: all 0.2s ease;
+}
+
+.settings-unit-card.active .settings-unit-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* System info card */
+.settings-info-card {
+  background: var(--bg-page);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--r-md);
+  padding: 0.75rem 1rem;
+}
+
+/* Settings Threshold Pills */
+.settings-threshold-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.settings-threshold-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-page);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  padding: 0.65rem 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-threshold-pill:hover {
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+.settings-threshold-pill.active {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.threshold-badge {
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 0.2rem 0.65rem;
+  border-radius: var(--r-full);
+  background: rgba(244, 63, 94, 0.12);
+  color: var(--accent-rose);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+  font-family: monospace;
+}
+
+.settings-threshold-pill.active .threshold-badge {
+  background: var(--primary);
+  color: #FFFFFF;
+  border-color: var(--primary);
+}
+
+.threshold-label {
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Settings Box Card */
+.settings-box-card {
+  background: var(--bg-page);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  padding: 0.85rem 1rem;
+}
+
+.settings-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  gap: 0.75rem;
+}
+
+.settings-switch-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+}
+
+.settings-switch-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+}
+
+.settings-switch-sub {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.settings-timer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.settings-time-input {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-sm);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 0.35rem 0.55rem;
+  outline: none;
+  transition: border-color 0.15s ease;
+  width: 105px;
+  text-align: center;
+}
+
+.settings-time-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* Settings Modal Footer */
+.settings-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.btn-clear-cache {
+  background: transparent;
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  color: var(--accent-rose);
+  padding: 0.55rem 0.95rem;
+  border-radius: var(--r-md);
+  font-size: 0.825rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+}
+
+.btn-clear-cache:hover {
+  background: rgba(244, 63, 94, 0.1);
+  border-color: var(--accent-rose);
+}
+
 
