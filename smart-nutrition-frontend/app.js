@@ -7195,43 +7195,93 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const snapTeacherReviews = document.getElementById('snapTeacherReviews');
     const snapNutritionScore = document.getElementById('snapNutritionScore');
 
-    const recent7Meals = validMeals.slice(0, 7);
+    const isMonthly = state.chartFilter === 'monthly';
+    const dayCount = isMonthly ? 30 : 7;
+    const offset = state.chartPeriodOffset || 0;
+    const shiftDays = offset * dayCount;
 
-    if (recent7Meals.length === 0) {
-      // HONEST ZERO DATA STATE — NO FAKE HARDCODED DEFAULTS!
-      if (snapLunchesLogged) snapLunchesLogged.textContent = `0/5`;
+    // Active Period Range (identical calculation to updateIntakeChart)
+    const endPeriodDate = new Date();
+    endPeriodDate.setDate(endPeriodDate.getDate() + shiftDays);
+    const startPeriodDate = new Date(endPeriodDate);
+    startPeriodDate.setDate(startPeriodDate.getDate() - (dayCount - 1));
+
+    const startDateISO = getLocalISOForDate(startPeriodDate);
+    const endDateISO = getLocalISOForDate(endPeriodDate);
+
+    // Filter meals STRICTLY to those logged within the active period window
+    const periodMeals = validMeals.filter(m => {
+      const raw = m.mealDate || m.created_at || m.createdAt || '';
+      const dStr = raw.includes('T') ? raw.split('T')[0] : (raw ? raw.substring(0, 10) : '');
+      return dStr && dStr >= startDateISO && dStr <= endDateISO;
+    });
+
+    // Filter reports STRICTLY to those within the active period window
+    const periodReports = (Array.isArray(reports) ? reports : []).filter(r => {
+      const raw = r.mealDate || r.calculatedAt || r.date || '';
+      const dStr = raw.includes('T') ? raw.split('T')[0] : (raw ? raw.substring(0, 10) : '');
+      return dStr && dStr >= startDateISO && dStr <= endDateISO;
+    });
+
+    const maxTarget = isMonthly ? 20 : 5;
+
+    if (periodMeals.length === 0) {
+      // HONEST ZERO DATA STATE FOR THIS PERIOD — STRICTLY NO DATA FROM OLD HISTORICAL MEALS!
+      if (snapLunchesLogged) snapLunchesLogged.textContent = `0/${maxTarget}`;
       if (snapAvgProtein) snapAvgProtein.textContent = `—`;
       if (snapAvgCalories) snapAvgCalories.textContent = `—`;
-      if (snapTeacherReviews) snapTeacherReviews.textContent = `0/5`;
+      if (snapTeacherReviews) snapTeacherReviews.textContent = `0/${maxTarget}`;
       if (snapNutritionScore) snapNutritionScore.textContent = `—`;
     } else {
-      const loggedCount = Math.min(5, recent7Meals.length);
-      const reviewedCount = recent7Meals.filter(m => m.status === 'FULLY_CONSUMED' || m.status === 'PARTIALLY_CONSUMED' || (m.overallConsumptionPercentage !== null && m.overallConsumptionPercentage > 0)).length;
+      // Count unique days with meals logged in this period (capped at maxTarget)
+      const uniqueDays = new Set(periodMeals.map(m => {
+        const raw = m.mealDate || m.created_at || m.createdAt || '';
+        return raw.includes('T') ? raw.split('T')[0] : raw.substring(0, 10);
+      })).size;
+      const loggedCount = Math.min(maxTarget, uniqueDays);
 
-      let weekProtSum = 0;
-      let weekCalSum = 0;
-      recent7Meals.forEach(m => {
-        (m.foodItems || []).forEach(f => {
-          weekProtSum += (parseFloat(f.proteinG) || 0);
-          weekCalSum += (parseFloat(f.calories) || 0);
-        });
+      const reviewedCount = periodMeals.filter(m => 
+        m.status === 'FULLY_CONSUMED' || 
+        m.status === 'PARTIALLY_CONSUMED' || 
+        (m.overallConsumptionPercentage !== null && m.overallConsumptionPercentage > 0)
+      ).length;
+
+      let periodProtSum = 0;
+      let periodCalSum = 0;
+      let mealsWithNutrients = 0;
+
+      periodMeals.forEach(m => {
+        if (m.foodItems && m.foodItems.length > 0) {
+          mealsWithNutrients++;
+          m.foodItems.forEach(f => {
+            periodProtSum += (parseFloat(f.proteinG) || 0);
+            periodCalSum += (parseFloat(f.calories) || 0);
+          });
+        }
       });
 
-      const avgProtNum = Math.round(weekProtSum / recent7Meals.length);
-      const avgCalNum = Math.round(weekCalSum / recent7Meals.length);
+      const avgProtNum = mealsWithNutrients > 0 ? Math.round(periodProtSum / mealsWithNutrients) : 0;
+      const avgCalNum = mealsWithNutrients > 0 ? Math.round(periodCalSum / mealsWithNutrients) : 0;
 
       let scoreNum = null;
-      if (reports && reports.length > 0 && reports[0].score) {
-        scoreNum = Math.round(parseFloat(reports[0].score));
-      } else if (todayMeal && todayMeal.nutritionScore) {
-        scoreNum = Math.round(parseFloat(todayMeal.nutritionScore));
-      } else if (avgProtNum > 0 && avgCalNum > 0) {
-        scoreNum = Math.min(100, Math.round((Math.min(1, avgProtNum / protTarget) * 50) + (Math.min(1, avgCalNum / calTarget) * 50)));
+      // 1. Check reports for this period
+      const scoredReports = periodReports.filter(r => r.score !== null && r.score !== undefined && !isNaN(parseFloat(r.score)));
+      if (scoredReports.length > 0) {
+        scoreNum = Math.round(scoredReports.reduce((sum, r) => sum + parseFloat(r.score), 0) / scoredReports.length);
+      } else {
+        // 2. Check meals with score for this period
+        const scoredMeals = periodMeals.filter(m => (m.nutritionScore && !isNaN(parseFloat(m.nutritionScore))) || (m.nutritionScores && m.nutritionScores.length > 0));
+        if (scoredMeals.length > 0) {
+          const sum = scoredMeals.reduce((acc, m) => acc + parseFloat(m.nutritionScore || (m.nutritionScores && m.nutritionScores[0].score) || 0), 0);
+          scoreNum = Math.round(sum / scoredMeals.length);
+        } else if (avgProtNum > 0 && avgCalNum > 0) {
+          scoreNum = Math.min(100, Math.round((Math.min(1, avgProtNum / protTarget) * 50) + (Math.min(1, avgCalNum / calTarget) * 50)));
+        }
       }
 
-      if (snapLunchesLogged) snapLunchesLogged.textContent = `${loggedCount}/5`;
-      if (snapAvgProtein) snapAvgProtein.textContent = `${avgProtNum}g`;
-      if (snapAvgCalories) snapAvgCalories.textContent = `${avgCalNum} kcal`;
+      if (snapLunchesLogged) snapLunchesLogged.textContent = `${loggedCount}/${maxTarget}`;
+      if (snapAvgProtein) snapAvgProtein.textContent = avgProtNum > 0 ? `${avgProtNum}g` : `—`;
+      if (snapAvgCalories) snapAvgCalories.textContent = avgCalNum > 0 ? `${avgCalNum} kcal` : `—`;
       if (snapTeacherReviews) snapTeacherReviews.textContent = `${Math.min(loggedCount, reviewedCount)}/${loggedCount}`;
       if (snapNutritionScore) snapNutritionScore.textContent = scoreNum !== null ? `${scoreNum}/100` : `—`;
     }

@@ -4871,22 +4871,93 @@ body.dark-theme .badge-preset-custom {
 
 /* Trend Navigator Arrows & Pill Group */
 .trend-nav-pill-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 9999px;
+  padding: 0.2rem 0.45rem;
   transition: all 0.2s ease;
-}
-
-.btn-trend-nav:hover:not(:disabled) {
-  background: var(--bg-card) !important;
-  color: var(--primary) !important;
+  user-select: none;
+  box-sizing: border-box;
 }
 
 body.dark-theme .trend-nav-pill-group {
   background: #0F172A !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.btn-trend-nav {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: #94A3B8 !important;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0 !important;
+  margin: 0 !important;
+  cursor: pointer;
+  border-radius: 50% !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  line-height: 1;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.btn-trend-nav i {
+  color: inherit;
+  font-size: 0.75rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.btn-trend-nav:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12) !important;
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: #FFFFFF !important;
+}
+
+.btn-trend-nav:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2) !important;
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.btn-trend-nav:disabled {
+  opacity: 0.3 !important;
+  cursor: not-allowed !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  color: #64748B !important;
+  border: none !important;
 }
 
 body.dark-theme .btn-trend-nav:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  background-color: rgba(255, 255, 255, 0.12) !important;
   color: #FFFFFF !important;
+}
+
+#trendCurrentPeriodLabel {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #E2E8F0;
+  padding: 0 0.45rem;
+  user-select: none;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
 }
 
 /* AI Dimension Calibration Chips */
