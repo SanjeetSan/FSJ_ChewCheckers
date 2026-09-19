@@ -5454,7 +5454,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       return `
         <tr>
           <td style="text-align:center;">
-            <input type="checkbox" class="student-select-chk" data-meal-id="${meal ? meal.id : ''}" data-student-id="${s.id}" ${isActionable ? '' : 'disabled style="opacity:0.25; cursor:not-allowed;"'}>
+            <input type="checkbox" class="student-select-chk" data-meal-id="${meal ? meal.id : ''}" data-student-id="${s.id}" ${isActionable ? '' : 'disabled'}>
           </td>
           <td>
             <div style="display:flex; align-items:center; gap:0.75rem;">
@@ -5497,7 +5497,9 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       }
       if (selectAllChk) {
         const actionableChks = tbody.querySelectorAll('.student-select-chk:not(:disabled)');
-        selectAllChk.checked = actionableChks.length > 0 && checkedChks.length === actionableChks.length;
+        const allChecked = actionableChks.length > 0 && checkedChks.length === actionableChks.length;
+        selectAllChk.checked = allChecked;
+        selectAllChk.indeterminate = count > 0 && !allChecked;
       }
     }
 
