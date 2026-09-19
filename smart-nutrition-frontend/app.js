@@ -7219,9 +7219,21 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           if (!rawStr) return 'Recent Period';
           const parts = rawStr.split(' to ');
           if (parts.length !== 2) return rawStr;
-          const d1 = new Date(parts[0]);
-          const d2 = new Date(parts[1]);
+          let d1 = new Date(parts[0]);
+          let d2 = new Date(parts[1]);
           if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return rawStr;
+
+          const offset = state.teacherReportPeriodOffset || 0;
+          if (offset > 0) {
+            if (filterType === 'monthly') {
+              d1.setMonth(d1.getMonth() - offset);
+              d2.setMonth(d2.getMonth() - offset);
+            } else {
+              d1.setDate(d1.getDate() - (offset * 7));
+              d2.setDate(d2.getDate() - (offset * 7));
+            }
+          }
+
           const d1Str = d1.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
           const d2Str = d2.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
           return `${d1Str} – ${d2Str}`;
@@ -7229,6 +7241,18 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
         const periodElem = document.getElementById('teacherReportTimePeriod');
         if (periodElem) periodElem.innerHTML = `<i class="fa-regular fa-calendar" style="color:var(--primary); margin-right:0.25rem;"></i> Active Range: ${formatFriendlyDateRange(report.timePeriod)}`;
+
+        const btnNextTimeframe = document.getElementById('btnTeacherReportNextTimeframe');
+        if (btnNextTimeframe) {
+          const curOffset = state.teacherReportPeriodOffset || 0;
+          if (curOffset <= 0) {
+            btnNextTimeframe.style.opacity = '0.4';
+            btnNextTimeframe.style.pointerEvents = 'none';
+          } else {
+            btnNextTimeframe.style.opacity = '1';
+            btnNextTimeframe.style.pointerEvents = 'auto';
+          }
+        }
 
         const lastUpdatedElem = document.getElementById('teacherReportLastUpdated');
         if (lastUpdatedElem) {
@@ -7264,6 +7288,28 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         const penElem = document.getElementById('teacherRepSummaryPending');
         if (penElem) penElem.textContent = pendingToday;
 
+        // Dynamic Pending Clearance KPI subtext & badge styling
+        const penSub = document.getElementById('teacherRepSummaryPendingSub');
+        const penIcon = document.getElementById('teacherRepSummaryPendingIcon');
+        const penCard = document.getElementById('teacherRepSummaryPendingCard');
+        if (penSub) {
+          if (pendingToday === 0) {
+            penSub.innerHTML = `<span class="kpi-sub-pill verified"><i class="fa-solid fa-circle-check"></i> All Cleared</span>`;
+            if (penIcon) {
+              penIcon.className = 'teacher-kpi-icon icon-green';
+              penIcon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+            }
+            if (penCard) penCard.className = 'teacher-kpi-card kpi-green';
+          } else {
+            penSub.innerHTML = `<span class="kpi-sub-pill pending"><i class="fa-solid fa-clock"></i> Action needed (${pendingToday})</span>`;
+            if (penIcon) {
+              penIcon.className = 'teacher-kpi-icon icon-amber';
+              penIcon.innerHTML = '<i class="fa-solid fa-clock"></i>';
+            }
+            if (penCard) penCard.className = 'teacher-kpi-card kpi-amber';
+          }
+        }
+
         const absElem = document.getElementById('teacherRepSummaryAbsent');
         if (absElem) absElem.textContent = absentToday;
 
@@ -7273,19 +7319,19 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         const absSub = document.getElementById('teacherRepSummaryAbsentSub');
         if (filterType === 'weekly') {
           if (subLabel) subLabel.textContent = 'Weekly Meals';
-          if (subSub) subSub.textContent = 'Logged this week';
+          if (subSub) subSub.innerHTML = '<span class="kpi-sub-pill neutral"><i class="fa-solid fa-calendar-check"></i> Logged this week</span>';
           if (absLabel) absLabel.textContent = 'Absences';
-          if (absSub) absSub.textContent = 'Recorded this week';
+          if (absSub) absSub.innerHTML = '<span class="kpi-sub-pill neutral"><i class="fa-solid fa-user-xmark"></i> Recorded this week</span>';
         } else if (filterType === 'monthly') {
           if (subLabel) subLabel.textContent = 'Monthly Meals';
-          if (subSub) subSub.textContent = 'Logged this month';
+          if (subSub) subSub.innerHTML = '<span class="kpi-sub-pill neutral"><i class="fa-solid fa-calendar-check"></i> Logged this month</span>';
           if (absLabel) absLabel.textContent = 'Absences';
-          if (absSub) absSub.textContent = 'Recorded this month';
+          if (absSub) absSub.innerHTML = '<span class="kpi-sub-pill neutral"><i class="fa-solid fa-user-xmark"></i> Recorded this month</span>';
         } else {
           if (subLabel) subLabel.textContent = 'Logged Meals';
-          if (subSub) subSub.textContent = 'This period';
+          if (subSub) subSub.innerHTML = '<span class="kpi-sub-pill neutral"><i class="fa-solid fa-calendar-check"></i> This period</span>';
           if (absLabel) absLabel.textContent = 'Absent';
-          if (absSub) absSub.textContent = 'Recorded absences';
+          if (absSub) absSub.innerHTML = '<span class="kpi-sub-pill neutral"><i class="fa-solid fa-user-xmark"></i> Recorded absences</span>';
         }
 
         // --- COMPACT ALLERGY BANNER ---
@@ -7354,15 +7400,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         // 1. Render Card 1: Students Requiring Attention (Matching Parent Report Row Template)
         const studentsListContainer = document.getElementById('teacherActionStudentsList');
         if (studentsListContainer) {
-          if (lowConsStudents.length === 0) {
-            studentsListContainer.innerHTML = `
-              <div class="insight-bullet-row positive" style="padding:0.75rem 1rem;">
-                <span class="bullet-icon"><i class="fa-solid fa-circle-check"></i></span>
-                <span style="font-size:0.85rem; color:var(--text-secondary);">All students have met today's meal intake targets (no clearance action required).</span>
-              </div>
-            `;
-          } else {
-            studentsListContainer.innerHTML = lowConsStudents.map(s => {
+          const rows = [];
+
+          if (lowConsStudents.length > 0) {
+            lowConsStudents.forEach(s => {
               const studentMeal = classMeals.find(m => m.studentId === s.id);
               let reasonText = `Low intake (< ${lowThreshold}% target)`;
               if (studentMeal && (studentMeal.status === 'PRE_MEAL_UPLOADED' || studentMeal.status === 'PENDING_LEFTOVER_ANALYSIS')) {
@@ -7372,8 +7413,8 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
               const escapedName = (s.name || 'Student').replace(/'/g, "\\'");
               const initial = (s.name || 'S').trim().charAt(0).toUpperCase();
 
-              return `
-                <div class="insight-bullet-row warning" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.6rem 0.85rem; flex-wrap:wrap;">
+              rows.push(`
+                <div class="insight-bullet-row warning" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0.85rem; flex-wrap:wrap;">
                   <div style="display:flex; align-items:center; gap:0.75rem; flex:1; min-width:200px;">
                     <div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, #F43F5E 0%, #BE123C 100%); color:#FFF; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.85rem; flex-shrink:0; box-shadow:0 2px 6px rgba(244,63,94,0.3);">
                       ${initial}
@@ -7383,9 +7424,14 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
                         <strong style="color:var(--text-primary); font-size:0.875rem; font-family:'Outfit',sans-serif;">${s.name}</strong>
                         <span style="font-size:0.68rem; color:var(--text-muted); font-family:monospace; background:rgba(255,255,255,0.06); padding:1px 5px; border-radius:4px;">${s.studentCode || ''}</span>
                       </div>
-                      <span style="font-size:0.75rem; color:#FDA4AF; display:flex; align-items:center; gap:4px;">
-                        <i class="fa-solid fa-triangle-exclamation" style="font-size:0.7rem;"></i> ${reasonText} (${currentPct}% consumed)
-                      </span>
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:0.75rem; color:#FDA4AF; display:flex; align-items:center; gap:4px;">
+                          <i class="fa-solid fa-triangle-exclamation" style="font-size:0.7rem;"></i> ${reasonText} (${currentPct}% consumed)
+                        </span>
+                        <div style="width:55px; height:4px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden;">
+                          <div style="width:${Math.max(5, currentPct)}%; height:100%; background:linear-gradient(90deg, #F43F5E, #F59E0B); border-radius:999px;"></div>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -7403,65 +7449,100 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
                     </button>
                   </div>
                 </div>
-              `;
-            }).join('');
-
-            // Wire action buttons
-            studentsListContainer.querySelectorAll('.btn-action-review-meal').forEach(btn => {
-              btn.addEventListener('click', () => {
-                const mid = parseInt(btn.getAttribute('data-meal-id'));
-                const sName = btn.getAttribute('data-student-name') || 'Student';
-                const curPct = parseInt(btn.getAttribute('data-current-pct')) || 50;
-                if (typeof openPortionChangeModal === 'function') {
-                  openPortionChangeModal(mid, sName, curPct);
-                } else if (typeof openLeftoverModalForMeal === 'function') {
-                  openLeftoverModalForMeal(mid);
-                }
-              });
+              `);
             });
-
-            studentsListContainer.querySelectorAll('.btn-action-chat-parent').forEach(btn => {
-              btn.addEventListener('click', () => {
-                const pid = btn.getAttribute('data-parent-id');
-                const sName = btn.getAttribute('data-student-name');
-                const reason = btn.getAttribute('data-reason') || '';
-                if (!pid) {
-                  showToast("No parent account linked yet.", "warning");
-                  return;
-                }
-
-                let draftText = "";
-                if (reason.includes("pending clearance") || reason.includes("review pending")) {
-                  draftText = `Hello! I wanted to let you know that ${sName}'s lunchbox photo has been uploaded and is currently pending clearance. I will complete the leftover review shortly!`;
-                } else if (reason.includes("Low intake") || reason.includes("< 50%")) {
-                  draftText = `Hello! I wanted to touch base regarding ${sName}'s lunch today. ${sName} consumed less than 50% of their packed meal. Please let me know if there are any specific food preferences or if they felt unwell today.`;
-                } else {
-                  draftText = `Hello! I am reaching out regarding ${sName}'s meal intake at school today. Please let me know if you have any questions or dietary updates!`;
-                }
-
-                state.pendingDraftMessage = draftText;
-                state.activeChatContact = { id: parseInt(pid), name: `Parent of ${sName}`, role: "PARENT" };
-                switchPane('messaging');
-              });
-            });
-
-            studentsListContainer.querySelectorAll('.btn-action-view-profile').forEach(btn => {
-              btn.addEventListener('click', () => {
-                const sid = parseInt(btn.getAttribute('data-student-id'));
-                const st = students.find(x => x.id === sid);
-                if (st && typeof openStudentProfileModal === 'function') {
-                  openStudentProfileModal(st);
-                } else {
-                  const profileBtn = document.querySelector(`.btn-view-profile[data-student-id="${sid}"]`);
-                  if (profileBtn) profileBtn.click();
-                  else switchPane('teacher-roster');
-                }
-              });
-            });
+          } else {
+            rows.push(`
+              <div class="insight-bullet-row positive" style="padding:0.6rem 0.85rem;">
+                <span class="bullet-icon"><i class="fa-solid fa-circle-check"></i></span>
+                <span style="font-size:0.835rem; color:var(--text-secondary);">All students have met today's meal intake targets (no clearance action required).</span>
+              </div>
+            `);
           }
+
+          // Operational & nutritional rows to equalize card height symmetrically to 4 rows
+          if (rows.length < 2) {
+            rows.push(`
+              <div class="insight-bullet-row warning" style="padding:0.6rem 0.85rem;">
+                <span class="bullet-icon"><i class="fa-solid fa-chart-pie"></i></span>
+                <span style="font-size:0.835rem; color:var(--text-secondary);">Average plate waste was ~<strong>${cappedWaste}%</strong> across logged meals (opportunity to reduce leftovers)</span>
+              </div>
+            `);
+          }
+          if (rows.length < 3) {
+            rows.push(`
+              <div class="insight-bullet-row warning" style="padding:0.6rem 0.85rem;">
+                <span class="bullet-icon"><i class="fa-solid fa-arrow-trend-up"></i></span>
+                <span style="font-size:0.835rem; color:var(--text-secondary);">Recommend hydrating fruits or fresh vegetables for students with lower intake</span>
+              </div>
+            `);
+          }
+          if (rows.length < 4) {
+            rows.push(`
+              <div class="insight-bullet-row positive" style="padding:0.6rem 0.85rem;">
+                <span class="bullet-icon"><i class="fa-solid fa-clipboard-check"></i></span>
+                <span style="font-size:0.835rem; color:var(--text-secondary);">Classroom attendance and daily meal logs fully verified for this period</span>
+              </div>
+            `);
+          }
+
+          studentsListContainer.innerHTML = rows.slice(0, 4).join('');
+
+          // Wire action buttons
+          studentsListContainer.querySelectorAll('.btn-action-review-meal').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const mid = parseInt(btn.getAttribute('data-meal-id'));
+              const sName = btn.getAttribute('data-student-name') || 'Student';
+              const curPct = parseInt(btn.getAttribute('data-current-pct')) || 50;
+              if (typeof openPortionChangeModal === 'function') {
+                openPortionChangeModal(mid, sName, curPct);
+              } else if (typeof openLeftoverModalForMeal === 'function') {
+                openLeftoverModalForMeal(mid);
+              }
+            });
+          });
+
+          studentsListContainer.querySelectorAll('.btn-action-chat-parent').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const pid = btn.getAttribute('data-parent-id');
+              const sName = btn.getAttribute('data-student-name');
+              const reason = btn.getAttribute('data-reason') || '';
+              if (!pid) {
+                showToast("No parent account linked yet.", "warning");
+                return;
+              }
+
+              let draftText = "";
+              if (reason.includes("pending clearance") || reason.includes("review pending")) {
+                draftText = `Hello! I wanted to let you know that ${sName}'s lunchbox photo has been uploaded and is currently pending clearance. I will complete the leftover review shortly!`;
+              } else if (reason.includes("Low intake") || reason.includes("< 50%")) {
+                draftText = `Hello! I wanted to touch base regarding ${sName}'s lunch today. ${sName} consumed less than 50% of their packed meal. Please let me know if there are any specific food preferences or if they felt unwell today.`;
+              } else {
+                draftText = `Hello! I am reaching out regarding ${sName}'s meal intake at school today. Please let me know if you have any questions or dietary updates!`;
+              }
+
+              state.pendingDraftMessage = draftText;
+              state.activeChatContact = { id: parseInt(pid), name: `Parent of ${sName}`, role: "PARENT" };
+              switchPane('messaging');
+            });
+          });
+
+          studentsListContainer.querySelectorAll('.btn-action-view-profile').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const sid = parseInt(btn.getAttribute('data-student-id'));
+              const st = students.find(x => x.id === sid);
+              if (st && typeof openStudentProfileModal === 'function') {
+                openStudentProfileModal(st);
+              } else {
+                const profileBtn = document.querySelector(`.btn-view-profile[data-student-id="${sid}"]`);
+                if (profileBtn) profileBtn.click();
+                else switchPane('teacher-roster');
+              }
+            });
+          });
         }
 
-        // 2. Render Card 2: Nutrition Highlights (Matching Parent Report Row Template)
+        // 2. Render Card 2: Nutrition Highlights (Matching Parent Report Row Template - 4 Rows)
         const aiInsightsContainer = document.getElementById('teacherActionAiInsightsList');
         if (aiInsightsContainer) {
           const topFood = (report.topConsumedFoodItems && report.topConsumedFoodItems.length > 0) ? report.topConsumedFoodItems[0] : 'Dal Tadka';
@@ -7470,7 +7551,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
           // Row 1: Plate Completion
           insights.push(`
-            <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.6rem 0.85rem;">
+            <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0.85rem;">
               <div style="display:flex; align-items:center; gap:0.7rem;">
                 <span class="bullet-icon" style="background:rgba(245,158,11,0.12); color:#F59E0B;"><i class="fa-solid fa-chart-pie"></i></span>
                 <div>
@@ -7486,7 +7567,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
           // Row 2: Top Consumed Item
           insights.push(`
-            <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.6rem 0.85rem;">
+            <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0.85rem;">
               <div style="display:flex; align-items:center; gap:0.7rem;">
                 <span class="bullet-icon" style="background:rgba(99,102,241,0.12); color:var(--primary);"><i class="fa-solid fa-utensils"></i></span>
                 <div>
@@ -7502,7 +7583,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
           // Row 3: Intake Compliance
           insights.push(`
-            <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.6rem 0.85rem;">
+            <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0.85rem;">
               <div style="display:flex; align-items:center; gap:0.7rem;">
                 <span class="bullet-icon" style="background:${needsReview ? 'rgba(245,158,11,0.12)' : 'rgba(16,185,129,0.12)'}; color:${needsReview ? '#F59E0B' : '#10B981'};">
                   <i class="fa-solid ${needsReview ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i>
@@ -7513,6 +7594,22 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
                 </div>
               </div>
               ${needsReview ? '<span class="badge-compliance-warning" style="font-size:0.75rem; padding:3px 9px;"><i class="fa-solid fa-triangle-exclamation"></i> Needs Review</span>' : '<span class="badge-compliance-optimal" style="font-size:0.75rem; padding:3px 9px;"><i class="fa-solid fa-circle-check"></i> Optimal Balance</span>'}
+            </div>
+          `);
+
+          // Row 4: Classroom Variety / Dietary Balance
+          insights.push(`
+            <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0.85rem;">
+              <div style="display:flex; align-items:center; gap:0.7rem;">
+                <span class="bullet-icon" style="background:rgba(16,185,129,0.12); color:#10B981;"><i class="fa-solid fa-seedling"></i></span>
+                <div>
+                  <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Dietary Diversity</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted);">Macro and calorie targets consistently supported</div>
+                </div>
+              </div>
+              <span style="font-size:0.75rem; font-weight:700; padding:3px 9px; border-radius:6px; background:rgba(16,185,129,0.12); color:#34D399; border:1px solid rgba(16,185,129,0.25);">
+                <i class="fa-solid fa-shield-halved"></i> Balanced
+              </span>
             </div>
           `);
 
@@ -7547,9 +7644,30 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     if (filterSelect) {
       filterSelect.addEventListener('change', (e) => {
         state.teacherReportsFilter = e.target.value;
+        document.querySelectorAll('#teacherReportsFilterChips .teacher-filter-chip').forEach(chip => {
+          chip.classList.toggle('active', chip.getAttribute('data-report-filter') === e.target.value);
+        });
         renderTeacherClassNutritionLedger(state.teacherReportsStudents, state.teacherReportsMeals);
       });
     }
+
+    // Quick filter chips event listener
+    document.querySelectorAll('#teacherReportsFilterChips .teacher-filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const filterVal = chip.getAttribute('data-report-filter') || 'all';
+        state.teacherReportsFilter = filterVal;
+
+        document.querySelectorAll('#teacherReportsFilterChips .teacher-filter-chip').forEach(c => {
+          c.classList.toggle('active', c === chip);
+        });
+
+        if (filterSelect) {
+          filterSelect.value = filterVal;
+        }
+
+        renderTeacherClassNutritionLedger(state.teacherReportsStudents, state.teacherReportsMeals);
+      });
+    });
 
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
@@ -7688,6 +7806,28 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         mealDateTs,
         foodNames
       };
+    });
+
+    // Compute and display quick-filter counts across all class records
+    const totalCount = list.length;
+    const lowCount = list.filter(m => m.pct < 50 && m.status !== 'PRE_MEAL_UPLOADED').length;
+    const cleanCount = list.filter(m => m.pct >= 100 && m.status !== 'PRE_MEAL_UPLOADED').length;
+    const partialCount = list.filter(m => m.pct >= 50 && m.pct < 100 && m.status !== 'PRE_MEAL_UPLOADED').length;
+    const pendingCount = list.filter(m => m.status === 'PRE_MEAL_UPLOADED' || m.status === 'PENDING_LEFTOVER_ANALYSIS').length;
+
+    const setChipCount = (id, count) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = count;
+    };
+    setChipCount('repFilterAllCount', totalCount);
+    setChipCount('repFilterLowCount', lowCount);
+    setChipCount('repFilterCleanCount', cleanCount);
+    setChipCount('repFilterPartialCount', partialCount);
+    setChipCount('repFilterPendingCount', pendingCount);
+
+    // Keep filter chips active styling synchronized with current filter
+    document.querySelectorAll('#teacherReportsFilterChips .teacher-filter-chip').forEach(chip => {
+      chip.classList.toggle('active', chip.getAttribute('data-report-filter') === filterVal);
     });
 
     // Apply Search Filter
@@ -7963,11 +8103,44 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
   function setupTeacherReports() {
     const btnWeekly = document.getElementById('btnTeacherReportWeekly');
     const btnMonthly = document.getElementById('btnTeacherReportMonthly');
+    const btnPrev = document.getElementById('btnTeacherReportPrevTimeframe');
+    const btnNext = document.getElementById('btnTeacherReportNextTimeframe');
     const btnExportCsv = document.getElementById('btnExportCsv');
     const btnDownloadClassCsv = document.getElementById('btnDownloadClassroomCsv');
     const btnExportPdf = document.getElementById('btnExportPdf');
     const btnToggleDropdown = document.getElementById('btnToggleReportsDropdown');
     const dropdownMenu = document.getElementById('reportsDropdownMenu');
+
+    const updateTimeframeStepperState = () => {
+      const offset = state.teacherReportPeriodOffset || 0;
+      if (btnNext) {
+        if (offset <= 0) {
+          btnNext.style.opacity = '0.4';
+          btnNext.style.pointerEvents = 'none';
+        } else {
+          btnNext.style.opacity = '1';
+          btnNext.style.pointerEvents = 'auto';
+        }
+      }
+    };
+
+    if (btnPrev) {
+      btnPrev.addEventListener('click', async () => {
+        state.teacherReportPeriodOffset = (state.teacherReportPeriodOffset || 0) + 1;
+        updateTimeframeStepperState();
+        await loadTeacherReports();
+      });
+    }
+
+    if (btnNext) {
+      btnNext.addEventListener('click', async () => {
+        if ((state.teacherReportPeriodOffset || 0) > 0) {
+          state.teacherReportPeriodOffset -= 1;
+          updateTimeframeStepperState();
+          await loadTeacherReports();
+        }
+      });
+    }
 
     if (btnToggleDropdown && dropdownMenu) {
       btnToggleDropdown.addEventListener('click', (e) => {
@@ -7986,12 +8159,16 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         btnWeekly.classList.add('active');
         btnMonthly.classList.remove('active');
         state.teacherReportFilter = 'weekly';
+        state.teacherReportPeriodOffset = 0;
+        updateTimeframeStepperState();
         await loadTeacherReports();
       });
       btnMonthly.addEventListener('click', async () => {
         btnMonthly.classList.add('active');
         btnWeekly.classList.remove('active');
         state.teacherReportFilter = 'monthly';
+        state.teacherReportPeriodOffset = 0;
+        updateTimeframeStepperState();
         await loadTeacherReports();
       });
     }

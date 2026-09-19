@@ -1519,10 +1519,18 @@
                 </div>
               </div>
               <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
-                <!-- Segmented Control: Weekly vs Monthly -->
-                <div class="segmented-pill-group">
-                  <button type="button" class="segmented-pill active" id="btnTeacherReportWeekly">Weekly</button>
-                  <button type="button" class="segmented-pill" id="btnTeacherReportMonthly">Monthly</button>
+                <!-- Segmented Control & Stepper: Weekly vs Monthly -->
+                <div style="display:flex; align-items:center; gap:5px;">
+                  <button type="button" class="btn-action-outline" id="btnTeacherReportPrevTimeframe" style="width:34px; height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:var(--r-md);" title="Previous Period">
+                    <i class="fa-solid fa-chevron-left" style="font-size:0.75rem;"></i>
+                  </button>
+                  <div class="segmented-pill-group">
+                    <button type="button" class="segmented-pill active" id="btnTeacherReportWeekly">Weekly</button>
+                    <button type="button" class="segmented-pill" id="btnTeacherReportMonthly">Monthly</button>
+                  </div>
+                  <button type="button" class="btn-action-outline" id="btnTeacherReportNextTimeframe" style="width:34px; height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:var(--r-md); opacity:0.4; pointer-events:none;" title="Current Period">
+                    <i class="fa-solid fa-chevron-right" style="font-size:0.75rem;"></i>
+                  </button>
                 </div>
                 
                 <!-- Export Dropdown Group -->
@@ -1571,16 +1579,16 @@
               </div>
             </div>
 
-            <div class="teacher-kpi-card kpi-amber">
+            <div class="teacher-kpi-card kpi-green" id="teacherRepSummaryPendingCard">
               <div class="teacher-kpi-content">
                 <span class="teacher-kpi-label">Pending Clearance</span>
                 <div class="teacher-kpi-value" id="teacherRepSummaryPending">0</div>
-                <small class="teacher-kpi-subtext">
-                  <span class="kpi-sub-pill pending"><i class="fa-solid fa-clock"></i> Action needed</span>
+                <small class="teacher-kpi-subtext" id="teacherRepSummaryPendingSub">
+                  <span class="kpi-sub-pill verified"><i class="fa-solid fa-circle-check"></i> All Cleared</span>
                 </small>
               </div>
-              <div class="teacher-kpi-icon icon-amber">
-                <i class="fa-solid fa-clock"></i>
+              <div class="teacher-kpi-icon icon-green" id="teacherRepSummaryPendingIcon">
+                <i class="fa-solid fa-circle-check"></i>
               </div>
             </div>
 
@@ -1676,9 +1684,9 @@
                 <!-- Status Filter Dropdown -->
                 <select id="teacherReportsStatusFilter" class="form-input" style="font-size:0.8rem; padding:0.4rem 0.65rem; height:36px; min-width:130px; font-weight:600; border-radius:var(--r-md); color-scheme:dark; background:var(--bg-card); color:var(--text-primary);">
                   <option value="all" style="background:#1E293B; color:#F8FAFC;">All Statuses</option>
+                  <option value="low" style="background:#1E293B; color:#F8FAFC;">Low Intake (&lt; 50%)</option>
                   <option value="clean" style="background:#1E293B; color:#F8FAFC;">Clean Plate</option>
                   <option value="partial" style="background:#1E293B; color:#F8FAFC;">Partial Intake</option>
-                  <option value="low" style="background:#1E293B; color:#F8FAFC;">Low Intake (&lt; 50%)</option>
                   <option value="pending" style="background:#1E293B; color:#F8FAFC;">Review Pending</option>
                 </select>
 
@@ -1687,6 +1695,25 @@
                   <i class="fa-solid fa-file-csv"></i> Download CSV
                 </button>
               </div>
+            </div>
+
+            <!-- Quick Filter Chips Toolbar -->
+            <div class="teacher-filter-bar" id="teacherReportsFilterChips" style="display:flex; gap:0.45rem; align-items:center; flex-wrap:wrap; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid rgba(255,255,255,0.06);">
+              <button type="button" class="teacher-filter-chip active" data-report-filter="all">
+                All Records <span class="chip-count" id="repFilterAllCount">0</span>
+              </button>
+              <button type="button" class="teacher-filter-chip" data-report-filter="low">
+                Needs Attention <span class="chip-count" id="repFilterLowCount">0</span>
+              </button>
+              <button type="button" class="teacher-filter-chip" data-report-filter="clean">
+                Clean Plate <span class="chip-count" id="repFilterCleanCount">0</span>
+              </button>
+              <button type="button" class="teacher-filter-chip" data-report-filter="partial">
+                Partial Intake <span class="chip-count" id="repFilterPartialCount">0</span>
+              </button>
+              <button type="button" class="teacher-filter-chip" data-report-filter="pending">
+                Pending Review <span class="chip-count" id="repFilterPendingCount">0</span>
+              </button>
             </div>
 
             <div class="table-responsive">
