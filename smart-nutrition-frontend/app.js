@@ -5066,6 +5066,336 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     }
   };
 
+  // ==========================================
+  // CUSTOM MODERN DARK DATEPICKER CONTROLLER
+  // ==========================================
+  let customCalState = {
+    selectedISO: new Date().toISOString().split('T')[0],
+    viewYear: new Date().getFullYear(),
+    viewMonth: new Date().getMonth(), // 0 - 11
+    initialized: false
+  };
+
+  function formatReadableDate(isoStr) {
+    if (!isoStr) return "";
+    const parts = isoStr.split('-').map(Number);
+    if (parts.length < 3) return isoStr;
+    const [y, m, d] = parts;
+    const date = new Date(y, m - 1, d);
+    const today = new Date();
+    const todayISO = today.toISOString().split('T')[0];
+
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    const yesterdayISO = yesterday.toISOString().split('T')[0];
+
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+    const tomorrowISO = tomorrow.toISOString().split('T')[0];
+
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    const formattedDayMonthYear = `${d} ${monthNames[m - 1]} ${y}`;
+
+    if (isoStr === todayISO) {
+      return `Today, ${formattedDayMonthYear}`;
+    } else if (isoStr === yesterdayISO) {
+      return `Yesterday, ${formattedDayMonthYear}`;
+    } else if (isoStr === tomorrowISO) {
+      return `Tomorrow, ${formattedDayMonthYear}`;
+    } else {
+      return `${dayNames[date.getDay()]}, ${formattedDayMonthYear}`;
+    }
+  }
+
+  function shiftDateByDays(isoStr, deltaDays) {
+    const parts = (isoStr || new Date().toISOString().split('T')[0]).split('-').map(Number);
+    const date = new Date(parts[0], parts[1] - 1, parts[2]);
+    date.setDate(date.getDate() + deltaDays);
+    const ny = date.getFullYear();
+    const nm = String(date.getMonth() + 1).padStart(2, '0');
+    const nd = String(date.getDate()).padStart(2, '0');
+    return `${ny}-${nm}-${nd}`;
+  }
+
+  function renderCustomCalendarDays() {
+    const grid = document.getElementById('calDaysGrid');
+    const title = document.getElementById('calMonthYearTitle');
+    if (!grid || !title) return;
+
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+    title.textContent = `${monthNames[customCalState.viewMonth]} ${customCalState.viewYear}`;
+
+    const todayISO = new Date().toISOString().split('T')[0];
+    const firstDayIndex = new Date(customCalState.viewYear, customCalState.viewMonth, 1).getDay(); // 0 is Sunday
+    const daysInCurrentMonth = new Date(customCalState.viewYear, customCalState.viewMonth + 1, 0).getDate();
+    const daysInPrevMonth = new Date(customCalState.viewYear, customCalState.viewMonth, 0).getDate();
+
+    grid.innerHTML = '';
+
+    // Previous month tail days
+    for (let x = firstDayIndex - 1; x >= 0; x--) {
+      const prevDay = daysInPrevMonth - x;
+      const prevDate = new Date(customCalState.viewYear, customCalState.viewMonth - 1, prevDay);
+      const iso = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}-${String(prevDate.getDate()).padStart(2, '0')}`;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'cal-day-cell other-month';
+      if (iso === customCalState.selectedISO) btn.classList.add('selected');
+      if (iso === todayISO) btn.classList.add('today');
+      btn.textContent = prevDay;
+      btn.onclick = () => selectCustomCalendarDate(iso);
+      grid.appendChild(btn);
+    }
+
+    // Current month days
+    for (let day = 1; day <= daysInCurrentMonth; day++) {
+      const iso = `${customCalState.viewYear}-${String(customCalState.viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'cal-day-cell';
+      if (iso === customCalState.selectedISO) btn.classList.add('selected');
+      if (iso === todayISO) btn.classList.add('today');
+      btn.textContent = day;
+      btn.onclick = () => selectCustomCalendarDate(iso);
+      grid.appendChild(btn);
+    }
+
+    // Next month head days to complete 35 or 42 grid cells
+    const totalRendered = firstDayIndex + daysInCurrentMonth;
+    const remainingCells = (totalRendered <= 35 ? 35 : 42) - totalRendered;
+    for (let nextDay = 1; nextDay <= remainingCells; nextDay++) {
+      const nextDate = new Date(customCalState.viewYear, customCalState.viewMonth + 1, nextDay);
+      const iso = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}-${String(nextDate.getDate()).padStart(2, '0')}`;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'cal-day-cell other-month';
+      if (iso === customCalState.selectedISO) btn.classList.add('selected');
+      if (iso === todayISO) btn.classList.add('today');
+      btn.textContent = nextDay;
+      btn.onclick = () => selectCustomCalendarDate(iso);
+      grid.appendChild(btn);
+    }
+
+    // Update active shortcut pill
+    updateCalendarShortcutPills(customCalState.selectedISO);
+  }
+
+  function updateCalendarShortcutPills(isoStr) {
+    const todayISO = new Date().toISOString().split('T')[0];
+    const yesterdayISO = shiftDateByDays(todayISO, -1);
+    const tomorrowISO = shiftDateByDays(todayISO, 1);
+
+    const pillToday = document.getElementById('calShortcutToday');
+    const pillYesterday = document.getElementById('calShortcutYesterday');
+    const pillTomorrow = document.getElementById('calShortcutTomorrow');
+
+    if (pillToday) pillToday.classList.toggle('active', isoStr === todayISO);
+    if (pillYesterday) pillYesterday.classList.toggle('active', isoStr === yesterdayISO);
+    if (pillTomorrow) pillTomorrow.classList.toggle('active', isoStr === tomorrowISO);
+  }
+
+  function selectCustomCalendarDate(isoStr) {
+    customCalState.selectedISO = isoStr;
+    const parts = isoStr.split('-').map(Number);
+    customCalState.viewYear = parts[0];
+    customCalState.viewMonth = parts[1] - 1;
+
+    // Update Hidden Input & Label
+    const dateInput = document.getElementById('teacherSelectedDate');
+    if (dateInput) dateInput.value = isoStr;
+
+    const label = document.getElementById('teacherDateDisplayLabel');
+    if (label) label.textContent = formatReadableDate(isoStr);
+
+    closeCustomCalendarPopover();
+    renderCustomCalendarDays();
+
+    // Trigger meal roster update
+    loadTeacherTodayMealRoster(isoStr);
+  }
+
+  function toggleCustomCalendarPopover() {
+    const popover = document.getElementById('teacherCustomCalendarPopover');
+    const trigger = document.getElementById('btnTeacherCalendarTrigger');
+    if (!popover) return;
+    const isOpen = popover.classList.contains('open');
+    if (isOpen) {
+      closeCustomCalendarPopover();
+    } else {
+      openCustomCalendarPopover();
+    }
+  }
+
+  function openCustomCalendarPopover() {
+    const popover = document.getElementById('teacherCustomCalendarPopover');
+    const trigger = document.getElementById('btnTeacherCalendarTrigger');
+    if (!popover) return;
+    popover.classList.add('open');
+    if (trigger) {
+      trigger.classList.add('active');
+      trigger.setAttribute('aria-expanded', 'true');
+    }
+    renderCustomCalendarDays();
+  }
+
+  function closeCustomCalendarPopover() {
+    const popover = document.getElementById('teacherCustomCalendarPopover');
+    const trigger = document.getElementById('btnTeacherCalendarTrigger');
+    if (!popover) return;
+    popover.classList.remove('open');
+    if (trigger) {
+      trigger.classList.remove('active');
+      trigger.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  function syncTeacherCustomDatePicker(targetDateStr) {
+    const todayISO = new Date().toISOString().split('T')[0];
+    const iso = targetDateStr || todayISO;
+    customCalState.selectedISO = iso;
+    const parts = iso.split('-').map(Number);
+    if (parts.length >= 3) {
+      customCalState.viewYear = parts[0];
+      customCalState.viewMonth = parts[1] - 1;
+    }
+
+    const label = document.getElementById('teacherDateDisplayLabel');
+    if (label) label.textContent = formatReadableDate(iso);
+
+    const dateInput = document.getElementById('teacherSelectedDate');
+    if (dateInput && dateInput.value !== iso) dateInput.value = iso;
+
+    updateCalendarShortcutPills(iso);
+  }
+
+  function setupCustomTeacherDatePicker() {
+    if (customCalState.initialized) return;
+    const container = document.getElementById('teacherDatepickerContainer');
+    if (!container) return;
+
+    customCalState.initialized = true;
+
+    const trigger = document.getElementById('btnTeacherCalendarTrigger');
+    const prevDayBtn = document.getElementById('btnTeacherPrevDay');
+    const nextDayBtn = document.getElementById('btnTeacherNextDay');
+    const calPrevMonth = document.getElementById('calPrevMonth');
+    const calNextMonth = document.getElementById('calNextMonth');
+    const calFooterClose = document.getElementById('calFooterClose');
+    const calFooterToday = document.getElementById('calFooterToday');
+
+    const shortcutToday = document.getElementById('calShortcutToday');
+    const shortcutYesterday = document.getElementById('calShortcutYesterday');
+    const shortcutTomorrow = document.getElementById('calShortcutTomorrow');
+
+    const todayISO = new Date().toISOString().split('T')[0];
+    const dateInput = document.getElementById('teacherSelectedDate');
+    const initialISO = (dateInput && dateInput.value) || todayISO;
+    syncTeacherCustomDatePicker(initialISO);
+
+    if (trigger) {
+      trigger.onclick = (e) => {
+        e.stopPropagation();
+        toggleCustomCalendarPopover();
+      };
+    }
+
+    if (prevDayBtn) {
+      prevDayBtn.onclick = () => {
+        const newDate = shiftDateByDays(customCalState.selectedISO, -1);
+        selectCustomCalendarDate(newDate);
+      };
+    }
+
+    if (nextDayBtn) {
+      nextDayBtn.onclick = () => {
+        const newDate = shiftDateByDays(customCalState.selectedISO, 1);
+        selectCustomCalendarDate(newDate);
+      };
+    }
+
+    if (calPrevMonth) {
+      calPrevMonth.onclick = (e) => {
+        e.stopPropagation();
+        customCalState.viewMonth--;
+        if (customCalState.viewMonth < 0) {
+          customCalState.viewMonth = 11;
+          customCalState.viewYear--;
+        }
+        renderCustomCalendarDays();
+      };
+    }
+
+    if (calNextMonth) {
+      calNextMonth.onclick = (e) => {
+        e.stopPropagation();
+        customCalState.viewMonth++;
+        if (customCalState.viewMonth > 11) {
+          customCalState.viewMonth = 0;
+          customCalState.viewYear++;
+        }
+        renderCustomCalendarDays();
+      };
+    }
+
+    if (shortcutToday) {
+      shortcutToday.onclick = (e) => {
+        e.stopPropagation();
+        selectCustomCalendarDate(new Date().toISOString().split('T')[0]);
+      };
+    }
+
+    if (shortcutYesterday) {
+      shortcutYesterday.onclick = (e) => {
+        e.stopPropagation();
+        const yesterday = shiftDateByDays(new Date().toISOString().split('T')[0], -1);
+        selectCustomCalendarDate(yesterday);
+      };
+    }
+
+    if (shortcutTomorrow) {
+      shortcutTomorrow.onclick = (e) => {
+        e.stopPropagation();
+        const tomorrow = shiftDateByDays(new Date().toISOString().split('T')[0], 1);
+        selectCustomCalendarDate(tomorrow);
+      };
+    }
+
+    if (calFooterToday) {
+      calFooterToday.onclick = (e) => {
+        e.stopPropagation();
+        selectCustomCalendarDate(new Date().toISOString().split('T')[0]);
+      };
+    }
+
+    if (calFooterClose) {
+      calFooterClose.onclick = (e) => {
+        e.stopPropagation();
+        closeCustomCalendarPopover();
+      };
+    }
+
+    // Dismiss on click outside or escape key
+    document.addEventListener('click', (e) => {
+      const popover = document.getElementById('teacherCustomCalendarPopover');
+      if (popover && popover.classList.contains('open')) {
+        if (!container.contains(e.target)) {
+          closeCustomCalendarPopover();
+        }
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeCustomCalendarPopover();
+      }
+    });
+  }
+
   async function loadTeacherTodayMealRoster(selectedDateStr) {
     const classCode = (state.activeClass && state.activeClass.classCode) ? state.activeClass.classCode : "CLS-6070";
     state.currentTeacherClassCode = classCode;
@@ -5080,6 +5410,8 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     if (dateInput && !dateInput.onchange) {
       dateInput.onchange = (e) => loadTeacherTodayMealRoster(e.target.value);
     }
+    setupCustomTeacherDatePicker();
+    syncTeacherCustomDatePicker(targetDate);
 
     // Header Details
     const headerClassName = document.getElementById('teacherHeaderClassName');

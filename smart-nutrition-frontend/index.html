@@ -1241,11 +1241,71 @@
                   </div>
                 </div>
               </div>
-              <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
-                <div class="teacher-date-picker-wrap" style="background:var(--bg-page); color:var(--text-primary); border:1px solid var(--border-subtle); font-weight:500; padding:0.3rem 0.65rem; font-size:0.8rem; display:inline-flex; align-items:center; gap:0.5rem; border-radius:var(--r-md); height:36px;">
-                  <i class="fa-regular fa-calendar" style="color:var(--primary);"></i>
-                  <input type="date" id="teacherSelectedDate" title="Select Date to View Meal Records" style="border:none; background:transparent; font-family:inherit; font-weight:500; font-size:0.8rem; color:var(--text-primary); cursor:pointer; outline:none;" />
+              <div style="display:flex; gap:0.55rem; align-items:center; flex-wrap:wrap; position:relative;">
+                <!-- Modern Classroom Date Toolbar -->
+                <div class="teacher-datepicker-container" id="teacherDatepickerContainer">
+                  <!-- Prev Day Button -->
+                  <button type="button" class="btn-cal-step" id="btnTeacherPrevDay" title="Previous Day (Step back 1 day)" aria-label="Previous Day">
+                    <i class="fa-solid fa-chevron-left"></i>
+                  </button>
+
+                  <!-- Date Trigger Button -->
+                  <button type="button" class="btn-cal-trigger" id="btnTeacherCalendarTrigger" aria-haspopup="dialog" aria-expanded="false" title="Click to choose a date">
+                    <i class="fa-regular fa-calendar-days" style="color:var(--primary); font-size:0.875rem;"></i>
+                    <span id="teacherDateDisplayLabel">Today, 19 Sep 2026</span>
+                    <i class="fa-solid fa-chevron-down cal-chevron" id="teacherDateChevron"></i>
+                  </button>
+
+                  <!-- Next Day Button -->
+                  <button type="button" class="btn-cal-step" id="btnTeacherNextDay" title="Next Day (Step forward 1 day)" aria-label="Next Day">
+                    <i class="fa-solid fa-chevron-right"></i>
+                  </button>
+
+                  <!-- Hidden Input to preserve complete backward compatibility for state & queries -->
+                  <input type="date" id="teacherSelectedDate" title="Select Date" style="position:absolute; opacity:0; width:0; height:0; pointer-events:none; border:none; padding:0; margin:0;" />
+
+                  <!-- Custom Modern Dark Calendar Dropdown Popover -->
+                  <div class="custom-cal-popover" id="teacherCustomCalendarPopover" role="dialog" aria-modal="true" aria-label="Select Date">
+                    <!-- Header with Month/Year Navigation -->
+                    <div class="cal-header">
+                      <button type="button" class="cal-month-nav" id="calPrevMonth" title="Previous Month">
+                        <i class="fa-solid fa-chevron-left"></i>
+                      </button>
+                      <div class="cal-title" id="calMonthYearTitle">September 2026</div>
+                      <button type="button" class="cal-month-nav" id="calNextMonth" title="Next Month">
+                        <i class="fa-solid fa-chevron-right"></i>
+                      </button>
+                    </div>
+
+                    <!-- Quick Date Shortcuts -->
+                    <div class="cal-shortcuts">
+                      <button type="button" class="cal-shortcut-pill active" id="calShortcutToday" data-shortcut="today">Today</button>
+                      <button type="button" class="cal-shortcut-pill" id="calShortcutYesterday" data-shortcut="yesterday">Yesterday</button>
+                      <button type="button" class="cal-shortcut-pill" id="calShortcutTomorrow" data-shortcut="tomorrow">Tomorrow</button>
+                    </div>
+
+                    <!-- Weekdays Header -->
+                    <div class="cal-weekdays">
+                      <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                    </div>
+
+                    <!-- Days Grid -->
+                    <div class="cal-days-grid" id="calDaysGrid">
+                      <!-- Rendered by JavaScript -->
+                    </div>
+
+                    <!-- Popover Footer -->
+                    <div class="cal-footer">
+                      <button type="button" class="cal-footer-btn cal-footer-today" id="calFooterToday">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Jump to Today
+                      </button>
+                      <button type="button" class="cal-footer-btn cal-footer-close" id="calFooterClose">
+                        Done
+                      </button>
+                    </div>
+                  </div>
                 </div>
+
                 <button class="btn-action-outline" id="btnRefreshTeacherMeals" title="Refresh meal records" style="height:36px; padding:0 0.85rem; font-size:0.8rem; display:inline-flex; align-items:center; gap:0.4rem; border-radius:var(--r-md);">
                   <i class="fa-solid fa-rotate"></i> Refresh
                 </button>
