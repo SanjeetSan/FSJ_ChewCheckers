@@ -6335,41 +6335,51 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         if (studentsListContainer) {
           if (lowConsStudents.length === 0) {
             studentsListContainer.innerHTML = `
-              <div style="padding:0.75rem 1rem; text-align:center; color:var(--accent-green); font-size:0.825rem; font-weight:600; background:rgba(16,185,129,0.04); border-radius:var(--r-sm);">
-                <i class="fa-solid fa-circle-check"></i> All students are meeting today's meal goals.
+              <div style="padding:1rem 1.25rem; text-align:center; color:var(--accent-green); font-size:0.825rem; font-weight:600; background:rgba(16,185,129,0.04); border-radius:var(--r-md); border:1px dashed rgba(16,185,129,0.2);">
+                <i class="fa-solid fa-circle-check" style="margin-right:0.35rem;"></i> All students are meeting today's meal goals.
               </div>
             `;
           } else {
             studentsListContainer.innerHTML = lowConsStudents.map(s => {
               const studentMeal = classMeals.find(m => m.studentId === s.id);
-              let reasonText = "Low intake recorded (&lt; 50% target)";
+              let reasonText = "Low intake (< 50% target)";
               if (studentMeal && (studentMeal.status === 'PRE_MEAL_UPLOADED' || studentMeal.status === 'PENDING_LEFTOVER_ANALYSIS')) {
-                reasonText = "⏳ Meal review pending clearance";
+                reasonText = "Meal review pending clearance";
               }
+              const currentPct = (studentMeal && studentMeal.overallConsumptionPercentage !== null) ? Math.round(Number(studentMeal.overallConsumptionPercentage)) : 50;
+              const escapedName = (s.name || 'Student').replace(/'/g, "\\'");
+
               return `
-                <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--r-md); padding:0.85rem 1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; box-shadow:0 2px 6px rgba(0,0,0,0.02);">
-                  <div style="display:flex; align-items:center; gap:0.75rem;">
-                    <div style="width:36px; height:36px; border-radius:50%; background:rgba(239,68,68,0.1); color:var(--accent-rose); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.9rem; flex-shrink:0;">${s.name.charAt(0).toUpperCase()}</div>
-                    <div>
-                      <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
-                        <strong style="font-size:0.9rem; color:var(--text-primary); font-weight:800;">${s.name}</strong>
-                        <span style="font-size:0.7rem; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); padding:0.1rem 0.4rem; border-radius:4px; color:var(--primary); font-weight:700;">${s.studentCode || ''}</span>
+                <div class="attention-student-card">
+                  <div style="display:flex; align-items:center; gap:0.75rem; min-width:0;">
+                    <div style="width:34px; height:34px; border-radius:50%; background:rgba(239,68,68,0.1); color:var(--accent-rose); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; flex-shrink:0;">
+                      ${(s.name || 'S').charAt(0).toUpperCase()}
+                    </div>
+                    <div style="min-width:0;">
+                      <div style="display:flex; align-items:center; gap:0.4rem; white-space:nowrap;">
+                        <strong style="font-size:0.875rem; color:var(--text-primary); font-weight:700;">${s.name}</strong>
+                        <span style="font-size:0.72rem; color:var(--text-muted); font-family:monospace;">${s.studentCode || ''}</span>
                       </div>
-                      <span style="font-size:0.75rem; color:var(--accent-rose); font-weight:600; margin-top:0.15rem; display:block;">${reasonText}</span>
+                      <div style="margin-top:0.15rem; white-space:nowrap;">
+                        <span class="badge-status-attention" style="padding:0.15rem 0.5rem; font-size:0.7rem; display:inline-flex; align-items:center; gap:0.3rem;">
+                          <i class="fa-solid fa-triangle-exclamation"></i> ${reasonText}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                    <div style="display:flex; gap:0.35rem; align-items:center; flex-wrap:wrap;">
-                    <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-right:0.15rem;">Log Eaten %:</span>
+
+                  <div style="display:flex; gap:0.4rem; align-items:center; flex-shrink:0; white-space:nowrap;">
                     ${studentMeal ? `
-                      <button class="btn-quick-pct btn-100" onclick="recordTeacherQuickConsumption(${studentMeal.id}, 100)" title="100% Clean Plate (No Leftovers)">100%</button>
-                      <button class="btn-quick-pct btn-75" onclick="openTeacherLogLeftoverModal(${s.id}, 75, ${studentMeal.id}, '${s.name.replace(/'/g, "\\'")}')" title="75% Eaten (Upload Photo)">75%</button>
-                      <button class="btn-quick-pct btn-50" onclick="openTeacherLogLeftoverModal(${s.id}, 50, ${studentMeal.id}, '${s.name.replace(/'/g, "\\'")}')" title="50% Eaten (Upload Photo)">50%</button>
-                      <button class="btn-quick-pct btn-25" onclick="openTeacherLogLeftoverModal(${s.id}, 25, ${studentMeal.id}, '${s.name.replace(/'/g, "\\'")}')" title="25% Eaten (Upload Photo)">25%</button>
-                      <button class="btn-quick-pct btn-0" onclick="openTeacherLogLeftoverModal(${s.id}, 0, ${studentMeal.id}, '${s.name.replace(/'/g, "\\'")}')" title="0% Untouched (Upload Photo)">0%</button>
+                      <button class="btn-action-primary btn-action-review-meal" data-meal-id="${studentMeal.id}" data-student-name="${escapedName}" data-current-pct="${currentPct}" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:600; white-space:nowrap;">
+                        <i class="fa-solid fa-camera"></i> Review
+                      </button>
                     ` : ''}
-                    <button class="btn-action-primary btn-action-review-meal" data-student-id="${s.id}" data-meal-id="${studentMeal ? studentMeal.id : ''}" data-student-name="${s.name.replace(/'/g, "\\'")}" style="padding:0.35rem 0.65rem; font-size:0.75rem; background:var(--accent-teal); border-color:var(--accent-teal); border-radius:var(--r-md); color:#FFF; display:flex; align-items:center; gap:0.3rem;" title="Upload Leftover / Post-Meal Photo"><i class="fa-solid fa-camera"></i> Photo</button>
-                    <button class="btn-action-primary btn-action-chat-parent" data-parent-id="${s.parentId || ''}" data-student-name="${s.name}" data-reason="${reasonText.replace(/"/g, '&quot;')}" style="padding:0.35rem 0.65rem; font-size:0.75rem; background:var(--primary); border-color:var(--primary); border-radius:var(--r-md); display:flex; align-items:center; gap:0.3rem;"><i class="fa-solid fa-comments"></i> Chat</button>
-                    <button class="btn-action-outline btn-action-view-profile" data-student-id="${s.id}" style="padding:0.35rem 0.65rem; font-size:0.75rem; border-radius:var(--r-md);"><i class="fa-solid fa-user"></i> Profile</button>
+                    <button class="btn-action-outline btn-action-chat-parent" data-parent-id="${s.parentId || ''}" data-student-name="${escapedName}" data-reason="${reasonText.replace(/"/g, '&quot;')}" style="padding:0.35rem 0.65rem; font-size:0.75rem; white-space:nowrap;">
+                      <i class="fa-solid fa-comments"></i> Message
+                    </button>
+                    <button class="btn-action-outline btn-action-view-profile" data-student-id="${s.id}" style="padding:0.35rem 0.65rem; font-size:0.75rem; white-space:nowrap;">
+                      <i class="fa-solid fa-user"></i> Profile
+                    </button>
                   </div>
                 </div>
               `;
@@ -6378,10 +6388,14 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             // Wire action buttons
             studentsListContainer.querySelectorAll('.btn-action-review-meal').forEach(btn => {
               btn.addEventListener('click', () => {
-                const sid = parseInt(btn.getAttribute('data-student-id'));
-                const mid = parseInt(btn.getAttribute('data-meal-id')) || null;
-                const sName = btn.getAttribute('data-student-name') || '';
-                openTeacherLogLeftoverModal(sid, 75, mid, sName);
+                const mid = parseInt(btn.getAttribute('data-meal-id'));
+                const sName = btn.getAttribute('data-student-name') || 'Student';
+                const curPct = parseInt(btn.getAttribute('data-current-pct')) || 50;
+                if (typeof openPortionChangeModal === 'function') {
+                  openPortionChangeModal(mid, sName, curPct);
+                } else if (typeof openLeftoverModalForMeal === 'function') {
+                  openLeftoverModalForMeal(mid);
+                }
               });
             });
 
@@ -6395,7 +6409,6 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
                   return;
                 }
 
-                // AI Intelligent Draft Generator based on Student Status
                 let draftText = "";
                 if (reason.includes("pending clearance") || reason.includes("review pending")) {
                   draftText = `Hello! I wanted to let you know that ${sName}'s lunchbox photo has been uploaded and is currently pending clearance. I will complete the leftover review shortly!`;
@@ -6415,7 +6428,9 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
               btn.addEventListener('click', () => {
                 const sid = parseInt(btn.getAttribute('data-student-id'));
                 const st = students.find(x => x.id === sid);
-                if (st) {
+                if (st && typeof openStudentProfileModal === 'function') {
+                  openStudentProfileModal(st);
+                } else {
                   const profileBtn = document.querySelector(`.btn-view-profile[data-student-id="${sid}"]`);
                   if (profileBtn) profileBtn.click();
                   else switchPane('teacher-roster');
@@ -6434,23 +6449,26 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
               const sObj = students.find(x => x.id === m.studentId);
               const pName = sObj && sObj.parentName ? sObj.parentName : (m.studentName ? `Parent of ${m.studentName}` : 'Parent');
               const sName = m.studentName || (sObj ? sObj.name : 'Child');
+              const dateStr = m.mealDate ? formatDateDDMMYYYY(m.mealDate) : 'Today';
               activities.push(`
-                <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--r-md); padding:0.75rem 0.95rem; font-size:0.825rem; display:flex; align-items:center; justify-content:space-between; gap:0.5rem;">
-                  <div style="display:flex; align-items:center; gap:0.65rem;">
-                    <div style="width:34px; height:34px; border-radius:50%; background:rgba(99,102,241,0.08); color:var(--primary); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.85rem;">‍‍</div>
-                    <div>
-                      <strong style="color:var(--text-primary); font-size:0.85rem;">${pName}</strong> <span style="color:var(--text-muted); font-size:0.8rem;">uploaded meal for <strong>${sName}</strong></span>
-                      <small style="color:var(--text-muted); display:block; font-size:0.725rem; margin-top:0.1rem;"><i class="fa-regular fa-clock" style="margin-right:0.2rem;"></i>${new Date(m.mealDate).toLocaleDateString()} • ${m.foodItems ? m.foodItems.length : 0} packed items</small>
+                <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--r-md); padding:0.75rem 1rem; font-size:0.825rem; display:flex; align-items:center; justify-content:space-between; gap:0.75rem;">
+                  <div style="display:flex; align-items:center; gap:0.65rem; min-width:0;">
+                    <div style="width:32px; height:32px; border-radius:50%; background:rgba(99,102,241,0.08); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:0.8rem; flex-shrink:0;">
+                      <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <div style="min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                      <strong style="color:var(--text-primary); font-size:0.825rem;">${pName}</strong>
+                      <span style="color:var(--text-muted); font-size:0.78rem;"> • ${sName}'s Lunchbox (${m.foodItems ? m.foodItems.length : 0} items)</span>
                     </div>
                   </div>
-                  <span class="badge-status badge-full" style="font-size:0.7rem; padding:0.25rem 0.5rem;">Meal Upload</span>
+                  <span style="font-size:0.72rem; color:var(--text-muted); white-space:nowrap;">${dateStr}</span>
                 </div>
               `);
             });
           }
 
           if (activities.length === 0) {
-            activityContainer.innerHTML = `<div style="padding:1rem; text-align:center; color:var(--text-muted); font-size:0.85rem;">No recent parent activities recorded today.</div>`;
+            activityContainer.innerHTML = `<div style="padding:1rem; text-align:center; color:var(--text-muted); font-size:0.825rem;">No recent parent activities recorded today.</div>`;
           } else {
             activityContainer.innerHTML = activities.join('');
           }
@@ -6461,42 +6479,61 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         if (aiInsightsContainer) {
           const rawWaste = parseFloat(report.averageLeftoverPercentage) || 0;
           const cappedWaste = Math.min(100, Math.max(0, Math.round(rawWaste)));
+          const completionRate = Math.max(0, Math.min(100, Math.round(100 - cappedWaste)));
           const insights = [];
 
-          if (cappedWaste > 20) {
-            insights.push(`
-              <div style="font-size:0.825rem; color:var(--text-primary); background:rgba(239,68,68,0.04); border:1px solid rgba(239,68,68,0.18); border-radius:var(--r-md); padding:0.75rem 0.95rem; line-height:1.45;">
-                <strong style="color:var(--accent-rose); font-size:0.85rem; display:flex; align-items:center; gap:0.35rem; margin-bottom:0.2rem;"><i class="fa-solid fa-lightbulb"></i> Intake Trend</strong>
-                Class average plate waste is <strong>${cappedWaste}%</strong>. Portion adjustment recommended.
+          insights.push(`
+            <div class="nutrition-highlight-item">
+              <div class="nutrition-highlight-icon" style="background:rgba(245,158,11,0.1); color:var(--accent-amber);">
+                <i class="fa-solid fa-chart-pie"></i>
               </div>
-            `);
-          } else {
-            insights.push(`
-              <div style="font-size:0.825rem; color:var(--text-primary); background:rgba(16,185,129,0.04); border:1px solid rgba(16,185,129,0.18); border-radius:var(--r-md); padding:0.75rem 0.95rem; line-height:1.45;">
-                <strong style="color:var(--accent-green); font-size:0.85rem; display:flex; align-items:center; gap:0.35rem; margin-bottom:0.2rem;"><i class="fa-solid fa-circle-check"></i> Intake Compliance</strong>
-                Class average plate waste is low (<strong>${cappedWaste}%</strong>). Lunch completion rate is healthy.
+              <div style="flex:1; min-width:0;">
+                <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Plate Completion</span>
+                  <strong style="font-size:0.95rem; font-weight:800; color:var(--accent-amber);">${completionRate}% Eaten</strong>
+                </div>
+                <div style="font-size:0.775rem; color:var(--text-secondary); margin-top:0.15rem;">
+                  Average plate waste is <strong>${cappedWaste}%</strong> across logged meals
+                </div>
               </div>
-            `);
-          }
+            </div>
+          `);
 
           if (report.topConsumedFoodItems && report.topConsumedFoodItems.length > 0) {
             insights.push(`
-              <div style="font-size:0.825rem; color:var(--text-primary); background:rgba(99,102,241,0.04); border:1px solid rgba(99,102,241,0.18); border-radius:var(--r-md); padding:0.75rem 0.95rem; line-height:1.45;">
-                <strong style="color:var(--primary); font-size:0.85rem; display:flex; align-items:center; gap:0.35rem; margin-bottom:0.2rem;"><i class="fa-solid fa-utensils"></i> Preferred Menu</strong>
-                Top consumed item is <strong style="color:var(--primary);">${report.topConsumedFoodItems[0]}</strong>.
+              <div class="nutrition-highlight-item">
+                <div class="nutrition-highlight-icon" style="background:rgba(99,102,241,0.1); color:var(--primary);">
+                  <i class="fa-solid fa-utensils"></i>
+                </div>
+                <div style="flex:1; min-width:0;">
+                  <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                    <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Top Consumed Item</span>
+                    <strong style="font-size:0.9rem; font-weight:800; color:var(--primary);">${report.topConsumedFoodItems[0]}</strong>
+                  </div>
+                  <div style="font-size:0.775rem; color:var(--text-secondary); margin-top:0.15rem;">
+                    Highest student consumption rate in this class period
+                  </div>
+                </div>
               </div>
             `);
           }
 
-          if (report.totalMealsLogged > 0) {
-            const completionRate = Math.max(0, Math.min(100, Math.round(100 - cappedWaste)));
-            insights.push(`
-              <div style="font-size:0.825rem; color:var(--text-primary); background:rgba(245,158,11,0.04); border:1px solid rgba(245,158,11,0.18); border-radius:var(--r-md); padding:0.75rem 0.95rem; line-height:1.45;">
-                <strong style="color:var(--accent-amber); font-size:0.85rem; display:flex; align-items:center; gap:0.35rem; margin-bottom:0.2rem;"><i class="fa-solid fa-chart-pie"></i> Classroom Completion Rate</strong>
-                Class Meal Completion Rate: <strong style="color:var(--accent-amber);">${completionRate}%</strong>
+          insights.push(`
+            <div class="nutrition-highlight-item">
+              <div class="nutrition-highlight-icon" style="background:rgba(16,185,129,0.1); color:var(--accent-green);">
+                <i class="fa-solid fa-circle-check"></i>
               </div>
-            `);
-          }
+              <div style="flex:1; min-width:0;">
+                <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Intake Compliance</span>
+                  <strong style="font-size:0.9rem; font-weight:800; color:var(--accent-green);">${cappedWaste <= 25 ? 'Healthy' : 'Needs Review'}</strong>
+                </div>
+                <div style="font-size:0.775rem; color:var(--text-secondary); margin-top:0.15rem;">
+                  ${cappedWaste <= 25 ? 'Most students are meeting daily lunch caloric targets' : 'Portion adjustments recommended for low intake students'}
+                </div>
+              </div>
+            </div>
+          `);
 
           aiInsightsContainer.innerHTML = insights.join('');
         }
@@ -6528,45 +6565,64 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const rows = classMeals.map(meal => {
       const student = students.find(s => s.id === meal.studentId) || { name: meal.studentName || 'Student', studentCode: 'STU-' + meal.studentId };
       const items = meal.foodItems || [];
-      const foodStr = items.map(f => f.foodName).join(', ') || 'Balanced Lunchbox';
       const packedCal = meal.packedCalories || items.reduce((acc, f) => acc + (f.calories || 0), 0) || 450;
       const consumedCal = meal.totalConsumedCalories || Math.round(packedCal * ((meal.overallConsumptionPercentage || 100) / 100));
-      const proteinG = meal.totalConsumedProteinG || items.reduce((acc, f) => acc + (f.proteinG || 0), 0) || 14;
+      const rawProtein = meal.totalConsumedProteinG || items.reduce((acc, f) => acc + (f.proteinG || 0), 0) || 14;
+      const proteinFormatted = (parseFloat(rawProtein) || 0).toFixed(1).replace(/\.0$/, '');
       const pct = meal.overallConsumptionPercentage !== null && meal.overallConsumptionPercentage !== undefined ? Number(meal.overallConsumptionPercentage) : 100;
-      const formattedDate = meal.mealDate ? new Date(meal.mealDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Today';
+      const formattedDate = meal.mealDate ? formatDateDDMMYYYY(meal.mealDate) : 'Today';
 
-      let statusBadge = `<span class="badge-status-consumed"><i class="fa-solid fa-check"></i> Clean Plate</span>`;
+      // Clean food items formatting with +N more chip
+      let foodHTML = '<span style="color:var(--text-muted); font-size:0.8rem;">Balanced Lunchbox</span>';
+      if (items.length > 0) {
+        const names = items.map(f => f.foodName);
+        if (names.length <= 2) {
+          foodHTML = `<span style="font-weight:600; color:var(--text-primary); white-space:nowrap;">${names.join(', ')}</span>`;
+        } else {
+          const firstTwo = names.slice(0, 2).join(', ');
+          const moreCount = names.length - 2;
+          const allTooltip = names.join(', ').replace(/"/g, '&quot;');
+          foodHTML = `
+            <span style="display:inline-flex; align-items:center; gap:0.35rem; white-space:nowrap;">
+              <span style="font-weight:600; color:var(--text-primary);">${firstTwo}</span>
+              <button type="button" class="btn-food-more" onclick="event.stopPropagation(); window.openMealDetailModalById(${meal.id})" title="${allTooltip}">+${moreCount} more</button>
+            </span>
+          `;
+        }
+      }
+
+      let statusBadge = `<span class="badge-status-consumed" style="white-space:nowrap;"><i class="fa-solid fa-check"></i> Clean Plate</span>`;
       if (meal.status === 'PRE_MEAL_UPLOADED' || meal.status === 'PENDING_LEFTOVER_ANALYSIS') {
-        statusBadge = `<span class="badge-status-pending"><i class="fa-solid fa-clock"></i> Review Pending</span>`;
-      } else if (pct < 60) {
-        statusBadge = `<span class="badge-status-attention"><i class="fa-solid fa-triangle-exclamation"></i> Low Intake</span>`;
-      } else if (pct < 90) {
-        statusBadge = `<span class="badge-status-partial"><i class="fa-solid fa-chart-pie"></i> Partial</span>`;
+        statusBadge = `<span class="badge-status-pending" style="white-space:nowrap;"><i class="fa-solid fa-clock"></i> Review Pending</span>`;
+      } else if (pct < 50) {
+        statusBadge = `<span class="badge-status-attention" style="white-space:nowrap;"><i class="fa-solid fa-triangle-exclamation"></i> Low Intake</span>`;
+      } else if (pct < 100) {
+        statusBadge = `<span class="badge-status-partial" style="white-space:nowrap;"><i class="fa-solid fa-chart-pie"></i> Partial</span>`;
       }
 
       return `
         <tr>
-          <td>
+          <td class="nowrap">
             <div style="display:flex; align-items:center; gap:0.5rem;">
-              <div style="width:28px; height:28px; border-radius:50%; background:rgba(99,102,241,0.1); color:var(--primary); font-weight:700; font-size:0.75rem; display:flex; align-items:center; justify-content:center;">
+              <div style="width:28px; height:28px; border-radius:50%; background:rgba(99,102,241,0.1); color:var(--primary); font-weight:700; font-size:0.75rem; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                 ${(student.name || 'S').charAt(0).toUpperCase()}
               </div>
               <strong style="color:var(--text-primary); font-size:0.875rem;">${student.name}</strong>
             </div>
           </td>
-          <td><code style="font-size:0.75rem; color:var(--text-muted);">${student.studentCode || 'N/A'}</code></td>
-          <td style="font-size:0.8rem; color:var(--text-secondary);">${formattedDate}</td>
-          <td style="font-size:0.8rem; max-width:240px; white-space:normal; line-height:1.3;">${foodStr}</td>
-          <td style="font-size:0.8rem;"><strong>${consumedCal}</strong> <span style="color:var(--text-muted);">/ ${packedCal} kcal</span></td>
-          <td style="font-size:0.8rem; font-weight:600; color:var(--text-primary);">${proteinG}g</td>
-          <td>
+          <td class="nowrap"><code style="font-size:0.75rem; color:var(--text-muted);">${student.studentCode || 'N/A'}</code></td>
+          <td class="nowrap" style="font-size:0.8rem; color:var(--text-secondary);">${formattedDate}</td>
+          <td>${foodHTML}</td>
+          <td class="nowrap" style="font-size:0.8rem;"><strong>${consumedCal}</strong> <span style="color:var(--text-muted); font-size:0.75rem;">/ ${packedCal} kcal</span></td>
+          <td class="nowrap" style="font-size:0.8rem; font-weight:600; color:var(--text-primary);">${proteinFormatted}g</td>
+          <td class="nowrap">
             <span style="font-weight:700; font-size:0.8rem; color:${pct >= 75 ? 'var(--accent-green)' : (pct >= 50 ? 'var(--accent-teal)' : 'var(--accent-rose)')};">
               ${pct}%
             </span>
           </td>
-          <td>${statusBadge}</td>
-          <td style="text-align:right;">
-            <button class="btn-action-primary" onclick="window.openMealDetailModalById(${meal.id})" style="padding:0.25rem 0.55rem; font-size:0.75rem;">Details</button>
+          <td class="nowrap">${statusBadge}</td>
+          <td class="nowrap" style="text-align:right;">
+            <button class="btn-action-outline" onclick="window.openMealDetailModalById(${meal.id})" style="padding:0.25rem 0.65rem; font-size:0.75rem; font-weight:600; white-space:nowrap;">Details</button>
           </td>
         </tr>
       `;

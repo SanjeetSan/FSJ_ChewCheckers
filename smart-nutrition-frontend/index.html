@@ -1461,49 +1461,49 @@
             </div>
           </div>
 
-          <!-- SECTION 1: Today's Classroom Summary (Enhanced Professional KPI Cards) -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.15rem; margin-bottom: 1.5rem;">
+          <!-- SECTION 1: Today's Classroom Summary (Clean Modern KPI Cards) -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
             
-            <div class="card" style="padding:1.15rem; border-left: 4px solid var(--primary); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
+            <div class="card" style="padding:1.1rem 1.25rem; border-left: 4px solid var(--primary); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.35rem;">Submitted Today</span>
-                <div class="metric-box-val" id="teacherRepSummarySubmitted" style="font-size:1.6rem; font-weight:800; color:var(--text-primary);">0</div>
-                <small style="font-size:0.7rem; color:var(--text-muted);">Classroom meal logs</small>
+                <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.25rem;">Submitted Today</span>
+                <div class="metric-box-val" id="teacherRepSummarySubmitted" style="font-size:1.6rem; font-weight:800; color:var(--text-primary); line-height:1.2;">0</div>
+                <small style="font-size:0.72rem; color:var(--text-muted);">Logged meals</small>
               </div>
-              <div style="width:40px; height:40px; border-radius:50%; background:rgba(99,102,241,0.08); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.15rem;">
+              <div style="width:38px; height:38px; border-radius:50%; background:rgba(99,102,241,0.08); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
                 <i class="fa-solid fa-box-archive"></i>
               </div>
             </div>
 
-            <div class="card" style="padding:1.15rem; border-left: 4px solid var(--accent-green); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
+            <div class="card" style="padding:1.1rem 1.25rem; border-left: 4px solid var(--accent-green); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.35rem;">Meals Reviewed</span>
-                <div class="metric-box-val" id="teacherRepSummaryReviewed" style="font-size:1.6rem; font-weight:800; color:var(--accent-green);">0</div>
-                <small style="font-size:0.7rem; color:var(--accent-green); font-weight:600;">Teacher evaluated</small>
+                <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.25rem;">Reviewed</span>
+                <div class="metric-box-val" id="teacherRepSummaryReviewed" style="font-size:1.6rem; font-weight:800; color:var(--accent-green); line-height:1.2;">0</div>
+                <small style="font-size:0.72rem; color:var(--accent-green); font-weight:600;">Verified</small>
               </div>
-              <div style="width:40px; height:40px; border-radius:50%; background:rgba(16,185,129,0.08); color:var(--accent-green); display:flex; align-items:center; justify-content:center; font-size:1.15rem;">
+              <div style="width:38px; height:38px; border-radius:50%; background:rgba(16,185,129,0.08); color:var(--accent-green); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
                 <i class="fa-solid fa-circle-check"></i>
               </div>
             </div>
 
-            <div class="card" style="padding:1.15rem; border-left: 4px solid var(--accent-amber); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
+            <div class="card" style="padding:1.1rem 1.25rem; border-left: 4px solid var(--accent-amber); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.35rem;">Pending Reviews</span>
-                <div class="metric-box-val" id="teacherRepSummaryPending" style="font-size:1.6rem; font-weight:800; color:var(--accent-amber);">0</div>
-                <small style="font-size:0.7rem; color:var(--accent-amber); font-weight:600;">Action required</small>
+                <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.25rem;">Pending</span>
+                <div class="metric-box-val" id="teacherRepSummaryPending" style="font-size:1.6rem; font-weight:800; color:var(--accent-amber); line-height:1.2;">0</div>
+                <small style="font-size:0.72rem; color:var(--accent-amber); font-weight:600;">Action needed</small>
               </div>
-              <div style="width:40px; height:40px; border-radius:50%; background:rgba(245,158,11,0.08); color:var(--accent-amber); display:flex; align-items:center; justify-content:center; font-size:1.15rem;">
-                <i class="fa-solid fa-triangle-exclamation"></i>
+              <div style="width:38px; height:38px; border-radius:50%; background:rgba(245,158,11,0.08); color:var(--accent-amber); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
+                <i class="fa-solid fa-clock"></i>
               </div>
             </div>
 
-            <div class="card" style="padding:1.15rem; border-left: 4px solid var(--accent-blue); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
+            <div class="card" style="padding:1.1rem 1.25rem; border-left: 4px solid var(--accent-blue); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.35rem;">Absent Students</span>
-                <div class="metric-box-val" id="teacherRepSummaryAbsent" style="font-size:1.6rem; font-weight:800; color:var(--accent-blue);">0</div>
-                <small style="font-size:0.7rem; color:var(--text-muted);">Marked absent today</small>
+                <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.25rem;">Absent</span>
+                <div class="metric-box-val" id="teacherRepSummaryAbsent" style="font-size:1.6rem; font-weight:800; color:var(--accent-blue); line-height:1.2;">0</div>
+                <small style="font-size:0.72rem; color:var(--text-muted);">Today</small>
               </div>
-              <div style="width:40px; height:40px; border-radius:50%; background:rgba(59,130,246,0.08); color:var(--accent-blue); display:flex; align-items:center; justify-content:center; font-size:1.15rem;">
+              <div style="width:38px; height:38px; border-radius:50%; background:rgba(59,130,246,0.08); color:var(--accent-blue); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
                 <i class="fa-solid fa-user-xmark"></i>
               </div>
             </div>
@@ -1568,18 +1568,18 @@
 
           </div>
 
-          <!-- SECTION 5: Comprehensive Classroom Nutrition History & Intake Ledger (CSV & Table View) -->
-          <div class="card" style="padding:1.35rem 1.65rem; margin-top:0.5rem; margin-bottom:1.5rem;">
+          <!-- SECTION 5: Classroom Nutrition History Table -->
+          <div class="card" style="padding:1.25rem 1.5rem; margin-top:0.5rem; margin-bottom:1.5rem;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.15rem; flex-wrap:wrap; gap:0.6rem;">
               <div>
-                <h3 style="font-size:1.1rem; font-weight:800; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:0.5rem;">
-                  <i class="fa-solid fa-table-list" style="color:var(--primary);"></i> Classroom Student Nutrition History Ledger
+                <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:0.5rem;">
+                  <i class="fa-solid fa-table-list" style="color:var(--primary);"></i> Classroom Nutrition History
                 </h3>
-                <small style="color:var(--text-muted);">Comprehensive diet intake records, macronutrient targets & clearance metrics for all enrolled students</small>
+                <small style="color:var(--text-muted); font-size:0.78rem;">Student intake records, nutrient targets, and plate completion metrics</small>
               </div>
               <div style="display:flex; gap:0.5rem; align-items:center;">
                 <button type="button" class="btn-action-primary" id="btnDownloadClassroomCsv" style="padding:0.4rem 0.85rem; font-size:0.78rem;">
-                  <i class="fa-solid fa-file-csv"></i> Download Class CSV Report
+                  <i class="fa-solid fa-file-csv"></i> Download CSV
                 </button>
               </div>
             </div>
@@ -1588,15 +1588,15 @@
               <table class="table-chewcheckers">
                 <thead>
                   <tr>
-                    <th>STUDENT</th>
-                    <th>STUDENT ID</th>
-                    <th>DATE</th>
-                    <th>FOOD ITEMS</th>
-                    <th>CALORIES (CONSUMED / TARGET)</th>
-                    <th>PROTEIN</th>
-                    <th>CONSUMED %</th>
-                    <th>STATUS</th>
-                    <th style="text-align:right;">ACTIONS</th>
+                    <th style="white-space:nowrap;">Student</th>
+                    <th style="white-space:nowrap;">Student Code</th>
+                    <th style="white-space:nowrap;">Date</th>
+                    <th>Food Items</th>
+                    <th style="white-space:nowrap;">Calories (Eaten / Goal)</th>
+                    <th style="white-space:nowrap;">Protein</th>
+                    <th style="white-space:nowrap;">Intake %</th>
+                    <th style="white-space:nowrap;">Status</th>
+                    <th style="text-align:right; white-space:nowrap;">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="teacherClassNutritionLedgerBody">
