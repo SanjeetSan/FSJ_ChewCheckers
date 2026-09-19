@@ -7129,7 +7129,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         const report = await res.json();
 
         const classTitleElem = document.getElementById('teacherReportsClassTitle');
-        if (classTitleElem) classTitleElem.textContent = `${state.activeClass.className} ${state.activeClass.section}`;
+        if (classTitleElem) classTitleElem.textContent = (state.activeClass && state.activeClass.className) ? `${state.activeClass.className} Class` : "Grade 5 Class";
+
+        const teacherNameElem = document.getElementById('teacherReportsTeacherName');
+        if (teacherNameElem && state.user) teacherNameElem.textContent = state.user.name || "Jothi Prakash V";
 
         function formatFriendlyDateRange(rawStr) {
           if (!rawStr) return 'Recent Period';
@@ -7144,12 +7147,12 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         }
 
         const periodElem = document.getElementById('teacherReportTimePeriod');
-        if (periodElem) periodElem.textContent = `Active Date Range: ${formatFriendlyDateRange(report.timePeriod)}`;
+        if (periodElem) periodElem.innerHTML = `<i class="fa-regular fa-calendar" style="color:var(--primary); margin-right:0.25rem;"></i> Active Range: ${formatFriendlyDateRange(report.timePeriod)}`;
 
         const lastUpdatedElem = document.getElementById('teacherReportLastUpdated');
         if (lastUpdatedElem) {
           const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          lastUpdatedElem.textContent = `• Last Updated: ${nowStr}`;
+          lastUpdatedElem.textContent = `• Updated: ${nowStr}`;
         }
 
         const classCodeElem = document.getElementById('teacherReportsClassCode');
@@ -7382,38 +7385,38 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           const insights = [];
 
           insights.push(`
-            <div style="background:var(--bg-page); border:1px solid var(--border-subtle); border-radius:var(--r-md); padding:0.95rem 1rem;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                <div style="display:flex; align-items:center; gap:0.6rem;">
-                  <div style="width:34px; height:34px; border-radius:8px; background:rgba(245,158,11,0.12); color:var(--accent-amber); display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0;">
+            <div class="nutrition-highlight-row">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+                <div style="display:flex; align-items:center; gap:0.65rem;">
+                  <div style="width:34px; height:34px; border-radius:10px; background:rgba(245,158,11,0.12); color:var(--accent-amber); display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0; border:1px solid rgba(245,158,11,0.2);">
                     <i class="fa-solid fa-chart-pie"></i>
                   </div>
                   <div>
-                    <div style="font-size:0.72rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Plate Completion</div>
-                    <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:1px;">Avg plate waste: <strong>${cappedWaste}%</strong> across logged meals</div>
+                    <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em;">Plate Completion</div>
+                    <div style="font-size:0.775rem; color:var(--text-secondary); margin-top:1px;">Avg plate waste: <strong style="color:var(--text-primary);">${cappedWaste}%</strong> across logged meals</div>
                   </div>
                 </div>
-                <span style="font-size:1.05rem; font-weight:800; color:var(--accent-amber); font-family:'Outfit',sans-serif;">${completionRate}% Eaten</span>
+                <span style="font-size:1.1rem; font-weight:800; color:var(--accent-amber); font-family:'Outfit',sans-serif;">${completionRate}% Eaten</span>
               </div>
-              <div style="width:100%; height:5px; background:rgba(255,255,255,0.06); border-radius:999px; overflow:hidden;">
-                <div style="width:${completionRate}%; height:100%; background:linear-gradient(90deg, #F59E0B, #10B981); border-radius:999px;"></div>
+              <div style="width:100%; height:6px; background:rgba(255,255,255,0.06); border-radius:999px; overflow:hidden;">
+                <div style="width:${completionRate}%; height:100%; background:linear-gradient(90deg, #6366F1 0%, #10B981 100%); border-radius:999px;"></div>
               </div>
             </div>
           `);
 
           const topFood = (report.topConsumedFoodItems && report.topConsumedFoodItems.length > 0) ? report.topConsumedFoodItems[0] : 'Dal Tadka';
           insights.push(`
-            <div style="background:var(--bg-page); border:1px solid var(--border-subtle); border-radius:var(--r-md); padding:0.95rem 1rem; display:flex; justify-content:space-between; align-items:center; gap:12px;">
-              <div style="display:flex; align-items:center; gap:0.6rem;">
-                <div style="width:34px; height:34px; border-radius:8px; background:rgba(99,102,241,0.12); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0;">
+            <div class="nutrition-highlight-row" style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+              <div style="display:flex; align-items:center; gap:0.65rem;">
+                <div style="width:34px; height:34px; border-radius:10px; background:rgba(99,102,241,0.12); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0; border:1px solid rgba(99,102,241,0.2);">
                   <i class="fa-solid fa-utensils"></i>
                 </div>
                 <div>
-                  <div style="font-size:0.72rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Top Consumed Item</div>
-                  <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:1px;">Highest student clearance rate</div>
+                  <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em;">Top Consumed Item</div>
+                  <div style="font-size:0.775rem; color:var(--text-secondary); margin-top:1px;">Highest student clearance rate</div>
                 </div>
               </div>
-              <span style="font-size:0.85rem; font-weight:700; color:var(--primary); background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.22); padding:3px 10px; border-radius:6px; white-space:nowrap;">
+              <span style="font-size:0.8rem; font-weight:700; color:#C7D2FE; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.25); padding:4px 11px; border-radius:6px; white-space:nowrap;">
                 ${topFood}
               </span>
             </div>
@@ -7421,17 +7424,17 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
           const needsReview = lowConsStudents.length > 0;
           insights.push(`
-            <div style="background:var(--bg-page); border:1px solid var(--border-subtle); border-radius:var(--r-md); padding:0.95rem 1rem; display:flex; justify-content:space-between; align-items:center; gap:12px;">
-              <div style="display:flex; align-items:center; gap:0.6rem;">
-                <div style="width:34px; height:34px; border-radius:8px; background:${needsReview ? 'rgba(245,158,11,0.12)' : 'rgba(16,185,129,0.12)'}; color:${needsReview ? 'var(--accent-amber)' : 'var(--accent-green)'}; display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0;">
+            <div class="nutrition-highlight-row" style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+              <div style="display:flex; align-items:center; gap:0.65rem;">
+                <div style="width:34px; height:34px; border-radius:10px; background:${needsReview ? 'rgba(245,158,11,0.12)' : 'rgba(16,185,129,0.12)'}; color:${needsReview ? 'var(--accent-amber)' : 'var(--accent-green)'}; display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0; border:1px solid ${needsReview ? 'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.2)'};">
                   <i class="fa-solid ${needsReview ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i>
                 </div>
                 <div>
-                  <div style="font-size:0.72rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Intake Compliance</div>
-                  <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:1px;">${needsReview ? `${lowConsStudents.length} student${lowConsStudents.length > 1 ? 's' : ''} with low intake` : 'All students meeting nutrition targets'}</div>
+                  <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em;">Intake Compliance</div>
+                  <div style="font-size:0.775rem; color:var(--text-secondary); margin-top:1px;">${needsReview ? `${lowConsStudents.length} student${lowConsStudents.length > 1 ? 's' : ''} with low intake` : 'All students meeting nutrition targets'}</div>
                 </div>
               </div>
-              <span style="font-size:0.78rem; font-weight:700; padding:3px 10px; border-radius:6px; white-space:nowrap; background:${needsReview ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)'}; color:${needsReview ? 'var(--accent-amber)' : 'var(--accent-green)'}; border:1px solid ${needsReview ? 'rgba(245,158,11,0.25)' : 'rgba(16,185,129,0.25)'};">
+              <span style="font-size:0.75rem; font-weight:700; padding:4px 10px; border-radius:6px; white-space:nowrap; background:${needsReview ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)'}; color:${needsReview ? '#FBBF24' : '#34D399'}; border:1px solid ${needsReview ? 'rgba(245,158,11,0.25)' : 'rgba(16,185,129,0.25)'};">
                 ${needsReview ? 'Needs Review' : 'Optimal'}
               </span>
             </div>

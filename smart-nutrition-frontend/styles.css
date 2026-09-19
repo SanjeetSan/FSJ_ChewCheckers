@@ -8275,4 +8275,179 @@ select option:checked {
   background: var(--primary);
 }
 
+/* ==========================================================================
+   UNIFIED TEACHER PORTAL & NUTRITION REPORTS HARMONIZATION
+   ========================================================================== */
+.teacher-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.35rem;
+}
+
+.teacher-kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-card);
+  padding: 1.15rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.teacher-kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.35);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35);
+}
+
+.teacher-kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: transparent;
+  transition: opacity 0.2s ease;
+  opacity: 0.85;
+}
+
+.teacher-kpi-card.kpi-primary::before {
+  background: linear-gradient(90deg, #6366F1, #818CF8);
+}
+
+.teacher-kpi-card.kpi-green::before {
+  background: linear-gradient(90deg, #10B981, #34D399);
+}
+
+.teacher-kpi-card.kpi-amber::before {
+  background: linear-gradient(90deg, #F59E0B, #FBBF24);
+}
+
+.teacher-kpi-card.kpi-blue::before {
+  background: linear-gradient(90deg, #3B82F6, #60A5FA);
+}
+
+.teacher-kpi-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.teacher-kpi-label {
+  font-size: 0.685rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.teacher-kpi-value {
+  font-size: 1.85rem;
+  font-weight: 800;
+  font-family: 'Outfit', sans-serif;
+  color: #FFFFFF;
+  line-height: 1.2;
+}
+
+.teacher-kpi-subtext {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.15rem;
+}
+
+.teacher-kpi-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.teacher-kpi-card:hover .teacher-kpi-icon {
+  transform: scale(1.06);
+}
+
+.teacher-kpi-icon.icon-primary {
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--primary);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.teacher-kpi-icon.icon-green {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.teacher-kpi-icon.icon-amber {
+  background: rgba(245, 158, 11, 0.12);
+  color: #F59E0B;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.teacher-kpi-icon.icon-blue {
+  background: rgba(59, 130, 246, 0.12);
+  color: #60A5FA;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* Segmented pill group */
+.segmented-pill-group {
+  background: var(--bg-page);
+  padding: 3px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-subtle);
+  display: inline-flex;
+  gap: 3px;
+}
+
+.segmented-pill-group .segmented-pill {
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 0.35rem 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: inherit;
+}
+
+.segmented-pill-group .segmented-pill:hover {
+  color: var(--text-primary);
+}
+
+.segmented-pill-group .segmented-pill.active {
+  background: rgba(99, 102, 241, 0.18) !important;
+  color: #C7D2FE !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Nutrition Highlights rows */
+.nutrition-highlight-row {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  padding: 0.95rem 1.1rem;
+  transition: all 0.2s ease;
+}
+
+.nutrition-highlight-row:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.02);
+}
+
 
