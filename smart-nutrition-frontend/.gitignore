@@ -1,0 +1,16 @@
+node_modules/
+dist/
+dist-ssr/
+*.local
+.env
+.env.local
+.env.*.local
+check_passwords.js
+clear_tokens.js
+dump_db_users.js
+inspect_columns.js
+list_gemini_models.js
+test_assistant.js
+test_model_names.js
+.DS_Store
+Thumbs.db

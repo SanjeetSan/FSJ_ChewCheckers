@@ -1,0 +1,2408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ChewCheckers - AI School Lunchbox & Child Nutrition Monitoring Platform">
+  <title>ChewCheckers - Smart Child Nutrition Platform</title>
+
+  <!-- Instant Auth Check (Eliminates page reload flash/glitch) -->
+  <script>
+    if (localStorage.getItem('chewchecker_access_token') && localStorage.getItem('chewchecker_user_data')) {
+      document.documentElement.classList.add('is-logged-in');
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Official Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       1. AUTHENTICATION — CHEWCHECKERS SPLIT CARD
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div id="authScreen">
+    <!-- Floating Theme Toggle for Auth Screen -->
+    <div class="auth-theme-toggle-wrap">
+      <button type="button" class="btn-auth-theme-toggle" id="btnAuthThemeToggle" title="Toggle Light / Dark Mode">
+        <i class="fa-solid fa-moon" id="authThemeIcon"></i>
+      </button>
+    </div>
+
+    <div class="auth-card-split">
+      
+      <!-- LEFT PURPLE HERO PANEL (Purpose-driven & School Nutrition focused) -->
+      <div class="auth-hero-side">
+        <div>
+          <div class="auth-logo-brand">
+            <i class="fa-solid fa-box-archive" style="color:var(--primary);"></i> Chew<span>Checkers</span>
+          </div>
+          
+          <div class="hero-text-block" style="margin-top: 1.75rem;">
+            <h1 id="heroHeading">Welcome back to ChewCheckers.</h1>
+            <p id="heroSubheading">
+              Stay connected with your child's daily school nutrition and classroom lunch progress.
+            </p>
+          </div>
+
+          <div class="hero-feature-list" id="heroFeatureList">
+            <div class="hero-feature-item">
+              <i class="fa-solid fa-camera"></i>
+              <span>View today's lunch results and clearance rates</span>
+            </div>
+            <div class="hero-feature-item">
+              <i class="fa-solid fa-chart-line"></i>
+              <span>Check daily calorie and nutrient progress</span>
+            </div>
+            <div class="hero-feature-item">
+              <i class="fa-solid fa-comments"></i>
+              <span>Review teacher feedback and classroom messages</span>
+            </div>
+            <div class="hero-feature-item">
+              <i class="fa-solid fa-child-reaching"></i>
+              <span>Continue tracking your child's school nutrition</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Role Overview Section (Role-focused summaries) -->
+        <div class="hero-role-summary-box" id="heroRoleSummaryBox">
+          <div class="hero-role-summary-pill">
+            <div class="hero-role-title"><i class="fa-solid fa-user-group"></i> For Parents</div>
+            <small>Child profiles, lunch tracking, and daily reports</small>
+          </div>
+          <div class="hero-role-summary-pill">
+            <div class="hero-role-title"><i class="fa-solid fa-chalkboard-user"></i> For Teachers</div>
+            <small>Classroom meal verification and nutrition insights</small>
+          </div>
+        </div>
+
+        <!-- Trust / Context Footnote -->
+        <div class="auth-trust-footnote">
+          <i class="fa-solid fa-shield-halved"></i> ChewCheckers is designed for school nutrition monitoring between parents and teachers.
+        </div>
+      </div>
+
+      <!-- RIGHT WHITE FORM PANEL -->
+      <div class="auth-form-side">
+        <!-- CENTER ALIGNED TABS -->
+        <div class="auth-tabs-toggle">
+          <button class="auth-tab-link active" id="authLoginTab" type="button">Log in</button>
+          <button class="auth-tab-link" id="authRegisterTab" type="button">Register account</button>
+        </div>
+
+        <div id="loginHeaderBlock">
+          <h2>Welcome back</h2>
+          <p>Log in to continue tracking your child's nutrition.</p>
+        </div>
+
+        <div id="registerHeaderBlock" class="hidden">
+          <h2>Create your account</h2>
+          <p>Join ChewCheckers to start monitoring school lunch nutrition.</p>
+        </div>
+
+        <!-- Role Selector Pills (Register Only) -->
+        <div class="role-picker-pills hidden" id="rolePickerBlock">
+          <button type="button" class="role-picker-btn active" data-role="PARENT" id="btnRoleParent">I'm a Parent</button>
+          <button type="button" class="role-picker-btn" data-role="TEACHER" id="btnRoleTeacher">I'm a Teacher</button>
+        </div>
+
+        <!-- Dynamic Role Explanation Callout (Register Only) -->
+        <div class="role-explanation-callout hidden" id="roleExplanationBlock">
+          <i class="fa-solid fa-circle-info"></i>
+          <span id="roleExplanationText">Create child profiles, connect to classrooms using class codes, and monitor lunch nutrition.</span>
+        </div>
+
+        <form id="authForm" autocomplete="off">
+          <!-- Full Name (Register only) -->
+          <div class="form-group hidden" id="nameGroup">
+            <label class="form-label" for="authName">Full name</label>
+            <input type="text" id="authName" class="form-input" placeholder="Enter your full name" autocomplete="off">
+          </div>
+
+          <!-- Email Address -->
+          <div class="form-group">
+            <label class="form-label" for="authEmail">Email or username</label>
+            <input type="email" id="authEmail" class="form-input" placeholder="you@example.com" autocomplete="off" required>
+          </div>
+
+          <!-- Password with Eye Toggle -->
+          <div class="form-group">
+            <label class="form-label" for="authPassword">Password</label>
+            <div class="password-input-wrap">
+              <input type="password" id="authPassword" class="form-input" placeholder="Enter your password" autocomplete="new-password" required>
+              <button type="button" class="btn-toggle-pwd" id="btnToggleAuthPwd" title="Show/Hide Password">
+                <i class="fa-solid fa-eye" id="eyeIconPwd"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Login Helper Row (Remember Me & Forgot Password - Login Only) -->
+          <div class="auth-helper-row" id="loginHelperRow">
+            <label class="auth-remember-label">
+              <input type="checkbox" id="authRememberMe">
+              <span>Remember me</span>
+            </label>
+            <button type="button" class="btn-forgot-pwd-link" id="btnForgotPassword">Forgot password?</button>
+          </div>
+
+          <button type="submit" class="btn-submit-primary" id="btnSubmitAuth">
+            Log in
+          </button>
+        </form>
+
+        <!-- Context Tag Under Form -->
+        <div class="auth-footer-tag">
+          <span>School Nutrition & Wellness Platform</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       2. MAIN APPLICATION LAYOUT (PAGES 2-6 SCREENSHOTS)
+  ═══════════════════════════════════════════════════════════════════ -->
+  <div id="appScreen">
+    
+    <!-- LEFT SIDEBAR NAVIGATION (Change 8: Section Separation) -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo-brand">
+          <i class="fa-solid fa-box-archive" style="color:var(--primary);"></i> Chew<span>Checkers</span>
+        </div>
+        <div class="sidebar-sub" id="sidebarSubRole">Parent Portal</div>
+      </div>
+
+      <!-- CORE NAVIGATION (MAIN SCROLLABLE AREA) -->
+      <nav class="sidebar-nav-core" id="sidebarNavCore">
+        <div class="sidebar-nav-label">MAIN</div>
+        <!-- Parent Nav Group -->
+        <div id="navGroupParent" class="nav-group-container">
+          <button class="nav-link-btn active" data-pane="parent-overview">
+            <i class="fa-solid fa-house"></i> <span>Dashboard</span>
+          </button>
+          <button class="nav-link-btn" data-pane="ai-scanner">
+            <i class="fa-solid fa-camera"></i> <span>Lunch Scanner</span>
+          </button>
+          <button class="nav-link-btn" data-pane="leftover-tracker">
+            <i class="fa-solid fa-chart-pie"></i> <span>Reports</span>
+          </button>
+          <button class="nav-link-btn" data-pane="ai-assistant">
+            <i class="fa-solid fa-robot"></i> <span>AI Assistant</span>
+          </button>
+          <button class="nav-link-btn" data-pane="messaging">
+            <i class="fa-solid fa-comments"></i> <span>Messages</span>
+          </button>
+          <div style="display:flex; flex-direction:column;">
+            <button class="nav-link-btn nav-parent-toggle" id="btnNavChildren" type="button" title="Expand Children Navigation">
+              <i class="fa-solid fa-child"></i> <span>Children</span>
+              <i class="fa-solid fa-chevron-down accordion-chevron" id="childrenAccordionChevron"></i>
+            </button>
+            <div class="sub-nav-group" id="subNavChildren">
+              <button class="sub-nav-link-btn" id="btnSubChildProfiles" data-pane="parent-children" data-filter="profiles">
+                <i class="fa-solid fa-id-card"></i> <span>Child Profiles</span>
+              </button>
+              <button class="sub-nav-link-btn" id="btnSubLunchboxPresets" data-pane="parent-children" data-filter="presets">
+                <i class="fa-solid fa-boxes-stacked"></i> <span>Lunchbox Presets</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Teacher Nav Group -->
+        <div id="navGroupTeacher" class="nav-group-container hidden">
+          <button class="nav-link-btn active" data-pane="teacher-roster">
+            <i class="fa-solid fa-chart-line"></i> <span>Class Overview</span>
+          </button>
+          <button class="nav-link-btn" data-pane="teacher-students">
+            <i class="fa-solid fa-users"></i> <span>Manage Students</span>
+          </button>
+          <button class="nav-link-btn" data-pane="teacher-reports">
+            <i class="fa-solid fa-file-invoice"></i> <span>Nutrition Reports</span>
+          </button>
+          <button class="nav-link-btn" data-pane="messaging">
+            <i class="fa-solid fa-comments"></i> <span>Messages</span>
+          </button>
+        </div>
+
+        <!-- Admin Nav Group -->
+        <div id="navGroupAdmin" class="nav-group-container hidden">
+          <button class="nav-link-btn active" data-pane="admin-users">
+            <i class="fa-solid fa-users-gear"></i> <span>User Accounts</span>
+          </button>
+          <button class="nav-link-btn" data-pane="admin-holidays">
+            <i class="fa-solid fa-calendar-days"></i> <span>School Closures</span>
+          </button>
+          <button class="nav-link-btn" data-pane="admin-health">
+            <i class="fa-solid fa-server"></i> <span>Microservices Health</span>
+          </button>
+        </div>
+      </nav>
+
+      <!-- ACCOUNT & SYSTEM ACTIONS PINNED AT BOTTOM -->
+      <div class="sidebar-account-section">
+        <div class="sidebar-nav-label">ACCOUNT</div>
+        <button class="nav-link-btn" id="btnOpenSettings">
+          <i class="fa-solid fa-gear"></i> <span>Settings</span>
+        </button>
+        <button class="nav-link-btn" id="btnSwitchRole" style="color:var(--accent-rose);">
+          <i class="fa-solid fa-right-from-bracket"></i> <span>Sign out</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN WORKSPACE CONTENT -->
+    <div class="main-workspace">
+      
+      <!-- TOPBAR HEADER (SINGLE APP SETTINGS ENTRYPOINT IN SIDEBAR ONLY) -->
+      <header class="topbar-header">
+        <div>
+          <h2 style="font-size:1.15rem; font-weight:800;" id="paneTitle">Overview Dashboard</h2>
+          <span style="font-size:0.775rem; color:var(--text-muted);" id="paneSubtitle">Daily nutrition snapshot for your child</span>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <div class="user-profile-badge" id="userProfileBadge" style="cursor:pointer;" title="Click to manage profile">
+            <div class="user-avatar-initial" id="userAvatar">J</div>
+            <div class="user-profile-meta">
+              <strong class="user-profile-name" id="userName">User Profile</strong>
+              <span class="user-profile-role" id="userRoleDetail">Parent</span>
+            </div>
+            <i class="fa-solid fa-chevron-down user-profile-caret"></i>
+          </div>
+        </div>
+      </header>
+
+      <!-- PANES WORKSPACE -->
+      <main style="flex:1;">
+
+        <!-- PANE 1: PARENT OVERVIEW -->
+        <div class="pane-container active" id="pane-parent-overview">
+
+          <!-- Onboarding Steps Indicator -->
+          <div id="parentOnboardingWizardHeader" class="onboarding-wizard hidden">
+            <div class="onboarding-steps">
+              <div id="onboardingStepLineActive" class="onboarding-step-line-active" style="width: 0%;"></div>
+              <div class="onboarding-step active" id="stepIndicator1">
+                <div class="onboarding-step-num">1</div>
+                <span class="onboarding-step-label">Child Profile</span>
+              </div>
+              <div class="onboarding-step" id="stepIndicator2">
+                <div class="onboarding-step-num">2</div>
+                <span class="onboarding-step-label">Link Classroom</span>
+              </div>
+              <div class="onboarding-step" id="stepIndicator3">
+                <div class="onboarding-step-num">3</div>
+                <span class="onboarding-step-label">Lunchbox Setup</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Onboarding State 1: No Child Profile -->
+          <div id="parentOnboardingState1" class="card hidden" style="margin-bottom:1.75rem; padding:2rem; border-top:4px solid var(--primary);">
+            <div class="onboarding-hero">
+              <div class="onboarding-hero-icon" style="color:var(--primary); font-size:2rem;"><i class="fa-solid fa-child"></i></div>
+              <h3 style="font-size:1.5rem; font-weight:800; font-family:'Outfit', sans-serif; color:var(--text-primary); margin:0.5rem 0 0.25rem 0;">Create Child Profile</h3>
+              <p style="color:var(--text-secondary); max-width:600px; margin:0 auto; font-size:0.875rem;">
+                Step 1 of 3: Build a personalized child profile. This calculates baseline nutrient targets for daily macro calibration.
+              </p>
+            </div>
+            <form id="onboardingChildForm" style="max-width:700px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:1.25rem;">
+              <div class="form-group" style="grid-column: span 2;">
+                <label class="form-label" for="obChildName">Full Name *</label>
+                <input type="text" id="obChildName" class="form-input" placeholder="e.g. Rahul Sharma" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="obChildRoll">Roll Number / Student ID</label>
+                <input type="text" id="obChildRoll" class="form-input" placeholder="e.g. ROLL-24">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="obChildGender">Gender</label>
+                <select id="obChildGender" class="form-input">
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="obChildDob">Date of Birth *</label>
+                <input type="date" id="obChildDob" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="obChildBlood">Blood Group</label>
+                <input type="text" id="obChildBlood" class="form-input" placeholder="e.g. O+">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="obChildHeight">Height (cm) *</label>
+                <input type="number" step="0.1" id="obChildHeight" class="form-input" placeholder="e.g. 132.5" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="obChildWeight">Weight (kg) *</label>
+                <input type="number" step="0.1" id="obChildWeight" class="form-input" placeholder="e.g. 28.4" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="obChildClass">Class Code *</label>
+                <input type="text" id="obChildClass" class="form-input" placeholder="e.g. CLS3B-9842" required>
+                <small style="color:var(--text-muted); display:block; margin-top:0.25rem;">Ask your teacher for the classroom code</small>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="obChildRelation">Your Relationship *</label>
+                <select id="obChildRelation" class="form-input" required>
+                  <option value="MOTHER">Mother</option>
+                  <option value="FATHER">Father</option>
+                  <option value="GUARDIAN">Guardian</option>
+                </select>
+              </div>
+              <div style="grid-column: span 2; margin-top:1rem;">
+                <button type="submit" class="btn-action-primary" style="width:100%; padding:0.85rem;"><i class="fa-solid fa-arrow-right"></i> Save & Proceed to Step 2</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Onboarding State 2: Enter Class Code -->
+          <div id="parentOnboardingState2" class="card hidden" style="margin-bottom:1.75rem; padding:2rem; border-top:4px solid var(--accent-amber);">
+            <div class="onboarding-hero" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.01) 100%); border-color: rgba(245, 158, 11, 0.15);">
+              <div class="onboarding-hero-icon" style="color:var(--accent-amber); font-size:2rem;"><i class="fa-solid fa-key"></i></div>
+              <h3 style="font-size:1.5rem; font-weight:800; font-family:'Outfit', sans-serif; color:var(--text-primary); margin:0.5rem 0 0.25rem 0;">Link Child to Classroom</h3>
+              <p style="color:var(--text-secondary); max-width:600px; margin:0 auto; font-size:0.875rem;">
+                Step 2 of 3: Connect to your child's classroom. This links their profile to the class teacher to enable real-time lunch clearances.
+              </p>
+            </div>
+            <form id="onboardingLinkClassForm" style="max-width:450px; margin:0 auto; display:flex; flex-direction:column; gap:1.25rem;">
+              <div class="form-group">
+                <label class="form-label" for="obClassCode" style="text-align:center;">Enter Classroom Code</label>
+                <input type="text" id="obClassCode" class="form-input" placeholder="e.g. CLS3B-9842" required style="text-align:center; font-weight:700; font-size:1.25rem; letter-spacing:1px; padding:0.75rem;">
+                <small style="color:var(--text-muted); display:block; text-align:center; margin-top:0.35rem;">Ask your child's teacher for their 6-character classroom code</small>
+              </div>
+              <button type="submit" class="btn-action-primary" style="padding:0.85rem;"><i class="fa-solid fa-link"></i> Link & Proceed to Step 3</button>
+            </form>
+          </div>
+
+          <!-- Onboarding State 4: Configure Lunchbox Profile -->
+          <div id="parentOnboardingState4" class="card hidden" style="margin-bottom:1.75rem; padding:2rem; border-top:4px solid var(--primary-light);">
+            <div class="onboarding-hero" style="background: linear-gradient(135deg, rgba(91, 80, 229, 0.06) 0%, rgba(91, 80, 229, 0.01) 100%); border-color: rgba(91, 80, 229, 0.1);">
+              <div class="onboarding-hero-icon" style="color:var(--primary); font-size:2rem;"><i class="fa-solid fa-box-open"></i></div>
+              <h3 style="font-size:1.5rem; font-weight:800; font-family:'Outfit', sans-serif; color:var(--text-primary); margin:0.5rem 0 0.25rem 0;">Calibrate Lunchbox Profile</h3>
+              <p style="color:var(--text-secondary); max-width:600px; margin:0 auto; font-size:0.875rem;">
+                Step 3 of 3: Calibrate your child's physical lunchbox volume. Google Gemini Vision uses these exact dimensions to run 3D volumetric analysis and calorie estimations.
+              </p>
+            </div>
+            <form id="onboardingLunchboxForm" style="max-width:500px; margin:0 auto; display:flex; flex-direction:column; gap:1.25rem;">
+              <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem;">
+                <div class="form-group">
+                  <label class="form-label" for="lbLength">Length (cm)</label>
+                  <input type="number" step="0.1" id="lbLength" class="form-input" placeholder="e.g. 15.0" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="lbWidth">Width (cm)</label>
+                  <input type="number" step="0.1" id="lbWidth" class="form-input" placeholder="e.g. 15.0" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="lbDepth">Depth (cm)</label>
+                  <input type="number" step="0.1" id="lbDepth" class="form-input" placeholder="e.g. 5.5" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="lbCompartments">Number of Compartments</label>
+                <input type="number" id="lbCompartments" min="1" max="10" class="form-input" value="3" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="lbType">Lunchbox Type</label>
+                <select id="lbType" class="form-input" required>
+                  <option value="Bento Style">Bento Style</option>
+                  <option value="Single Compartment">Single Compartment</option>
+                  <option value="Double Compartment">Double Compartment</option>
+                  <option value="Triple Compartment">Triple Compartment</option>
+                </select>
+              </div>
+              <button type="submit" class="btn-action-primary" style="padding:0.85rem; margin-top:0.5rem;"><i class="fa-solid fa-circle-check"></i> Complete Calibration & Launch Dashboard</button>
+            </form>
+          </div>
+
+          <!-- TOP SUMMARY SECTION: HERO HEADER BAR + 4 RESTRUCTURED CARDS (CHANGES 1 & 2) -->
+          <div id="parentStudentInfoCard" class="hidden" style="margin-bottom:1.5rem;">
+            
+            <!-- Header Bar: Avatar + Name + Badges + Custom Child Dropdown + Change Class CTA -->
+            <div class="card" style="padding:1.15rem 1.35rem; margin-bottom:1.25rem; border-radius:var(--r-xl); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+              <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+                <div class="user-avatar-initial" id="cardStudentAvatarInitial" style="width:48px; height:48px; font-size:1.35rem; font-weight:900; background:linear-gradient(135deg, var(--primary) 0%, #4338CA 100%); color:#ffffff !important; flex-shrink:0; box-shadow:0 4px 14px rgba(91, 80, 229, 0.35);">S</div>
+                <div>
+                  <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+                    <h3 id="cardStudentName" style="font-size:1.25rem; font-weight:800; margin:0; color:var(--text-primary);">Student Name</h3>
+                    <span id="linkStatusBadge" class="badge-status badge-full" style="font-size:0.725rem; font-weight:800;"><i class="fa-solid fa-circle-check"></i> Linked to Classroom</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Custom Child Selector Dropdown (Change 7) -->
+              <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;" id="parentChildSelectorBar">
+                <div class="custom-child-dropdown" id="customChildDropdown">
+                  <button type="button" class="custom-child-dropdown-trigger" id="customChildDropdownTrigger" aria-haspopup="listbox" aria-expanded="false">
+                    <div class="custom-child-avatar" id="customChildAvatar">S</div>
+                    <div class="custom-child-info">
+                      <span class="custom-child-name" id="customChildName">Select Child</span>
+                      <small class="custom-child-class" id="customChildClass">Classroom</small>
+                    </div>
+                    <i class="fa-solid fa-chevron-down custom-child-chevron" id="customChildChevron"></i>
+                  </button>
+                  <div class="custom-child-dropdown-menu" id="customChildDropdownMenu" role="listbox" tabindex="-1">
+                    <!-- Populated dynamically with real children -->
+                  </div>
+                </div>
+
+                <!-- Hidden native select retained for backward DOM compatibility -->
+                <select id="parentChildSelector" style="display:none;"></select>
+              </div>
+            </div>
+
+            <!-- 3 PRIORITIZED TOP NUTRITION METRICS SUMMARY CARDS -->
+            <div class="top-summary-grid">
+              
+              <!-- CARD 1: TODAY'S LUNCH STATUS -->
+              <div class="top-summary-card" id="dashCardLunchStatus">
+                <div>
+                  <div class="top-summary-card-header">
+                    <div class="top-summary-card-title">
+                      <i class="fa-solid fa-utensils" style="color:#0284C7; font-size:0.85rem;"></i> Today's Lunch
+                    </div>
+                    <span id="dashLunchStatusBadge" class="badge-status badge-partial" style="font-size:0.7rem; font-weight:800;">Awaiting Meal</span>
+                  </div>
+                  <div style="font-size:1.45rem; font-weight:900; color:var(--text-primary); font-family:'Outfit', sans-serif;" id="dashLunchConsumptionPct">--% Eaten</div>
+                  <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.2rem;" id="dashLunchConsumedSummary">
+                    <span id="dashLunchConsumedCal">0 kcal</span> • <span id="dashLunchConsumedProt">0g Prot</span>
+                  </div>
+                </div>
+                <div style="margin-top:0.75rem; padding-top:0.6rem; border-top:1px solid var(--border-subtle); font-size:0.725rem; color:var(--text-muted);" id="dashLunchStatusDetail">
+                  Live meal clearance status
+                </div>
+              </div>
+
+              <!-- CARD 3: NUTRITION SCORE (PRIMARY PROMINENT METRIC) -->
+              <div class="top-summary-card nutrition-score-card" id="dashCardNutritionScore">
+                <div>
+                  <div class="top-summary-card-header">
+                    <div class="top-summary-card-title">
+                      <i class="fa-solid fa-award" style="color:var(--primary); font-size:0.85rem;"></i> Nutrition Score
+                    </div>
+                    <span id="dashNutritionClassificationBadge" class="badge-status badge-violet" style="font-size:0.7rem; font-weight:800;">Pending Evaluation</span>
+                  </div>
+                  <div class="nutrition-score-display">
+                    <span class="nutrition-score-val" id="dashNutritionScoreVal">--</span>
+                    <span class="nutrition-score-max">/ 100</span>
+                  </div>
+                </div>
+                <p id="dashNutritionInterpretation" style="font-size:0.75rem; color:var(--text-secondary); margin:0.35rem 0 0 0; line-height:1.35;">
+                  Calculated from daily caloric intake and macro balance.
+                </p>
+              </div>
+
+              <!-- CARD 4: DAILY TARGET -->
+              <div class="top-summary-card" id="dashCardTargetProgress">
+                <div>
+                  <div class="top-summary-card-header">
+                    <div class="top-summary-card-title">
+                      <i class="fa-solid fa-bullseye" style="color:#D97706; font-size:0.85rem;"></i> Daily Target
+                    </div>
+                    <span id="dashLunchAchievementPct" class="badge-status badge-violet" style="font-size:0.7rem; font-weight:800;">0% Met</span>
+                  </div>
+                  <div style="font-size:1.25rem; font-weight:800; color:#D97706;" id="dashLunchCalProgressText">
+                    <span id="dashLunchConsumedCalProgress">0</span> / <span id="dashLunchCalTarget">500</span> kcal
+                  </div>
+                  <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" id="dashLunchProgressBar" style="width:0%;"></div>
+                  </div>
+                </div>
+                <div style="margin-top:0.5rem; display:flex; justify-content:space-between; align-items:center; font-size:0.725rem; color:var(--text-muted);">
+                  <span>Target Achievement</span>
+                  <span id="dashLunchAchievementRatio" style="font-weight:700; color:var(--text-secondary);">0 / 100%</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- FULL ANALYTICS DASHBOARD (CHANGES 3, 4, 5, 6) -->
+          <div id="parentDashboardContent" class="hidden">
+            
+            <!-- SECTION 2: QUICK ACTIONS SHORTCUT BAR (CHANGE 6: HIERARCHY) -->
+            <div class="card" style="margin-bottom:1.5rem; padding:1rem 1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+              <div style="font-weight:800; font-size:0.875rem; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem;">
+                <i class="fa-solid fa-bolt" style="color:var(--primary);"></i> Quick Actions:
+              </div>
+              <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                <!-- Primary Action: Upload Lunchbox -->
+                <button class="btn-quick-primary" id="btnQuickActionUpload">
+                  <i class="fa-solid fa-camera"></i> Upload Lunchbox
+                </button>
+                <!-- Secondary Actions -->
+                <button class="btn-quick-secondary" id="btnQuickActionMessage">
+                  <i class="fa-solid fa-comments"></i> Message Teacher
+                </button>
+                <button class="btn-quick-secondary" id="btnQuickActionReports">
+                  <i class="fa-solid fa-chart-pie"></i> View Reports
+                </button>
+                <button class="btn-quick-secondary" id="btnParentRefreshDashboard">
+                  <i class="fa-solid fa-rotate"></i> Refresh Status
+                </button>
+              </div>
+            </div>
+
+            <!-- SECTION 3: RECENT LUNCH ACTIVITY (CHANGE 4: LIGHTWEIGHT, DATABASE-DRIVEN) -->
+            <div class="card" style="margin-bottom:1.5rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.15rem; flex-wrap:wrap; gap:0.5rem;">
+                <div>
+                  <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-primary); margin:0;">
+                    <i class="fa-solid fa-clock-rotate-left" style="color:var(--primary);"></i> Recent Lunch Activity
+                  </h3>
+                  <small style="color:var(--text-muted);">Verified meal consumption logs and teacher clearances</small>
+                </div>
+                <button class="btn-action-outline" id="btnOverviewScanLunchbox" style="padding:0.4rem 0.85rem; font-size:0.8rem; font-weight:700;">
+                  <i class="fa-solid fa-camera"></i> Log New Meal
+                </button>
+              </div>
+
+              <div id="scanHistoryContainer" style="display:flex; flex-direction:column; gap:0.65rem; max-height:340px; overflow-y:auto; padding-right:0.25rem;">
+                <!-- Dynamically populated from backend database records -->
+                <div style="color:var(--text-muted); text-align:center; padding:2rem;">No Scan Data Available</div>
+              </div>
+            </div>
+
+            <!-- SECTION 4: AI NUTRITION INSIGHTS -->
+            <div class="card" style="margin-bottom:1.5rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.15rem; flex-wrap:wrap; gap:0.5rem;">
+                <div>
+                  <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-primary); margin:0;">
+                    <i class="fa-solid fa-brain" style="color:var(--primary);"></i> AI Nutrition Insights
+                  </h3>
+                  <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700;" id="aiInsightsChildLabel">• Live Student Analysis</span>
+                </div>
+                <button type="button" class="btn-action-outline" id="btnAskAiInsightsSummary" style="padding:0.45rem 0.95rem; font-size:0.775rem; font-weight:700; color:var(--primary); border-color:var(--primary); background:rgba(91,80,229,0.06); border-radius:var(--r-full);">
+                  <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary);"></i> Ask AI Assistant for Detailed Summary
+                </button>
+              </div>
+              <div id="aiInsightsContainer" class="ai-insights-grid">
+                <!-- Populated dynamically with standardized 3-card layout from backend /api/reports/insights/{studentId} -->
+                <div style="color:var(--text-muted); padding:1rem; text-align:center; grid-column:1/-1;">Analyzing student's live consumption profile...</div>
+              </div>
+            </div>
+
+            <!-- SECTION 5: WEEKLY / MONTHLY TRENDS (NUTRITION SCORE TREND /100) -->
+            <div class="card" style="margin-bottom:1.75rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.15rem; flex-wrap:wrap; gap:0.5rem;">
+                <div>
+                  <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-primary); margin:0;" id="dashTrendCardTitle">
+                    <i class="fa-solid fa-chart-line" style="color:var(--primary);"></i> Weekly Nutrition Score Trends (/100)
+                  </h3>
+                  <small style="color:var(--text-muted);" id="dashTrendCardSubtitle">Historical nutrition score evaluation across weekly meal clearances</small>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.65rem; flex-wrap:wrap;">
+                  <!-- Period Navigator (< Period Label >) -->
+                  <div class="trend-nav-pill-group" style="display:inline-flex; align-items:center; background:var(--bg-page); border:1px solid var(--border-subtle); border-radius:var(--r-md); padding:2px 4px; gap:4px;">
+                    <button type="button" class="btn-trend-nav" id="btnTrendPrevPeriod" title="Previous period" style="background:transparent; border:none; color:var(--text-secondary); width:28px; height:28px; border-radius:4px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; transition:all 0.15s ease;">
+                      <i class="fa-solid fa-chevron-left" style="font-size:0.75rem;"></i>
+                    </button>
+                    <span id="trendCurrentPeriodLabel" style="font-size:0.75rem; font-weight:700; color:var(--text-primary); padding:0 6px; white-space:nowrap; min-width:85px; text-align:center;">This Week</span>
+                    <button type="button" class="btn-trend-nav" id="btnTrendNextPeriod" title="Next period" disabled style="background:transparent; border:none; color:var(--text-muted); width:28px; height:28px; border-radius:4px; cursor:not-allowed; display:inline-flex; align-items:center; justify-content:center; transition:all 0.15s ease; opacity:0.4;">
+                      <i class="fa-solid fa-chevron-right" style="font-size:0.75rem;"></i>
+                    </button>
+                  </div>
+
+                  <!-- Weekly / Monthly Toggle -->
+                  <div style="display:inline-flex; gap:0.35rem;">
+                    <button class="btn-action-outline active" id="btnFilterWeekly" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:700;">Weekly</button>
+                    <button class="btn-action-outline" id="btnFilterMonthly" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:700;">Monthly</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Stat Pills with Clear Context Labels -->
+              <div class="trend-stat-row">
+                <div class="trend-stat-pill">
+                  <div class="trend-stat-label" id="dashAvgScoreLabel">Weekly Average Score</div>
+                  <div class="trend-stat-val" id="dashWeeklyAvgScore">-- / 100</div>
+                </div>
+                <div class="trend-stat-pill">
+                  <div class="trend-stat-label" id="dashHighestDayLabel">Highest Score Day</div>
+                  <div class="trend-stat-val" id="dashWeeklyHighestDay">--</div>
+                </div>
+                <div class="trend-stat-pill">
+                  <div class="trend-stat-label" id="dashLowestDayLabel">Lowest Score Day</div>
+                  <div class="trend-stat-val" id="dashWeeklyLowestDay">--</div>
+                </div>
+                <div class="trend-stat-pill">
+                  <div class="trend-stat-label" id="dashDaysMeetingTargetLabel">Days Meeting Target (&ge;70%)</div>
+                  <div class="trend-stat-val" id="dashWeeklyDaysMeetingTarget">--</div>
+                </div>
+              </div>
+
+              <div style="height: 340px; width: 100%;">
+                <canvas id="intakeChart"></canvas>
+              </div>
+
+              <!-- Dynamic Trend Explanation Cards (Phase 3: Real Data-Driven Meaning) -->
+              <div id="dashTrendExplanationContainer" style="margin-top:1.25rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:0.75rem;">
+                <!-- Populated dynamically from real reports -->
+              </div>
+            </div>
+
+          </div>
+
+
+        </div>
+
+        <!-- PANE: CHILDREN MODULE (CHILD PROFILES & LUNCHBOX PRESETS) -->
+        <div class="pane-container" id="pane-parent-children" style="padding:24px;">
+          
+          <!-- SECTION 1: CHILD PROFILES MANAGEMENT -->
+          <div id="childrenSectionChildProfiles" style="max-width:950px; margin:0 auto 28px auto; width:100%;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; gap:16px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:1.05rem; font-weight:700; color:var(--text-primary);">Registered Profiles</span>
+                <span style="color:var(--border-subtle); font-size:0.85rem;">•</span>
+                <span id="childrenCountText" style="font-size:0.85rem; color:var(--text-muted); font-weight:500;">Loading registered children...</span>
+                <span id="childrenCountBadge" class="hidden"></span>
+              </div>
+              <button class="btn-action-primary" id="btnChildrenAddChildProfile" style="height:36px; padding:0 14px; font-size:0.825rem; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; gap:6px; flex-shrink:0;">
+                <i class="fa-solid fa-plus"></i> Add Child Profile
+              </button>
+            </div>
+
+            <!-- List of All Child Profiles -->
+            <div id="childrenActiveProfileContainer" style="display:flex; flex-direction:column; gap:16px;">
+              <!-- Dynamically populated with clean child profile cards -->
+            </div>
+          </div>
+
+          <!-- SECTION 2: LUNCHBOX PRESETS MANAGEMENT (RECONSTRUCTED MODERN UI) -->
+          <div id="childrenSectionLunchboxPresets" class="presets-container-wrap" style="display:none;">
+            
+            <!-- Presets Top Control Deck (Single Row: Title + Segmented Switcher + Add Button) -->
+            <div class="presets-top-deck" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.15rem; gap:16px; flex-wrap:wrap; padding-top:6px;">
+              <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+                <span class="presets-title-text" style="font-size:1.15rem; font-weight:800; color:var(--text-primary);">Lunchbox Presets</span>
+                <!-- Segmented Child Switcher -->
+                <div id="childrenPresetChildTabs" class="presets-child-segmented-bar" style="margin-bottom:0;"></div>
+              </div>
+              <button class="btn-action-primary" id="btnChildrenAddPreset" style="height:38px; padding:0 16px; font-size:0.825rem; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; gap:6px;">
+                <i class="fa-solid fa-plus"></i> Add Lunchbox Preset
+              </button>
+            </div>
+
+            <!-- Sleek AI Auto-Calibration Helper Strip -->
+            <div class="preset-ai-tip-strip">
+              <i class="fa-solid fa-wand-magic-sparkles preset-ai-tip-icon"></i>
+              <div class="preset-ai-tip-text">
+                <strong>Zero-effort scans:</strong> ChewCheckers AI auto-calibrates lunchbox dimensions directly from meal photos and saves them here for you.
+              </div>
+            </div>
+
+            <!-- Preset Cards Grid (with responsive columns and ghost add card) -->
+            <div id="childrenPresetCardsGrid" class="preset-cards-grid">
+              <!-- Dynamically populated preset cards -->
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- PANE 2: AI SCANNER (MEAL NUTRITION CALCULATOR) -->
+        <div class="pane-container" id="pane-ai-scanner">
+          <div class="card mb-3">
+            <h3 style="font-size:1.15rem; margin-bottom:0.35rem;"><i class="fa-solid fa-camera" style="color:var(--primary)"></i> Scan Lunchbox Photo</h3>
+            <p style="color:var(--text-secondary); font-size:0.875rem; margin-bottom:1.5rem;">
+              Upload lunchbox photo to automatically detect food items, estimate portion sizes, and extract nutritional facts.
+            </p>
+
+            <!-- SCANNER STUDENT & AI CALIBRATION BAR -->
+            <div id="scannerChildSelectorBar" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem; margin-bottom:1.5rem;">
+              
+              <!-- Child Selector Card -->
+              <div style="background:var(--bg-page); padding:1rem 1.25rem; border-radius:var(--r-lg); border:1px solid var(--border-subtle); display:flex; flex-direction:column; justify-content:center;">
+                <label style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.45rem; letter-spacing:0.5px;">Selecting Student</label>
+                <div class="custom-child-dropdown" id="scannerCustomChildDropdown" style="min-width:0; width:100%;">
+                  <button type="button" class="custom-child-dropdown-trigger" id="scannerCustomChildDropdownTrigger" aria-haspopup="listbox" aria-expanded="false" style="padding:0.5rem 0.85rem;">
+                    <div class="custom-child-avatar" id="scannerCustomChildAvatar" style="width:30px; height:30px; font-size:0.8rem;">S</div>
+                    <div class="custom-child-info">
+                      <span class="custom-child-name" id="scannerCustomChildName" style="font-size:0.85rem;">Student</span>
+                      <span class="custom-child-class" id="scannerCustomChildClass" style="font-size:0.7rem;">Class</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down custom-child-chevron"></i>
+                  </button>
+                  <div class="custom-child-dropdown-menu" id="scannerCustomChildDropdownMenu" role="listbox" tabindex="-1"></div>
+                  <select id="scannerChildSelect" style="display:none;"></select>
+                </div>
+              </div>
+
+              <!-- Lunchbox Preset Selector Card (Interactive Selection + AI Calibration) -->
+              <div style="background:var(--bg-page); padding:1rem 1.25rem; border-radius:var(--r-lg); border:1px solid var(--border-subtle); display:flex; flex-direction:column; justify-content:center;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem;">
+                  <label style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin:0;">Lunchbox Preset</label>
+                  <button type="button" class="btn-action-outline" id="btnScannerAddNewPreset" title="Add new preset" style="padding:0.25rem 0.6rem; font-size:0.725rem; font-weight:700; color:var(--primary); border-color:var(--primary); border-radius:6px; display:inline-flex; align-items:center; gap:4px;">
+                    <i class="fa-solid fa-plus"></i> Add Preset
+                  </button>
+                </div>
+
+                <!-- Custom Preset Dropdown with AI Auto-Detect option -->
+                <div class="custom-child-dropdown" id="scannerCustomPresetDropdown" style="min-width:0; width:100%;">
+                  <button type="button" class="custom-child-dropdown-trigger" id="scannerCustomPresetDropdownTrigger" aria-haspopup="listbox" aria-expanded="false" style="padding:0.5rem 0.85rem;">
+                    <div class="custom-child-avatar" id="scannerCustomPresetAvatar" style="width:30px; height:30px; font-size:0.8rem; background:linear-gradient(135deg, #059669 0%, #10B981 100%);">
+                      <i class="fa-solid fa-cube"></i>
+                    </div>
+                    <div class="custom-child-info">
+                      <span class="custom-child-name" id="scannerCustomPresetName" style="font-size:0.85rem;">AI Auto-Detection</span>
+                      <span class="custom-child-class" id="scannerCustomPresetDimensions" style="font-size:0.7rem;">Auto-calibrated from photo scale</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down custom-child-chevron"></i>
+                  </button>
+                  <div class="custom-child-dropdown-menu" id="scannerCustomPresetDropdownMenu" role="listbox" tabindex="-1"></div>
+                  <select id="scannerPresetSelect" style="display:none;"></select>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="dropzone-box" id="dropzone" style="cursor:pointer; padding:2.5rem; text-align:center; border:2px dashed var(--primary-border); border-radius:var(--r-xl); background:linear-gradient(135deg, rgba(91,80,229,0.03) 0%, rgba(124,58,237,0.01) 100%); transition:all 0.25s ease;">
+              <div style="width:64px; height:64px; border-radius:50%; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.75rem; margin:0 auto 1rem auto; box-shadow:0 4px 14px rgba(79, 70, 229, 0.25);">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+              </div>
+              <h3 style="font-size:1.15rem; font-weight:800; color:var(--text-primary); margin:0 0 0.35rem 0;">Click or Drag & Drop Lunchbox Photo</h3>
+              <p style="color:var(--text-muted); font-size:0.85rem; margin:0 0 1.25rem 0;">Supports JPG, PNG, WEBP files for Gemini Vision AI analysis</p>
+              <label for="imageFileInput" class="btn-action-primary" style="padding:0.65rem 1.4rem; font-size:0.875rem; font-weight:700; cursor:pointer;">
+                <i class="fa-solid fa-camera"></i> Upload Photo File
+              </label>
+              <input type="file" id="imageFileInput" accept="image/*" class="hidden">
+            </div>
+          </div>
+
+          <!-- Detection Result Card -->
+          <div class="card hidden" id="detectionCard">
+            <h3 style="font-size:1.15rem; margin-bottom:1rem;"><i class="fa-solid fa-sparkles" style="color:var(--primary)"></i> Extracted Nutrition Facts</h3>
+
+            <div>
+              <div>
+                <h3 id="detectedMealTitle" style="font-size:1.2rem; margin-bottom:0.35rem;">Indian Roti & Curry</h3>
+                <p id="detectedFoodList" style="color:var(--text-secondary); font-size:0.875rem; margin-bottom:0.85rem;">
+                  • 2x Whole Wheat Roti<br>• 1x Mixed Veg Sabzi (150g)<br>• 1x Fresh Side Salad
+                </p>
+
+                <!-- AI Auto-Detected Container Chip -->
+                <div id="detectedContainerBadge" class="detected-container-badge" style="display:flex; align-items:center; gap:0.6rem; background:rgba(16, 185, 129, 0.08); border:1px solid rgba(16, 185, 129, 0.22); border-radius:var(--r-md); padding:0.5rem 0.85rem; margin-bottom:1.15rem; font-size:0.82rem; color:var(--text-secondary);">
+                  <div style="width:28px; height:28px; border-radius:6px; background:rgba(16, 185, 129, 0.15); color:#059669; display:flex; align-items:center; justify-content:center; font-size:0.85rem; flex-shrink:0;">
+                    <i class="fa-solid fa-cube"></i>
+                  </div>
+                  <div style="flex:1; min-width:0;">
+                    <span style="display:block; font-size:0.68rem; text-transform:uppercase; font-weight:700; color:#059669; letter-spacing:0.5px;">Auto-Detected Container</span>
+                    <strong id="detectedContainerText" style="color:var(--text-primary); font-weight:600; font-size:0.85rem;">Stainless Steel Tiffin with Katori (~750 ml)</strong>
+                  </div>
+                  <span style="background:var(--accent-green); color:#fff; font-size:0.65rem; font-weight:700; padding:2px 7px; border-radius:10px; text-transform:uppercase; letter-spacing:0.4px;">AI Calibrated</span>
+                </div>
+
+                <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.5rem; margin-bottom:1.25rem;">
+                  <div style="background:var(--bg-page); padding:0.6rem 0.4rem; border-radius:var(--r-md); text-align:center;">
+                    <span style="font-size:0.7rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Calories</span>
+                    <strong id="detCal" style="display:block; font-size:1.05rem; margin-top:0.15rem;">540 kcal</strong>
+                  </div>
+                  <div style="background:var(--bg-page); padding:0.6rem 0.4rem; border-radius:var(--r-md); text-align:center;">
+                    <span style="font-size:0.7rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Protein</span>
+                    <strong id="detProtein" style="display:block; font-size:1.05rem; color:var(--accent-green); margin-top:0.15rem;">18.5 g</strong>
+                  </div>
+                  <div style="background:var(--bg-page); padding:0.6rem 0.4rem; border-radius:var(--r-md); text-align:center;">
+                    <span style="font-size:0.7rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Carbs</span>
+                    <strong id="detCarbs" style="display:block; font-size:1.05rem; color:var(--accent-teal); margin-top:0.15rem;">65.0 g</strong>
+                  </div>
+                  <div style="background:var(--bg-page); padding:0.6rem 0.4rem; border-radius:var(--r-md); text-align:center;">
+                    <span style="font-size:0.7rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Fiber</span>
+                    <strong id="detFiber" style="display:block; font-size:1.05rem; color:var(--accent-amber); margin-top:0.15rem;">6.0 g</strong>
+                  </div>
+                </div>
+
+                <div id="detFoodBreakdownBox" style="background:var(--bg-page); border:1px solid var(--border-subtle); border-radius:var(--r-md); padding:0.75rem 0.9rem; margin-bottom:1.25rem;">
+                  <div style="font-size:0.8rem; font-weight:800; color:var(--text-primary); margin-bottom:0.4rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.4rem;">
+                    <span style="display:flex; align-items:center; gap:0.4rem;"><i class="fa-solid fa-list-check" style="color:var(--primary)"></i> Extracted Food Verification List</span>
+                    <button class="btn-action-outline" id="btnEditExtractedFoodItems" style="padding:0.2rem 0.55rem; font-size:0.75rem; border-radius:var(--r-sm); color:var(--primary); border-color:var(--primary);"><i class="fa-solid fa-pen-to-square"></i> Edit Items</button>
+                  </div>
+                  <div id="detFoodItemsTable" style="font-size:0.8rem; color:var(--text-secondary);">
+                    <!-- Dynamic verified food item list -->
+                  </div>
+                </div>
+
+                <div style="margin-bottom:1.25rem;" id="parentConsumptionBlock">
+                  <div style="display:flex; justify-content:space-between; font-weight:700; font-size:0.875rem; margin-bottom:0.35rem;">
+                    <span>Child Consumption Adjuster:</span>
+                    <span id="eatenPercentLabel" style="color:var(--primary)">85% Eaten</span>
+                  </div>
+                  <input type="range" id="eatenRange" min="0" max="100" value="85" style="width:100%; accent-color:var(--primary);">
+                </div>
+
+                <div style="margin-bottom:1.25rem; background:rgba(99, 102, 241, 0.05); padding:0.75rem 1rem; border-radius:var(--r-md); border:1px solid rgba(99, 102, 241, 0.15); display:flex; align-items:center; justify-content:space-between;">
+                  <span style="font-size:0.825rem; color:var(--text-muted); font-weight:600;"><i class="fa-solid fa-user-check" style="color:var(--primary);"></i> Logging for Child:</span>
+                  <strong id="detectionTargetChildName" style="color:var(--primary); font-size:0.9rem;">Selected Child Profile</strong>
+                </div>
+
+                <button class="btn-action-primary" id="btnSaveScanLog" style="width:100%; padding:0.75rem;">
+                  <i class="fa-solid fa-floppy-disk"></i> Log Meal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANE 3: LEFTOVER TRACKER & WASTE ANALYTICS (ACTIONABLE REPORTS DASHBOARD) -->
+        <div class="pane-container" id="pane-leftover-tracker" style="padding:1.5rem 2rem;">
+          
+          <!-- Active Child Context Banner -->
+          <div class="reports-active-child-banner" id="reportsActiveChildBanner">
+            <div class="reports-child-pill">
+              <span class="reports-child-avatar" id="reportsActiveChildAvatar">S</span>
+              <span class="reports-child-label">Viewing Reports for: <strong id="reportsActiveChildName">Sree</strong> <span id="reportsActiveChildClass" style="color:var(--text-muted);">(Grade 5 B)</span></span>
+            </div>
+            <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;"><i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i> Verified School Reports</span>
+          </div>
+
+          <!-- Top Section: 4 Actionable Analytics KPI Cards -->
+          <div class="reports-kpi-grid">
+            <div class="reports-kpi-card">
+              <span class="reports-kpi-label"><i class="fa-solid fa-chart-pie" style="color:var(--accent-green);"></i> Avg Plate Clearance</span>
+              <div class="reports-kpi-val" id="parentRepPlateClearance" style="color:var(--accent-green);">—</div>
+              <span class="reports-kpi-sub" id="parentRepAvgClearanceStatus">Waiting for first meal evaluation</span>
+            </div>
+
+            <div class="reports-kpi-card">
+              <span class="reports-kpi-label"><i class="fa-solid fa-circle-check" style="color:var(--primary);"></i> Clean Plate Days</span>
+              <div class="reports-kpi-val" id="parentRepWasteSaved" style="color:var(--primary);">—</div>
+              <span class="reports-kpi-sub" id="parentRepWasteSavedStatus">Awaiting lunch records</span>
+            </div>
+
+            <div class="reports-kpi-card">
+              <span class="reports-kpi-label"><i class="fa-solid fa-user-check" style="color:var(--accent-teal);"></i> Teacher Verifications</span>
+              <div class="reports-kpi-val" id="parentRepVerifications" style="color:var(--accent-teal);">0</div>
+              <span class="reports-kpi-sub" id="parentRepTeacherVerificationsStatus">Awaiting lunchtime review</span>
+            </div>
+
+            <div class="reports-kpi-card">
+              <span class="reports-kpi-label"><i class="fa-solid fa-clock-rotate-left" style="color:#F59E0B;"></i> Latest Meal Record</span>
+              <div class="reports-kpi-val" id="parentRepLatestStatus" style="font-size:1.05rem; color:var(--text-muted); margin:0.6rem 0 0.35rem 0;">Waiting for first evaluation</div>
+              <span class="reports-kpi-sub">Most recent lunchbox audit</span>
+            </div>
+          </div>
+
+          <!-- School Clearance Protocol Guidance (Compact Collapsible Info Bar) -->
+          <details class="reports-protocol-card">
+            <summary class="reports-protocol-summary">
+              <span><i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i> How School Verification Works</span>
+              <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;"><i class="fa-solid fa-chevron-down"></i> View 3-Step Protocol</span>
+            </summary>
+            <div class="reports-protocol-steps">
+              <div class="reports-protocol-step-item">
+                <div class="reports-protocol-step-num">1</div>
+                <div>
+                  <strong style="font-size:0.85rem; color:var(--text-primary); display:block;">Pack & Scan at Home</strong>
+                  <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:0.15rem;">Upload pre-meal lunchbox photo in morning.</span>
+                </div>
+              </div>
+              <div class="reports-protocol-step-item">
+                <div class="reports-protocol-step-num">2</div>
+                <div>
+                  <strong style="font-size:0.85rem; color:var(--text-primary); display:block;">School Leftover Check</strong>
+                  <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:0.15rem;">Class teacher reviews plate clearance at lunch.</span>
+                </div>
+              </div>
+              <div class="reports-protocol-step-item">
+                <div class="reports-protocol-step-num">3</div>
+                <div>
+                  <strong style="font-size:0.85rem; color:var(--text-primary); display:block;">Real-Time Progress</strong>
+                  <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:0.15rem;">Verified nutrition data automatically syncs to reports.</span>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- Primary Content Area: Recent School Leftover & Consumption Records -->
+          <div class="card" style="padding:1.5rem 1.75rem; margin-bottom:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.15rem; flex-wrap:wrap; gap:0.5rem;">
+              <div>
+                <h3 style="font-size:1.1rem; font-weight:800; color:var(--text-primary); margin:0;">
+                  <i class="fa-solid fa-list-check" style="color:var(--primary);"></i> Verified School Leftover Logs
+                </h3>
+                <small style="color:var(--text-muted);">Chronological record of lunchbox clearances verified by classroom teachers</small>
+              </div>
+            </div>
+            
+            <div id="leftoverHistoryContainer" style="display:flex; flex-direction:column; gap:0.75rem;">
+              <!-- Populated dynamically with clean empty state when empty -->
+              <div class="reports-empty-state">
+                <div class="reports-empty-state-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+                <div class="reports-empty-state-title">No verified lunch records available yet.</div>
+                <div class="reports-empty-state-text">Reports will appear after teacher meal verification at school. Pack and scan a lunchbox to begin tracking.</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- PANE 4: SMART AI NUTRITION ASSISTANT (CONVERSATION-FIRST WORKSPACE) -->
+        <div class="pane-container" id="pane-ai-assistant" style="padding:0; height:100vh; box-sizing:border-box; width:100%;">
+          <div class="chat-window-full">
+            
+            <!-- 1. Sleek Integrated Top Header (Single Source of Truth) -->
+            <div class="ai-workspace-header">
+              <div class="ai-child-context-card">
+                <div class="ai-child-avatar" id="aiContextAvatar">S</div>
+                <div class="ai-child-meta">
+                  <span class="ai-child-name" id="aiStripChildName">Student Profile</span>
+                  <div class="ai-child-submeta">
+                    <span class="ai-meta-item"><i class="fa-solid fa-utensils" style="color:#38BDF8;"></i> <strong id="aiStripLunchStatus">Not Logged</strong></span>
+                    <span class="ai-meta-divider">•</span>
+                    <span class="ai-meta-item"><i class="fa-solid fa-bullseye" style="color:#F59E0B;"></i> <strong id="aiStripTarget">500 kcal</strong></span>
+                    <span class="ai-meta-divider">•</span>
+                    <span class="ai-meta-item"><i class="fa-solid fa-award" style="color:#10B981;"></i> <strong id="aiStripScore">Pending</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex; align-items:center; gap:0.75rem;">
+                <button type="button" class="ai-header-action-btn" id="btnClearAiChat" title="Clear conversation history">
+                  <i class="fa-solid fa-trash-can" style="font-size:0.775rem;"></i> <span>Clear Chat</span>
+                </button>
+                <div class="user-profile-badge" id="aiUserProfileBadge" style="cursor:pointer;" title="Click to manage profile">
+                  <div class="user-avatar-initial" id="aiUserAvatar">U</div>
+                  <div class="user-profile-meta">
+                    <strong class="user-profile-name" id="aiUserName">User Profile</strong>
+                    <span class="user-profile-role" id="aiUserRoleDetail">Parent</span>
+                  </div>
+                  <i class="fa-solid fa-chevron-down user-profile-caret"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. AI Chat Messages Thread (Generous Full-Width Reading Column) -->
+            <div class="chat-messages-full" id="aiChatScrollArea">
+              <div class="chat-thread-container" id="aiChatThread">
+                <!-- Compact Initial Empty State with Quick Action Chips -->
+                <div class="ai-empty-workspace" id="aiWelcomeCard">
+                  <div class="ai-empty-icon"><i class="fa-solid fa-robot"></i></div>
+                  <div class="ai-empty-title">Nutrition Assistant</div>
+                  <div class="ai-empty-subtitle">Ask questions about lunchbox planning, portion balance, or healthy school recipes.</div>
+                  
+                  <div class="ai-starter-chips-row" id="aiStarterChipsContainer">
+                    <button type="button" class="ai-action-chip" data-prompt="Suggest 5 high-protein, kid-friendly school lunchbox recipes.">
+                      <i class="fa-solid fa-egg" style="color:#F59E0B;"></i> High Protein Lunches
+                    </button>
+                    <button type="button" class="ai-action-chip" data-prompt="How can I help my picky eater child eat more vegetables at school?">
+                      <i class="fa-solid fa-carrot" style="color:#10B981;"></i> Picky Eating Tips
+                    </button>
+                    <button type="button" class="ai-action-chip" data-prompt="Give me quick 5-minute healthy snack recipes for school days.">
+                      <i class="fa-solid fa-apple-whole" style="color:#EF4444;"></i> Healthy Snacks
+                    </button>
+                    <button type="button" class="ai-action-chip" data-prompt="What are ideal lunch portions and balanced macronutrient targets for my child?">
+                      <i class="fa-solid fa-scale-balanced" style="color:#6366F1;"></i> Balanced Portions
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Bottom Integrated Composer -->
+            <div class="ai-composer-wrapper">
+              <form class="ai-composer-inner" id="aiChatForm">
+                <input type="text" class="ai-composer-input" id="aiChatInput" placeholder="Ask about lunchbox ideas, balanced portions, or healthy recipes..." autocomplete="off" required>
+                <button type="submit" class="btn-ai-send" id="btnAiChatSend" title="Send Message">
+                  <i class="fa-solid fa-paper-plane"></i>
+                </button>
+              </form>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- PANE 5: TEACHER CLASS OVERVIEW (ACTION-FIRST REDESIGN) -->
+        <div class="pane-container" id="pane-teacher-roster">
+          
+          <!-- A. COMPACT TEACHER HEADER (SINGLE AUTHORITATIVE SOURCE OF TRUTH) -->
+          <div class="teacher-header-banner">
+            <div style="display:flex; align-items:center; gap:1.25rem;">
+              <div style="font-size:2rem; color:var(--primary); line-height:1;"><i class="fa-solid fa-school"></i></div>
+              <div>
+                <h2 id="teacherHeaderClassName">Grade 3B Class</h2>
+                <div class="banner-meta">
+                  <span><i class="fa-solid fa-key"></i> Class Code: <strong id="teacherHeaderClassCode">CLS3B-9842</strong></span>
+                  <span>•</span>
+                  <span><i class="fa-solid fa-user-tie"></i> Teacher: <strong id="teacherHeaderTeacherName">Jothi Prakash V</strong></span>
+                  <span>•</span>
+                  <span><i class="fa-regular fa-envelope"></i> <span id="teacherHeaderTeacherEmail">jothi@gmail.com</span></span>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+              <!-- Interactive Date Picker for Past/Present Date Inspection -->
+              <div class="banner-date-badge">
+                <i class="fa-regular fa-calendar"></i>
+                <input type="date" id="teacherSelectedDate" title="Select Date to View Meal Records" style="border:none; background:transparent; font-family:inherit; font-weight:600; font-size:0.85rem; color:inherit; cursor:pointer; outline:none;" />
+              </div>
+            </div>
+          </div>
+
+          <!-- C. SMALL KPI SUMMARY (COMPACT 4 METRIC STRIP) -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+            <div class="metric-box" style="display:flex; align-items:center; justify-content:space-between; padding:1rem; height:100%;">
+              <div>
+                <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.25rem;">Students In Class</span>
+                <div class="metric-box-val" id="teacherMetricStudents" style="font-size:1.5rem; font-weight:800; color:var(--text-primary);">0</div>
+              </div>
+              <div style="font-size:1.5rem; line-height:1; color:var(--text-secondary); opacity:0.9;"><i class="fa-solid fa-user-graduate"></i></div>
+            </div>
+
+            <div class="metric-box" style="display:flex; align-items:center; justify-content:space-between; padding:1rem; height:100%;">
+              <div>
+                <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.25rem;">Meals Submitted</span>
+                <div class="metric-box-val" id="teacherMetricSubmitted" style="font-size:1.5rem; font-weight:800; color:var(--primary);">0</div>
+              </div>
+              <div style="font-size:1.5rem; line-height:1; color:var(--primary); opacity:0.9;"><i class="fa-solid fa-box-archive"></i></div>
+            </div>
+
+            <div class="metric-box" style="display:flex; align-items:center; justify-content:space-between; padding:1rem; height:100%;">
+              <div>
+                <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.25rem;">Pending Reviews</span>
+                <div class="metric-box-val" id="teacherMetricPendingReviews" style="font-size:1.5rem; font-weight:800; color:var(--accent-amber);">0</div>
+              </div>
+              <div style="font-size:1.5rem; line-height:1; color:var(--accent-amber); opacity:0.9;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            </div>
+
+            <div class="metric-box" style="display:flex; align-items:center; justify-content:space-between; padding:1rem; height:100%;">
+              <div>
+                <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.25rem;">Average Consumption</span>
+                <div class="metric-box-val" id="teacherMetricAvgConsumption" style="font-size:1.5rem; font-weight:800; color:var(--text-primary);">0%</div>
+              </div>
+              <div style="font-size:1.5rem; line-height:1; color:var(--accent-teal); opacity:0.9;"><i class="fa-solid fa-chart-column"></i></div>
+            </div>
+          </div>
+
+          <!-- B. ATTENTION REQUIRED / PENDING MEAL QUEUE (PRIMARY OPERATIONAL SECTION) -->
+          <div class="card" id="teacherPendingQueueCard" style="margin-bottom:1.5rem; border-top:4px solid var(--accent-rose); background:var(--bg-card); transition: border-color 0.3s ease;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+              <div>
+                <h3 style="font-size:1.15rem; margin:0; display:flex; align-items:center; gap:0.5rem;">
+                  <span style="color:var(--accent-rose);"><i class="fa-solid fa-triangle-exclamation"></i></span> Attention Required – Pending Meal Queue
+                </h3>
+                <small style="color:var(--text-muted)">Meals that need your immediate action (Review Consumption & Upload Leftovers)</small>
+              </div>
+              <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+                <span class="badge-status badge-violet" id="badgePendingQueueCount" style="font-weight:700;">0 Meals Pending</span>
+                <button class="btn-action-primary" id="btnBulkMarkFullEaten" style="padding:0.4rem 0.85rem; font-size:0.8rem; background:var(--accent-green); border-color:var(--accent-green);">
+                  <i class="fa-solid fa-bolt"></i> Bulk Mark 100% Eaten
+                </button>
+                <button class="btn-action-outline" id="btnRefreshTeacherMeals"><i class="fa-solid fa-rotate"></i> Refresh</button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table-chewcheckers">
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Packed Meal Summary</th>
+                    <th>Current Status</th>
+                    <th>Action Required</th>
+                  </tr>
+                </thead>
+                <tbody id="teacherPendingQueueBody">
+                  <tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:1.5rem;">Checking for pending meals...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- D. UNIFIED CLASSROOM STUDENT ROSTER & DAILY MEAL LOG -->
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.5rem;">
+              <div>
+                <h3 style="font-size:1.1rem; margin:0;"><i class="fa-solid fa-users" style="color:var(--primary)"></i> Classroom Student Roster & Meal Log</h3>
+                <small style="color:var(--text-muted)">Master student roster with real-time daily nutrition & meal clearance status</small>
+              </div>
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <button class="btn-action-primary" id="btnBulkMarkSelectedFull" style="display:none; padding:0.4rem 0.85rem; font-size:0.8rem; background:var(--accent-green); border-color:var(--accent-green);">
+                  <i class="fa-solid fa-check-double"></i> Mark Selected as Fully Consumed (<span id="bulkSelectedCount">0</span>)
+                </button>
+              </div>
+            </div>
+
+            <!-- Teacher Live Filter Bar -->
+            <div class="teacher-filter-bar" id="teacherFilterBar">
+              <button type="button" class="teacher-filter-chip active" data-filter="all">
+                All Students <span class="chip-count" id="countFilterAll">0</span>
+              </button>
+              <button type="button" class="teacher-filter-chip" data-filter="attention">
+                <i class="fa-solid fa-triangle-exclamation" style="color:var(--accent-rose);"></i> Needs Attention <span class="chip-count" id="countFilterAttention">0</span>
+              </button>
+              <button type="button" class="teacher-filter-chip" data-filter="pending">
+                <i class="fa-solid fa-clock" style="color:var(--accent-violet);"></i> Pending Review <span class="chip-count" id="countFilterPending">0</span>
+              </button>
+              <button type="button" class="teacher-filter-chip" data-filter="partial">
+                <i class="fa-solid fa-chart-pie" style="color:var(--accent-amber);"></i> Leftovers Recorded <span class="chip-count" id="countFilterPartial">0</span>
+              </button>
+              <button type="button" class="teacher-filter-chip" data-filter="full">
+                <i class="fa-solid fa-circle-check" style="color:var(--accent-green);"></i> Fully Consumed <span class="chip-count" id="countFilterFull">0</span>
+              </button>
+            </div>
+
+            <!-- Classroom Allergy & Food Alert Banner -->
+            <div id="classAllergyAlertBanner" style="display:none; background:rgba(239, 68, 68, 0.08); border:1px solid rgba(239, 68, 68, 0.25); color:var(--accent-rose); padding:0.75rem 1rem; border-radius:var(--r-md); margin-bottom:1rem; font-size:0.85rem; font-weight:600; align-items:center; gap:0.5rem;">
+              <i class="fa-solid fa-triangle-exclamation" style="font-size:1.1rem;"></i>
+              <span id="classAllergyAlertText">Classroom Allergy Alerts</span>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table-chewcheckers">
+                <thead>
+                  <tr>
+                    <th style="width:36px; text-align:center;">
+                      <input type="checkbox" id="selectAllStudentsCheckbox" class="student-select-chk" title="Select all actionable meals">
+                    </th>
+                    <th>STUDENT</th>
+                    <th>STUDENT ID</th>
+                    <th>MEAL SUMMARY & CONSUMPTION</th>
+                    <th>STATUS</th>
+                    <th style="text-align:right;">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="teacherRosterBody">
+                  <tr>
+                    <td colspan="6" class="text-center" style="padding:1.5rem; color:var(--text-muted);">Loading classroom roster...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANE 6: TEACHER STUDENT MANAGEMENT -->
+        <div class="pane-container" id="pane-teacher-students">
+          
+          <!-- Class Header Summary -->
+          <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--r-xl); padding:1.25rem 1.5rem; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+            <div>
+              <h2 style="font-size:1.25rem; font-weight:800; margin:0 0 0.25rem 0;" id="manageStudentsClassDesc">Manage Class Students</h2>
+              <div style="display:flex; gap:1rem; font-size:0.8rem; color:var(--text-muted); flex-wrap:wrap;">
+                <span><i class="fa-solid fa-key" style="color:var(--primary)"></i> Active Class Code: <strong id="manageStudentsClassCode" style="color:var(--text-primary)">N/A</strong></span>
+                <span>•</span>
+                <span><i class="fa-solid fa-users" style="color:var(--primary)"></i> Total Enrolled: <strong id="manageStudentsTotalCount" style="color:var(--text-primary)">0</strong></span>
+              </div>
+            </div>
+            <button class="btn-action-primary" id="btnOpenLinkStudentModal" style="padding:0.6rem 1.25rem; font-size:0.875rem;">
+              <i class="fa-solid fa-user-plus"></i> Link Existing Student
+            </button>
+          </div>
+
+          <!-- Class Roster Management Card -->
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.5rem;">
+              <div>
+                <h3 style="font-size:1.1rem; margin:0;"><i class="fa-solid fa-address-book" style="color:var(--primary)"></i> Class Members Roster</h3>
+                <small style="color:var(--text-muted)">Manage active class members and linking permissions</small>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table-chewcheckers">
+                <thead>
+                  <tr>
+                    <th>NAME</th>
+                    <th>STUDENT ID</th>
+                    <th>GENDER</th>
+                    <th>DATE OF BIRTH</th>
+                    <th style="text-align:right;">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="teacherManageRosterBody">
+                  <tr>
+                    <td colspan="5" class="text-center" style="padding:1.5rem; color:var(--text-muted);">Loading class roster...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANE 7: TEACHER ACTION DASHBOARD -->
+        <div class="pane-container" id="pane-teacher-reports">
+          
+          <!-- Compact Header Card -->
+          <div class="card mb-3" style="padding:1.15rem 1.5rem; border-top: 3px solid var(--primary); background: linear-gradient(135deg, var(--bg-card) 0%, rgba(99, 102, 241, 0.03) 100%);">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+              <div style="display:flex; align-items:center; gap:1rem;">
+                <div style="width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg, var(--primary) 0%, #4F46E5 100%); color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-size:1.25rem; box-shadow:0 4px 12px rgba(99,102,241,0.25);">
+                  <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div>
+                  <h3 style="font-size:1.2rem; margin:0 0 0.2rem 0; font-weight:800; font-family:'Outfit', sans-serif; display:flex; align-items:center; gap:0.6rem;">
+                    <span id="teacherReportsClassTitle">Grade 5B</span>
+                    <span id="teacherReportsClassCode" style="font-size:0.75rem; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); padding:0.15rem 0.5rem; border-radius:6px; color:var(--primary); font-weight:700;">CLS-3214</span>
+                  </h3>
+                  <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; font-size:0.775rem; color:var(--text-secondary);">
+                    <span id="teacherReportTimePeriod"><i class="fa-regular fa-calendar" style="margin-right:0.25rem;"></i> Active Date Range: Loading...</span>
+                    <span id="teacherReportLastUpdated" style="color:var(--text-muted); font-weight:600;"></span>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+                <div style="background:var(--bg-page); padding:0.2rem; border-radius:var(--r-md); border:1px solid var(--border-subtle); display:flex; gap:0.2rem;">
+                  <button class="btn-action-outline active" id="btnTeacherReportWeekly" style="padding:0.3rem 0.75rem; font-size:0.775rem; border:none; border-radius:var(--r-sm);">Weekly</button>
+                  <button class="btn-action-outline" id="btnTeacherReportMonthly" style="padding:0.3rem 0.75rem; font-size:0.775rem; border:none; border-radius:var(--r-sm);">Monthly</button>
+                </div>
+                
+                <!-- Compact Reports Dropdown Group -->
+                <div style="position:relative; display:inline-block;" id="reportsExportDropdownWrapper">
+                  <button class="btn-action-primary" id="btnToggleReportsDropdown" style="padding:0.4rem 0.85rem; font-size:0.775rem; background:var(--bg-card); color:var(--primary); border:1px solid var(--primary); font-weight:700; border-radius:var(--r-md); display:flex; align-items:center; gap:0.4rem;">
+                    <i class="fa-solid fa-file-export"></i> Export <i class="fa-solid fa-chevron-down" style="font-size:0.65rem;"></i>
+                  </button>
+                  <div id="reportsDropdownMenu" style="display:none; position:absolute; right:0; top:115%; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--r-md); box-shadow:var(--shadow-md); z-index:100; min-width:140px; padding:0.35rem 0;">
+                    <button id="btnExportCsv" style="width:100%; text-align:left; background:none; border:none; padding:0.45rem 0.95rem; font-size:0.775rem; color:var(--text-primary); cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+                      <i class="fa-solid fa-file-csv" style="color:var(--accent-green);"></i> Export CSV
+                    </button>
+                    <button id="btnExportPdf" style="width:100%; text-align:left; background:none; border:none; padding:0.45rem 0.95rem; font-size:0.775rem; color:var(--text-primary); cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+                      <i class="fa-solid fa-file-pdf" style="color:var(--accent-rose);"></i> Export PDF
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 1: Today's Classroom Summary (Enhanced Professional KPI Cards) -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.15rem; margin-bottom: 1.5rem;">
+            
+            <div class="card" style="padding:1.15rem; border-left: 4px solid var(--primary); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.35rem;">Submitted Today</span>
+                <div class="metric-box-val" id="teacherRepSummarySubmitted" style="font-size:1.6rem; font-weight:800; color:var(--text-primary);">0</div>
+                <small style="font-size:0.7rem; color:var(--text-muted);">Classroom meal logs</small>
+              </div>
+              <div style="width:40px; height:40px; border-radius:50%; background:rgba(99,102,241,0.08); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.15rem;">
+                <i class="fa-solid fa-box-archive"></i>
+              </div>
+            </div>
+
+            <div class="card" style="padding:1.15rem; border-left: 4px solid var(--accent-green); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.35rem;">Meals Reviewed</span>
+                <div class="metric-box-val" id="teacherRepSummaryReviewed" style="font-size:1.6rem; font-weight:800; color:var(--accent-green);">0</div>
+                <small style="font-size:0.7rem; color:var(--accent-green); font-weight:600;">Teacher evaluated</small>
+              </div>
+              <div style="width:40px; height:40px; border-radius:50%; background:rgba(16,185,129,0.08); color:var(--accent-green); display:flex; align-items:center; justify-content:center; font-size:1.15rem;">
+                <i class="fa-solid fa-circle-check"></i>
+              </div>
+            </div>
+
+            <div class="card" style="padding:1.15rem; border-left: 4px solid var(--accent-amber); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.35rem;">Pending Reviews</span>
+                <div class="metric-box-val" id="teacherRepSummaryPending" style="font-size:1.6rem; font-weight:800; color:var(--accent-amber);">0</div>
+                <small style="font-size:0.7rem; color:var(--accent-amber); font-weight:600;">Action required</small>
+              </div>
+              <div style="width:40px; height:40px; border-radius:50%; background:rgba(245,158,11,0.08); color:var(--accent-amber); display:flex; align-items:center; justify-content:center; font-size:1.15rem;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+            </div>
+
+            <div class="card" style="padding:1.15rem; border-left: 4px solid var(--accent-blue); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <span style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.35rem;">Absent Students</span>
+                <div class="metric-box-val" id="teacherRepSummaryAbsent" style="font-size:1.6rem; font-weight:800; color:var(--accent-blue);">0</div>
+                <small style="font-size:0.7rem; color:var(--text-muted);">Marked absent today</small>
+              </div>
+              <div style="width:40px; height:40px; border-radius:50%; background:rgba(59,130,246,0.08); color:var(--accent-blue); display:flex; align-items:center; justify-content:center; font-size:1.15rem;">
+                <i class="fa-solid fa-user-xmark"></i>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Compact Allergy Status Banner -->
+          <div id="teacherClassroomAllergyBanner" style="margin-bottom:1.5rem;">
+            <div style="background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.15); border-radius:var(--r-md); padding:0.75rem 1.15rem; font-size:0.85rem; color:var(--accent-green); font-weight:600; display:flex; align-items:center; gap:0.6rem;">
+              <i class="fa-solid fa-shield-check" style="font-size:1.1rem;"></i> <span>No active food allergies in this class</span>
+            </div>
+          </div>
+
+          <!-- Main Grid: SECTION 2 & SECTION 3 / 4 -->
+          <div style="display: grid; grid-template-columns: 1.35fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+            
+            <!-- Left Column: SECTION 2 (Students Requiring Attention) -->
+            <div style="display:flex; flex-direction:column; gap:1.5rem;">
+              
+              <div class="card" style="padding:1.25rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border-subtle);">
+                  <h3 style="font-size:1.05rem; margin:0; font-weight:800; display:flex; align-items:center; gap:0.5rem; color:var(--text-primary);">
+                    <i class="fa-solid fa-user-clock" style="color:var(--accent-rose)"></i> Students Requiring Attention
+                  </h3>
+                </div>
+                <div id="teacherActionStudentsList" style="display:flex; flex-direction:column; gap:0.75rem;">
+                  <div style="padding:1.25rem; text-align:center; color:var(--accent-green); font-size:0.85rem; font-weight:600; background:rgba(16,185,129,0.04); border-radius:var(--r-md); border:1px dashed rgba(16,185,129,0.2);">
+                    <i class="fa-solid fa-circle-check" style="margin-right:0.35rem;"></i> All students are meeting today's meal goals.
+                  </div>
+                </div>
+              </div>
+
+              <!-- SECTION 3: Recent Parent Activity -->
+              <div class="card" style="padding:1.25rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border-subtle);">
+                  <h3 style="font-size:1.05rem; margin:0; font-weight:800; display:flex; align-items:center; gap:0.5rem; color:var(--text-primary);">
+                    <i class="fa-solid fa-clock-rotate-left" style="color:var(--primary)"></i> Recent Parent Activity
+                  </h3>
+                </div>
+                <div id="teacherRecentParentActivityList" style="display:flex; flex-direction:column; gap:0.65rem;">
+                  <div style="padding:1rem; text-align:center; color:var(--text-muted); font-size:0.85rem;">No recent parent activities recorded today.</div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Right Column: SECTION 4 (Nutrition Highlights) -->
+            <div style="display:flex; flex-direction:column; gap:1.5rem;">
+              
+              <div class="card" style="padding:1.25rem; border-top:4px solid var(--accent-violet);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border-subtle);">
+                  <h3 style="font-size:1.05rem; margin:0; font-weight:800; display:flex; align-items:center; gap:0.5rem; color:var(--text-primary);">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent-violet)"></i> Nutrition Highlights
+                  </h3>
+                </div>
+                <div id="teacherActionAiInsightsList" style="display:flex; flex-direction:column; gap:0.75rem;">
+                  <div style="font-size:0.85rem; color:var(--text-secondary);">Analyzing classroom meal data...</div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- PANE 8: ADMIN USER ACCOUNTS & PROFILES (SYSTEM USERS OVERVIEW) -->
+        <div class="pane-container" id="pane-admin-users">
+          
+          <!-- Admin User Statistics Cards -->
+          <div class="admin-stats-grid">
+            <div class="admin-stat-card">
+              <div class="admin-stat-icon" style="color: var(--primary); background: var(--primary-light);"><i class="fa-solid fa-users"></i></div>
+              <div class="admin-stat-info">
+                <span class="admin-stat-label">Total Users</span>
+                <strong class="admin-stat-value" id="adminStatTotalUsers">0</strong>
+              </div>
+            </div>
+            <div class="admin-stat-card">
+              <div class="admin-stat-icon" style="color: var(--accent-green); background: var(--accent-green-bg);"><i class="fa-solid fa-baby"></i></div>
+              <div class="admin-stat-info">
+                <span class="admin-stat-label">Parents</span>
+                <strong class="admin-stat-value" id="adminStatParents">0</strong>
+              </div>
+            </div>
+            <div class="admin-stat-card">
+              <div class="admin-stat-icon" style="color: var(--accent-blue); background: var(--accent-blue-bg);"><i class="fa-solid fa-chalkboard-user"></i></div>
+              <div class="admin-stat-info">
+                <span class="admin-stat-label">Teachers</span>
+                <strong class="admin-stat-value" id="adminStatTeachers">0</strong>
+              </div>
+            </div>
+            <div class="admin-stat-card">
+              <div class="admin-stat-icon" style="color: var(--accent-rose); background: var(--accent-rose-bg);"><i class="fa-solid fa-shield-halved"></i></div>
+              <div class="admin-stat-info">
+                <span class="admin-stat-label">Admins</span>
+                <strong class="admin-stat-value" id="adminStatAdmins">0</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem;">
+              <div>
+                <h3 style="font-size:1.1rem;"><i class="fa-solid fa-users-gear" style="color:var(--primary)"></i> System Registered User Accounts</h3>
+                <small style="color:var(--text-muted);">Overview of registered Parents, Teachers & Admins (Default Admin: sanjeet@gmail.com / sanjeet123)</small>
+              </div>
+              <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                <div class="admin-search-box">
+                  <i class="fa-solid fa-magnifying-glass admin-search-icon"></i>
+                  <input type="text" id="adminUserSearchInput" class="form-input admin-filter-control admin-search-input" placeholder="Search by name, email..." style="width:230px;">
+                </div>
+                <div style="display:flex; align-items:center; gap:0.4rem;">
+                  <label for="adminUserRoleFilter" style="font-size:0.825rem; font-weight:600; color:var(--text-secondary); white-space:nowrap;">Filter Role:</label>
+                  <select id="adminUserRoleFilter" class="form-input admin-filter-control" style="width:150px; font-weight:600;">
+                    <option value="ALL">All Roles</option>
+                    <option value="ADMIN">Admins Only</option>
+                    <option value="PARENT">Parents Only</option>
+                    <option value="TEACHER">Teachers Only</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table-chewcheckers">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Details</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="userTableBody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANE 9: ADMIN SCHOOL CLOSURES & HOLIDAYS CALENDAR (FULL MONTH CALENDAR GRID VIEW) -->
+        <div class="pane-container" id="pane-admin-holidays">
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+              <div>
+                <h3 style="font-size:1.1rem;"><i class="fa-solid fa-calendar-days" style="color:var(--primary)"></i> School Closures & Special Leave Management</h3>
+                <p style="color:var(--text-secondary); font-size:0.85rem; margin:0;">Manage planned holidays, emergency closures, weather-related leave days, and other school-wide non-instructional periods.</p>
+              </div>
+              <button class="btn-action-primary" id="btnOpenAddHolidayModal">+ Declare Closure / Holiday</button>
+            </div>
+
+            <!-- Full Monthly Calendar Grid View with Navigation Toolbar -->
+            <div class="calendar-card" style="margin-bottom:2.25rem;">
+              <div class="calendar-header-toolbar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1.25rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <button id="btnPrevMonth" class="btn-action-outline" style="padding:0.35rem 0.65rem; font-size:0.85rem;" title="Previous Month"><i class="fa-solid fa-chevron-left"></i></button>
+                  <strong style="font-size:1.15rem; min-width:170px; text-align:center; display:inline-block;" id="calendarMonthLabel">August 2026</strong>
+                  <button id="btnNextMonth" class="btn-action-outline" style="padding:0.35rem 0.65rem; font-size:0.85rem;" title="Next Month"><i class="fa-solid fa-chevron-right"></i></button>
+                  <button id="btnCurrentMonth" class="btn-action-outline" style="padding:0.35rem 0.65rem; font-size:0.75rem; margin-left:0.35rem;" title="Current Month">Today</button>
+                </div>
+              </div>
+
+              <div class="calendar-grid" id="fullMonthCalendarGrid">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+
+            <!-- Holiday Records Table Section Header -->
+            <div style="margin-top:2rem; margin-bottom:1.25rem; border-top:1px solid var(--border-subtle); padding-top:1.5rem;">
+              <h4 style="font-size:1.05rem; font-weight:700; color:var(--text-primary); margin-bottom:0.25rem;">
+                <i class="fa-solid fa-list-check" style="color:var(--primary)"></i> Declared School Closures
+              </h4>
+              <p style="color:var(--text-secondary); font-size:0.85rem; margin:0;">
+                View and manage all scheduled holidays, emergency closures, and special non-instructional days.
+              </p>
+            </div>
+
+            <!-- Holidays List Table -->
+            <div class="table-responsive">
+              <table class="table-chewcheckers">
+                <thead>
+                  <tr>
+                    <th>Holiday Name / Reason</th>
+                    <th>Date Range (DD/MM/YYYY)</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="holidaysTableBody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANE 10: ADMIN HEALTH DIAGNOSTICS -->
+        <div class="pane-container" id="pane-admin-health">
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+              <div>
+                <h3 style="font-size:1.15rem; margin:0;"><i class="fa-solid fa-server" style="color:var(--primary)"></i> Microservices Health Diagnostics</h3>
+                <span id="healthLastChecked" style="font-size:0.775rem; color:var(--text-muted);">Last checked: just now</span>
+              </div>
+              <button class="btn-action-primary" id="btnRecheckHealth" style="padding:0.45rem 0.85rem; font-size:0.8rem;"><i class="fa-solid fa-arrows-rotate"></i> Re-run Diagnostics</button>
+            </div>
+            
+            <div style="display:flex; flex-direction:column; gap:0.75rem;" id="health-check-container">
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1rem; background:var(--bg-page); border-radius:var(--r-md); border: 1px solid var(--border-subtle);">
+                <strong>API Gateway Service (Port 8088)</strong>
+                <span class="badge-status" id="health-gateway" style="background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-muted); font-size:0.75rem;"><i class="fa-solid fa-spinner fa-spin" style="margin-right:0.25rem;"></i> Checking...</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1rem; background:var(--bg-page); border-radius:var(--r-md); border: 1px solid var(--border-subtle);">
+                <strong>Eureka Discovery Server (Port 8761)</strong>
+                <span class="badge-status" id="health-eureka" style="background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-muted); font-size:0.75rem;"><i class="fa-solid fa-spinner fa-spin" style="margin-right:0.25rem;"></i> Checking...</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1rem; background:var(--bg-page); border-radius:var(--r-md); border: 1px solid var(--border-subtle);">
+                <strong>Auth Admin Service (Port 8081)</strong>
+                <span class="badge-status" id="health-auth" style="background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-muted); font-size:0.75rem;"><i class="fa-solid fa-spinner fa-spin" style="margin-right:0.25rem;"></i> Checking...</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1rem; background:var(--bg-page); border-radius:var(--r-md); border: 1px solid var(--border-subtle);">
+                <strong>School Report Service (Port 8083)</strong>
+                <span class="badge-status" id="health-school" style="background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-muted); font-size:0.75rem;"><i class="fa-solid fa-spinner fa-spin" style="margin-right:0.25rem;"></i> Checking...</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1rem; background:var(--bg-page); border-radius:var(--r-md); border: 1px solid var(--border-subtle);">
+                <strong>AI Meal Vision Service (Port 8082)</strong>
+                <span class="badge-status" id="health-meal" style="background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-muted); font-size:0.75rem;"><i class="fa-solid fa-spinner fa-spin" style="margin-right:0.25rem;"></i> Checking...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANE 11: DIRECT MESSAGING (CONVERSATION-FIRST FULL-BLEED WORKSPACE) -->
+        <div class="pane-container" id="pane-messaging" style="padding:0; height:100vh; box-sizing:border-box; width:100%;">
+          <div class="chat-window-full" style="display:flex; flex-direction:row; height:100vh; width:100%;">
+            
+            <!-- Left Panel: Contacts Sidebar (for Teachers) -->
+            <div id="chatContactsSidebar" style="width:260px; min-width:260px; max-width:260px; background:var(--bg-page); border-right:1px solid var(--border-subtle); display:flex; flex-direction:column; height:100%;">
+              <div class="chat-contacts-header">
+                <i class="fa-solid fa-address-book" style="color:var(--primary);"></i> Active Conversations
+              </div>
+              <div id="chatContactsList">
+                <!-- Dynamically rendered contacts -->
+              </div>
+            </div>
+
+            <!-- Right Panel: Conversation Workspace -->
+            <div style="flex:1; display:flex; flex-direction:column; height:100%; min-width:0; background:var(--bg-card);">
+              
+              <!-- 1. Sleek Integrated Header (Matches AI Assistant Page) -->
+              <div class="ai-workspace-header">
+                <div class="ai-child-context-card">
+                  <div class="ai-child-avatar" id="chatContactAvatar">T</div>
+                  <div class="ai-child-meta">
+                    <span class="ai-child-name" id="chatContactName">Class Teacher</span>
+                    <div class="ai-child-submeta">
+                      <span class="ai-meta-item"><strong id="chatContactTitle">Class Teacher</strong></span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                  <div class="user-profile-badge" id="msgUserProfileBadge" style="cursor:pointer;" title="Click to manage profile">
+                    <div class="user-avatar-initial" id="msgUserAvatar">U</div>
+                    <div class="user-profile-meta">
+                      <strong class="user-profile-name" id="msgUserName">User Profile</strong>
+                      <span class="user-profile-role" id="msgUserRole">Parent</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down user-profile-caret"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. Main Conversation Stream (980px centered reading column) -->
+              <div class="chat-messages-full" id="directChatScrollArea">
+                <div class="chat-thread-container" id="directChatThread">
+                  <div class="msg-row theirs">
+                    <div class="msg-bubble">
+                      Select a conversation to begin.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. Grounded Bottom Composer Dock -->
+              <div class="ai-composer-wrapper">
+                <form class="ai-composer-inner" id="directChatForm">
+                  <button type="button" class="btn-composer-tool" id="btnAiDraftMessage" title="Generate Smart AI Draft Message">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> <span>AI Draft</span>
+                  </button>
+                  <input type="text" class="ai-composer-input" id="directChatInput" placeholder="Type a message to the teacher..." autocomplete="off" required>
+                  <button type="submit" class="btn-ai-send" title="Send Message">
+                    <i class="fa-solid fa-paper-plane"></i>
+                  </button>
+                </form>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       3. MODAL OVERLAYS (USER CRUD, ADD CHILD, LINK CODE, SETTINGS, HOLIDAYS)
+  ═══════════════════════════════════════════════════════════════════ -->
+
+  <!-- MODAL 1: EDIT USER PROFILE / ADD USER ACCOUNT -->
+  <div class="modal-backdrop" id="userModal">
+    <div class="modal-container" style="max-width:480px;">
+      <div class="modal-title-row">
+        <h3 style="font-size:1.15rem;" id="userModalTitle"><i class="fa-solid fa-user-gear" style="color:var(--primary)"></i> Edit Account Profile</h3>
+        <button class="modal-close-btn" id="btnCloseUserModal">&times;</button>
+      </div>
+
+      <form id="userModalForm">
+        <input type="hidden" id="editUserId">
+
+        <div class="form-group">
+          <label class="form-label" for="inputUserName">Full Name</label>
+          <input type="text" id="inputUserName" class="form-input" placeholder="e.g. Sanjeet Admin" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="inputUserEmail">Email Address</label>
+          <input type="email" id="inputUserEmail" class="form-input" placeholder="e.g. sanjeet@gmail.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="inputUserRole">Role</label>
+          <select id="inputUserRole" class="form-input">
+            <option value="PARENT">PARENT</option>
+            <option value="TEACHER">TEACHER</option>
+            <option value="ADMIN">ADMIN</option>
+          </select>
+          <small id="roleRestrictionNote" class="hidden" style="color:var(--accent-rose); font-weight:600; font-size:0.78rem; margin-top:0.35rem; display:block;">
+            <i class="fa-solid fa-lock"></i> Parent accounts cannot be converted through the Admin panel.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="inputUserDetails">Account Details</label>
+          <input type="text" id="inputUserDetails" class="form-input" placeholder="e.g. System Administrator" required>
+        </div>
+
+        <button type="submit" class="btn-submit-primary" style="margin-top:1rem;">Save Profile Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: ADD NEW CHILD -->
+  <div class="modal-backdrop" id="addChildModal">
+    <div class="modal-container">
+      <div class="modal-title-row">
+        <h3 style="font-size:1.15rem;"><i class="fa-solid fa-child-reaching" style="color:var(--primary)"></i> Add New Child Details</h3>
+        <button class="modal-close-btn" id="btnCloseAddChildModal">&times;</button>
+      </div>
+      <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:1.25rem;">
+        Enter your child's details to personalize their daily nutrition targets.
+      </p>
+
+      <form id="addChildForm">
+        <div class="form-group">
+          <label class="form-label" for="childSchoolSelect">Select School</label>
+          <select id="childSchoolSelect" class="form-input" required>
+            <option value="" disabled selected>Loading schools...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="childNameInput">Child's Full Name</label>
+          <input type="text" id="childNameInput" class="form-input" placeholder="e.g. Mia Fernandes" required>
+        </div>
+
+        <div class="grid-2-eq">
+          <div class="form-group">
+            <label class="form-label" for="childAgeInput">Age</label>
+            <input type="number" id="childAgeInput" class="form-input" placeholder="e.g. 8" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Gender</label>
+            <input type="hidden" id="childGenderSelect" value="Female">
+            <div class="gender-segmented-group" id="newChildGenderGroup">
+              <button type="button" class="gender-segment-btn active" data-gender="Female">
+                <i class="fa-solid fa-venus"></i> Female
+              </button>
+              <button type="button" class="gender-segment-btn" data-gender="Male">
+                <i class="fa-solid fa-mars"></i> Male
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2-eq">
+          <div class="form-group">
+            <label class="form-label" for="childHeightInput">Height (cm)</label>
+            <input type="number" id="childHeightInput" class="form-input" placeholder="e.g. 128" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="childWeightInput">Weight (kg)</label>
+            <input type="number" id="childWeightInput" class="form-input" placeholder="e.g. 26" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="childAllergiesInput">Food Allergies (if any)</label>
+          <input type="text" id="childAllergiesInput" class="form-input" placeholder="e.g. peanuts, dairy">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="childMedicalInput">Medical Conditions (if any)</label>
+          <input type="text" id="childMedicalInput" class="form-input" placeholder="e.g. mild lactose intolerance">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="childSchoolInput">Class Code</label>
+          <input type="text" id="childSchoolInput" class="form-input" placeholder="e.g. CLS-1018" required>
+        </div>
+
+        <button type="submit" class="btn-submit-primary" style="margin-top:1rem;">Save & Continue</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: LINK CLASS CODE -->
+  <div class="modal-backdrop" id="linkClassModal">
+    <div class="modal-container" style="max-width:440px;">
+      <div class="modal-title-row">
+        <h3 style="font-size:1.15rem;"><i class="fa-solid fa-key" style="color:var(--primary)"></i> Link Class Code</h3>
+        <button class="modal-close-btn" id="btnCloseLinkClassModal">&times;</button>
+      </div>
+
+      <form id="linkClassForm">
+        <div class="form-group">
+          <label class="form-label" for="inputClassCode">Class Code</label>
+          <input type="text" id="inputClassCode" class="form-input" placeholder="e.g. CLS3B-9842" style="font-size:1.1rem; letter-spacing:0.08em; text-transform:uppercase;" required>
+        </div>
+
+        <button type="submit" class="btn-submit-primary">Link Child to Classroom</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 4: APPLICATION SETTINGS -->
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="modal-container" style="max-width:440px;">
+      <div class="modal-title-row">
+        <h3 style="font-size:1.15rem;"><i class="fa-solid fa-gear" style="color:var(--primary)"></i> Application Settings</h3>
+        <button class="modal-close-btn" id="btnCloseSettingsModal">&times;</button>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:1.25rem; margin-top:0.75rem;">
+        <!-- Theme Toggle Segmented Control -->
+        <div class="form-group">
+          <label class="form-label" style="margin-bottom:0.5rem; font-weight:700;">Appearance & Color Theme</label>
+          <div class="theme-segmented-control" id="themeSegmentedControl">
+            <div class="theme-slider-pill" id="themeSliderPill"></div>
+            <button type="button" class="theme-segment-btn" id="btnThemeLight"><i class="fa-solid fa-sun"></i> Light Theme</button>
+            <button type="button" class="theme-segment-btn" id="btnThemeDark"><i class="fa-solid fa-moon"></i> Dark Theme</button>
+          </div>
+        </div>
+
+        <!-- Notification & Alert Preferences -->
+        <div class="form-group">
+          <label class="form-label" style="margin-bottom:0.5rem; font-weight:700;">Notification & Alert Preferences</label>
+          <div style="display:flex; flex-direction:column; gap:0.75rem; background:var(--bg-page); padding:0.85rem 1rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+            
+            <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer; font-size:0.85rem; color:var(--text-primary); font-weight:600;">
+              <span><i class="fa-solid fa-bell" style="color:var(--primary); margin-right:0.4rem;"></i> In-App Message Alerts</span>
+              <input type="checkbox" id="settingMsgAlerts" checked style="width:18px; height:18px; accent-color:var(--primary); cursor:pointer;">
+            </label>
+
+            <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer; font-size:0.85rem; color:var(--text-primary); font-weight:600;">
+              <span><i class="fa-solid fa-clock" style="color:var(--accent-amber); margin-right:0.4rem;"></i> Daily Meal Log Reminders</span>
+              <input type="checkbox" id="settingMealReminders" checked style="width:18px; height:18px; accent-color:var(--primary); cursor:pointer;">
+            </label>
+
+            <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer; font-size:0.85rem; color:var(--text-primary); font-weight:600;">
+              <span><i class="fa-solid fa-rotate" style="color:var(--accent-teal); margin-right:0.4rem;"></i> Real-Time Live Sync (5s)</span>
+              <input type="checkbox" id="settingAutoRefresh" checked style="width:18px; height:18px; accent-color:var(--primary); cursor:pointer;">
+            </label>
+
+          </div>
+        </div>
+
+        <!-- Technical Gateway URL (Admin Only) -->
+        <div class="form-group" id="adminGatewaySettingBlock" style="display:none;">
+          <label class="form-label" for="settingGatewayUrl" style="font-weight:700;">Spring Cloud Gateway URL <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Admin Configuration)</span></label>
+          <input type="text" id="settingGatewayUrl" class="form-input" value="http://localhost:8088">
+        </div>
+
+        <button type="button" class="btn-submit-primary" id="btnSaveSettings" style="margin-top:0.25rem; font-weight:700;">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4B: PROFILE MANAGEMENT (RELOCATED FROM SETTINGS) -->
+  <div class="modal-backdrop" id="profileManagementModal">
+    <div class="modal-container" style="max-width:550px;">
+      <div class="modal-title-row">
+        <h3 style="font-size:1.15rem;"><i class="fa-solid fa-user-gear" style="color:var(--primary)"></i> Profile Management</h3>
+        <button class="modal-close-btn" id="btnCloseProfileModal">&times;</button>
+      </div>
+
+      <form id="profileManagementForm">
+        <div style="display:flex; flex-direction:column; gap:1.1rem; margin-top:0.5rem; max-height: 70vh; overflow-y: auto; padding-right: 0.5rem;">
+          
+          <!-- Initial Avatar Header Row -->
+          <div style="display:flex; align-items:center; gap:1rem; background:var(--bg-elevated); padding:0.95rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+            <div style="width:58px; height:58px; border-radius:50%; background:linear-gradient(135deg, var(--primary) 0%, #4F46E5 100%); color:#FFFFFF; font-weight:800; font-size:1.6rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(99,102,241,0.25); flex-shrink:0; text-transform:uppercase;" id="profileAvatarPreviewInitial">
+              J
+            </div>
+            <div style="flex:1;">
+              <strong style="font-size:1.05rem; color:var(--text-primary); display:block;" id="profileAvatarName">User Profile</strong>
+              <p style="font-size:0.775rem; color:var(--text-muted); margin:0.2rem 0 0 0;">Profile avatar badge based on first letter of name</p>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+            <div class="form-group">
+              <label class="form-label" for="profileFullName">Full Name</label>
+              <input type="text" id="profileFullName" class="form-input" placeholder="e.g. John Doe" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="profileMobile">Mobile Number</label>
+              <input type="text" id="profileMobile" class="form-input" placeholder="e.g. +91 98765 43210">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="profileEmail">Email Address</label>
+            <input type="email" id="profileEmail" class="form-input" placeholder="e.g. user@example.com" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="profileAddress">Home Address</label>
+            <textarea id="profileAddress" class="form-input" rows="2" placeholder="Enter home address" style="resize:none; padding:0.5rem;"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="profilePassword">New Password (leave blank to keep current)</label>
+            <input type="password" id="profilePassword" class="form-input" placeholder="Min. 8 characters">
+          </div>
+
+          <!-- ACCOUNT INFORMATION (READ-ONLY) -->
+          <div style="background:var(--bg-elevated); padding:0.75rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+            <h5 style="font-size:0.825rem; font-weight:700; color:var(--text-secondary); margin-bottom:0.4rem;">Account Info</h5>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem 1rem; font-size:0.75rem; color:var(--text-secondary);">
+              <div><strong>User ID:</strong> <span id="profileInfoUserId">-</span></div>
+              <div><strong>Account Role:</strong> <span id="profileInfoUserRole">-</span></div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit-primary" style="margin-top:0.25rem; font-weight:700;">Save Profile Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 5: ADD PUBLIC HOLIDAY WITH MULTI-DAY DATE RANGE -->
+  <div class="modal-backdrop" id="holidayModal">
+    <div class="modal-container" style="max-width:460px;">
+      <div class="modal-title-row">
+        <h3 style="font-size:1.15rem;"><i class="fa-solid fa-calendar-plus" style="color:var(--primary)"></i> Declare School Closure / Holiday</h3>
+        <button class="modal-close-btn" id="btnCloseHolidayModal">&times;</button>
+      </div>
+
+      <form id="addHolidayForm">
+        <div class="form-group">
+          <label class="form-label" for="holidayNameInput">Holiday Name / Reason</label>
+          <input type="text" id="holidayNameInput" class="form-input" placeholder="e.g. Deepavali / Pongal / Diwali" required>
+        </div>
+
+        <div class="grid-2-eq">
+          <div class="form-group">
+            <label class="form-label" for="holidayStartDateInput">Start Date</label>
+            <input type="date" id="holidayStartDateInput" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="holidayEndDateInput">End Date (Multi-Day)</label>
+            <input type="date" id="holidayEndDateInput" class="form-input" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit-primary">Add Holiday to Calendar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 7: MEAL DETAIL VIEW -->
+  <div class="modal-backdrop" id="mealDetailModal">
+    <div class="modal-container" style="max-width:560px;">
+      <div class="modal-title-row">
+        <h3 style="font-size:1.15rem;" id="mealDetailTitle"><i class="fa-solid fa-utensils" style="color:var(--primary)"></i> School Lunch Details</h3>
+        <button class="modal-close-btn" id="btnCloseMealDetailModal">&times;</button>
+      </div>
+
+      <div style="background:var(--bg-page); padding:1rem; border-radius:var(--r-md); margin-bottom:1.25rem; border:1px solid var(--border-subtle);">
+        <h4 style="margin:0 0 0.5rem 0; font-size:0.95rem;">Detected Food Items</h4>
+        <div id="detailFoodsList" style="font-size:0.875rem; color:var(--text-secondary); line-height:1.4;">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
+        <div style="background:var(--bg-page); padding:0.75rem; border-radius:var(--r-md); text-align:center;">
+          <span style="font-size:0.75rem; color:var(--text-muted)">Estimated Weight</span>
+          <strong id="detailEstWeight" style="display:block; font-size:1.1rem; margin-top:0.25rem;">--</strong>
+        </div>
+        <div style="background:var(--bg-page); padding:0.75rem; border-radius:var(--r-md); text-align:center;">
+          <span style="font-size:0.75rem; color:var(--text-muted)">Quantity Consumed</span>
+          <strong id="detailConsumedQty" style="display:block; font-size:1.1rem; margin-top:0.25rem; color:var(--accent-green);">--</strong>
+        </div>
+      </div>
+      <div style="background:var(--bg-page); padding:1rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+        <h4 style="margin:0 0 0.75rem 0; font-size:0.95rem;">Nutrient Consumption Breakdown</h4>
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.5rem; text-align:center;">
+          <div>
+            <span style="font-size:0.7rem; color:var(--text-muted)">Calories</span>
+            <strong id="detailConsumedCal" style="display:block; font-size:1rem; margin-top:0.15rem;">-- kcal</strong>
+          </div>
+          <div>
+            <span style="font-size:0.7rem; color:var(--text-muted)">Protein</span>
+            <strong id="detailConsumedProt" style="display:block; font-size:1rem; margin-top:0.15rem; color:var(--accent-green)">-- g</strong>
+          </div>
+          <div>
+            <span style="font-size:0.7rem; color:var(--text-muted)">Carbs</span>
+            <strong id="detailConsumedCarbs" style="display:block; font-size:1rem; margin-top:0.15rem;">-- g</strong>
+          </div>
+          <div>
+            <span style="font-size:0.7rem; color:var(--text-muted)">Fibre</span>
+            <strong id="detailConsumedFib" style="display:block; font-size:1rem; margin-top:0.15rem; color:var(--accent-amber)">-- g</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 8: TEACHER LOG LEFTOVERS -->
+  <div class="modal-backdrop" id="teacherLeftoverModal">
+    <div class="modal-container" style="max-width:460px;">
+      <div class="modal-title-row">
+        <h3 style="font-size:1.15rem;"><i class="fa-solid fa-clipboard-check" style="color:var(--primary)"></i> Verify Lunchbox Clearance</h3>
+        <button class="modal-close-btn" id="btnCloseTeacherLeftoverModal">&times;</button>
+      </div>
+
+      <form id="teacherLeftoverForm" style="display:flex; flex-direction:column; gap:1.25rem;">
+        <input type="hidden" id="teacherLeftoverStudentId">
+        <input type="hidden" id="teacherLeftoverMealId">
+
+        <div style="background:var(--bg-page); padding:1rem; border-radius:var(--r-md); border:1px solid var(--border-subtle); display:flex; gap:0.75rem; align-items:center;">
+          <div style="width:42px; height:42px; border-radius:50%; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.1rem; flex-shrink:0;">
+            <i class="fa-solid fa-utensils"></i>
+          </div>
+          <div>
+            <strong id="teacherLeftoverStudentName" style="font-size:0.95rem; display:block;">Student Name</strong>
+            <span id="teacherLeftoverMealDate" style="font-size:0.8rem; color:var(--text-secondary);">Today's Meal</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="display:flex; justify-content:space-between; font-weight:700;">
+            <span>Clearance Slider (Eaten Percentage)</span>
+            <span id="teacherLeftoverPercentLabel" style="color:var(--primary); font-size:1rem;">85% Eaten</span>
+          </label>
+          <input type="range" id="teacherLeftoverRange" min="0" max="100" value="85" style="width:100%; accent-color:var(--primary);">
+        </div>
+
+        <button type="submit" class="btn-action-primary" style="padding:0.75rem; width:100%;">
+          <i class="fa-solid fa-circle-check"></i> Save Clearance Log & Trigger Nutrition Scoring
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- LINK EXISTING STUDENT MODAL -->
+  <div class="modal-backdrop" id="linkStudentModal">
+    <div class="modal-container" style="max-width:550px;">
+      <div class="modal-title-row">
+        <h3 style="font-size:1.15rem;"><i class="fa-solid fa-user-plus" style="color:var(--primary)"></i> Link Existing Student</h3>
+        <button class="modal-close-btn" id="btnCloseLinkStudentModal">&times;</button>
+      </div>
+      <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:1rem;">
+        Search and select an eligible student to link to your class. Eligible students are active and not currently assigned to any class.
+      </p>
+
+      <div class="form-group" style="margin-bottom:1rem;">
+        <div style="display:flex; gap:0.5rem;">
+          <input type="text" id="linkStudentSearch" class="form-control" placeholder="Search by student name or code (e.g. STU-123456)..." style="flex:1;">
+          <button class="btn-action-primary" id="btnSearchEligibleStudents" style="padding:0 1.25rem;"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+        </div>
+      </div>
+
+      <div style="max-height:250px; overflow-y:auto; border:1px solid var(--border-subtle); border-radius:var(--r-md); background:var(--bg-page); margin-bottom:1.25rem;" id="eligibleStudentsContainer">
+        <table class="table-chewcheckers" style="margin:0;">
+          <thead>
+            <tr>
+              <th style="padding:0.5rem 0.75rem;">Name</th>
+              <th style="padding:0.5rem 0.75rem;">Code</th>
+              <th style="padding:0.5rem 0.75rem; text-align:right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="eligibleStudentsList">
+            <tr>
+              <td colspan="3" style="text-align:center; padding:1.5rem; color:var(--text-muted);">Enter search or click search to view eligible students</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
+        <button class="btn-action-outline" id="btnCancelLinkStudent" style="padding:0.5rem 1rem;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STUDENT PROFILE MODAL -->
+  <div class="modal-backdrop" id="studentProfileModal">
+    <div class="modal-container" style="max-width:550px;">
+      <div class="modal-title-row">
+        <h3 style="font-size:1.15rem;"><i class="fa-solid fa-id-card" style="color:var(--primary)"></i> Student Profile</h3>
+        <button class="modal-close-btn" id="btnCloseStudentProfileModal">&times;</button>
+      </div>
+      
+      <div style="display:grid; grid-template-columns:80px 1fr; gap:1.25rem; align-items:center; background:var(--bg-page); padding:1rem; border-radius:var(--r-md); border:1px solid var(--border-subtle); margin-bottom:1.25rem;">
+        <div style="width:80px; height:80px; border-radius:50%; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:2.5rem; font-weight:700;" id="profileAvatar">
+          S
+        </div>
+        <div>
+          <h4 id="profileStudentName" style="font-size:1.25rem; margin:0 0 0.25rem 0; font-weight:800;">Student Name</h4>
+          <code id="profileStudentCode" style="font-size:0.85rem; background:var(--bg-card); padding:0.2rem 0.4rem; border-radius:var(--r-sm); color:var(--primary); font-weight:700;">STU-000000</code>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1.25rem;">
+        <div style="background:var(--bg-page); padding:0.75rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Gender</span>
+          <div id="profileGender" style="font-weight:600; color:var(--text-primary); margin-top:0.15rem;">N/A</div>
+        </div>
+        <div style="background:var(--bg-page); padding:0.75rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Date of Birth</span>
+          <div id="profileDOB" style="font-weight:600; color:var(--text-primary); margin-top:0.15rem;">N/A</div>
+        </div>
+        <div style="background:var(--bg-page); padding:0.75rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Blood Group</span>
+          <div id="profileBloodGroup" style="font-weight:600; color:var(--text-primary); margin-top:0.15rem;">N/A</div>
+        </div>
+        <div style="background:var(--bg-page); padding:0.75rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Class Assignment</span>
+          <div id="profileClass" style="font-weight:600; color:var(--text-primary); margin-top:0.15rem;">N/A</div>
+        </div>
+        <div style="background:var(--bg-page); padding:0.75rem; border-radius:var(--r-md); border:1px solid var(--border-subtle); grid-column: span 2;">
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Food Allergies</span>
+          <div id="profileAllergy" style="font-weight:600; color:var(--text-primary); margin-top:0.15rem;">None</div>
+        </div>
+      </div>
+
+      <h4 style="font-size:0.95rem; font-weight:700; margin-bottom:0.5rem; color:var(--text-primary);">Lunchbox Target Targets (Daily)</h4>
+      <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:0.5rem; margin-bottom:1.5rem; text-align:center;">
+        <div style="background:var(--bg-page); padding:0.5rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+          <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">Calories</div>
+          <div id="profileTargetCal" style="font-size:0.85rem; font-weight:700; color:var(--primary);">0</div>
+        </div>
+        <div style="background:var(--bg-page); padding:0.5rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+          <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">Protein</div>
+          <div id="profileTargetProt" style="font-size:0.85rem; font-weight:700; color:var(--accent-green);">0g</div>
+        </div>
+        <div style="background:var(--bg-page); padding:0.5rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+          <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">Carbs</div>
+          <div id="profileTargetCarbs" style="font-size:0.85rem; font-weight:700; color:var(--accent-violet);">0g</div>
+        </div>
+        <div style="background:var(--bg-page); padding:0.5rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+          <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">Fat</div>
+          <div id="profileTargetFat" style="font-size:0.85rem; font-weight:700; color:var(--accent-amber);">0g</div>
+        </div>
+        <div style="background:var(--bg-page); padding:0.5rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+          <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">Fiber</div>
+          <div id="profileTargetFiber" style="font-size:0.85rem; font-weight:700; color:var(--accent-teal);">0g</div>
+        </div>
+      </div>
+
+      <!-- Daily Intake & Deficit Analysis -->
+      <h4 style="font-size:0.95rem; font-weight:700; margin-bottom:0.5rem; color:var(--text-primary); display:flex; align-items:center; gap:0.4rem;">
+        <i class="fa-solid fa-chart-column" style="color:var(--primary);"></i> Intake Status & Deficits (<span id="profileIntakeDate">Today</span>)
+      </h4>
+      <div id="profileIntakeAnalysisBlock" style="background:var(--bg-page); padding:1rem; border-radius:var(--r-md); border:1px solid var(--border-subtle); margin-bottom:1.5rem;">
+        <div style="color:var(--text-muted); font-size:0.85rem;">No meal records found for this date.</div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end;">
+        <button class="btn-action-outline" id="btnCloseProfileDetail" style="padding:0.5rem 1.25rem;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CUSTOM PORTION CORRECTION MODAL -->
+  <div class="modal-backdrop" id="portionCorrectionModal">
+    <div class="modal-container" style="max-width:480px;">
+      <div class="modal-title-row">
+        <h3 style="font-size:1.15rem; display:flex; align-items:center; gap:0.5rem; margin:0;">
+          <i class="fa-solid fa-rotate-left" style="color:var(--primary)"></i> Correct Portion Consumed
+        </h3>
+        <button class="modal-close-btn" id="btnClosePortionModal">&times;</button>
+      </div>
+
+      <div style="background:var(--bg-page); padding:1rem 1.15rem; border-radius:var(--r-md); border:1px solid var(--border-subtle); margin-top:0.85rem; margin-bottom:1.25rem;">
+        <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Student</div>
+        <strong id="portionModalStudentName" style="font-size:1.1rem; color:var(--text-primary); display:block; margin-top:0.15rem;">Student Name</strong>
+        <p style="font-size:0.825rem; color:var(--text-secondary); margin:0.35rem 0 0 0;">Select the corrected meal portion consumed by this student:</p>
+      </div>
+
+      <!-- Quick Percentage Pill Buttons Grid -->
+      <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:0.6rem; margin-bottom:1.5rem;" id="portionModalPctGrid">
+        <button class="btn-pct-select" data-pct="100" style="padding:0.85rem 0.25rem; font-weight:800; border-radius:var(--r-md); border:2px solid var(--accent-green); background:rgba(16,185,129,0.05); cursor:pointer; text-align:center; transition:all 0.2s ease;">
+          <div style="font-size:1.15rem; color:var(--accent-green); font-weight:800;">100%</div>
+          <small style="font-size:0.65rem; color:var(--text-muted); display:block; margin-top:0.25rem;">Clean Plate</small>
+        </button>
+        <button class="btn-pct-select" data-pct="75" style="padding:0.85rem 0.25rem; font-weight:800; border-radius:var(--r-md); border:2px solid var(--primary); background:rgba(99,102,241,0.05); cursor:pointer; text-align:center; transition:all 0.2s ease;">
+          <div style="font-size:1.15rem; color:var(--primary); font-weight:800;">75%</div>
+          <small style="font-size:0.65rem; color:var(--text-muted); display:block; margin-top:0.25rem;">Most Eaten</small>
+        </button>
+        <button class="btn-pct-select" data-pct="50" style="padding:0.85rem 0.25rem; font-weight:800; border-radius:var(--r-md); border:2px solid var(--accent-violet); background:rgba(139,92,246,0.05); cursor:pointer; text-align:center; transition:all 0.2s ease;">
+          <div style="font-size:1.15rem; color:var(--accent-violet); font-weight:800;">50%</div>
+          <small style="font-size:0.65rem; color:var(--text-muted); display:block; margin-top:0.25rem;">Half Eaten</small>
+        </button>
+        <button class="btn-pct-select" data-pct="25" style="padding:0.85rem 0.25rem; font-weight:800; border-radius:var(--r-md); border:2px solid var(--accent-amber); background:rgba(245,158,11,0.05); cursor:pointer; text-align:center; transition:all 0.2s ease;">
+          <div style="font-size:1.15rem; color:var(--accent-amber); font-weight:800;">25%</div>
+          <small style="font-size:0.65rem; color:var(--text-muted); display:block; margin-top:0.25rem;">Quarter Eaten</small>
+        </button>
+        <button class="btn-pct-select" data-pct="0" style="padding:0.85rem 0.25rem; font-weight:800; border-radius:var(--r-md); border:2px solid var(--accent-rose); background:rgba(239,68,68,0.05); cursor:pointer; text-align:center; transition:all 0.2s ease;">
+          <div style="font-size:1.15rem; color:var(--accent-rose); font-weight:800;">0%</div>
+          <small style="font-size:0.65rem; color:var(--text-muted); display:block; margin-top:0.25rem;">Untouched</small>
+        </button>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:0.6rem;">
+        <button class="btn-action-outline" id="btnCancelPortionModal" style="padding:0.5rem 1.25rem;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD / EDIT LUNCHBOX PRESET -->
+  <div class="modal-backdrop" id="presetModal" style="z-index: 2500;">
+    <div class="modal-container" style="max-width:520px;">
+      <div class="modal-title-row">
+        <h3 style="font-size:1.15rem; display:flex; align-items:center; gap:0.5rem; margin:0;" id="presetModalTitle">
+          <i class="fa-solid fa-box-open" style="color:var(--primary)"></i> Add Lunchbox Preset
+        </h3>
+        <button class="modal-close-btn" id="btnClosePresetModal">&times;</button>
+      </div>
+
+      <form id="presetForm" style="display:flex; flex-direction:column; gap:1.15rem; margin-top:1rem;">
+        <input type="hidden" id="presetFormId" value="">
+
+        <div class="form-group">
+          <label class="form-label" for="inputPresetName">Lunchbox Preset Name *</label>
+          <input type="text" id="inputPresetName" class="form-input" placeholder="e.g. Blue Bento Box, Steel Lunch Box" required>
+        </div>
+
+        <!-- AI Quick Calibration Helper Bar -->
+        <div style="background:rgba(16, 185, 129, 0.08); border:1px solid rgba(16, 185, 129, 0.25); border-radius:var(--r-md); padding:0.65rem 0.85rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem;">
+            <span style="font-size:0.75rem; font-weight:800; color:#059669; text-transform:uppercase; letter-spacing:0.4px; display:flex; align-items:center; gap:5px;">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> AI Dimension Calibration Presets
+            </span>
+            <span style="font-size:0.7rem; color:var(--text-muted);">Click to auto-calibrate</span>
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button type="button" class="btn-ai-dim-chip" data-name="Stainless Steel Tiffin with Katori" data-len="16.0" data-wid="12.0" data-hgt="4.0" style="padding:4px 8px; font-size:0.75rem; font-weight:700; border-radius:6px; border:1px solid rgba(16,185,129,0.3); background:var(--bg-card); color:var(--text-primary); cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s ease;">
+              🍱 Steel Tiffin (16×12×4)
+            </button>
+            <button type="button" class="btn-ai-dim-chip" data-name="2-Tier Stainless Steel Dabba" data-len="14.0" data-wid="14.0" data-hgt="4.5" style="padding:4px 8px; font-size:0.75rem; font-weight:700; border-radius:6px; border:1px solid rgba(16,185,129,0.3); background:var(--bg-card); color:var(--text-primary); cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s ease;">
+              🥘 2-Tier Dabba (14×14×4.5)
+            </button>
+            <button type="button" class="btn-ai-dim-chip" data-name="Insulated Single-Tier Box" data-len="15.0" data-wid="11.0" data-hgt="4.0" style="padding:4px 8px; font-size:0.75rem; font-weight:700; border-radius:6px; border:1px solid rgba(16,185,129,0.3); background:var(--bg-card); color:var(--text-primary); cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s ease;">
+              📦 Insulated Box (15×11×4)
+            </button>
+            <button type="button" class="btn-ai-dim-chip" data-name="Compartment Bento Box" data-len="18.0" data-wid="13.0" data-hgt="4.5" style="padding:4px 8px; font-size:0.75rem; font-weight:700; border-radius:6px; border:1px solid rgba(16,185,129,0.3); background:var(--bg-card); color:var(--text-primary); cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s ease;">
+              🍱 Bento Box (18×13×4.5)
+            </button>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.85rem;">
+          <div class="form-group">
+            <label class="form-label" for="inputPresetLength">Length (cm) *</label>
+            <input type="number" step="0.1" min="0.1" id="inputPresetLength" class="form-input" placeholder="16.0" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="inputPresetWidth">Width (cm) *</label>
+            <input type="number" step="0.1" min="0.1" id="inputPresetWidth" class="form-input" placeholder="12.0" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="inputPresetHeight">Height (cm) *</label>
+            <input type="number" step="0.1" min="0.1" id="inputPresetHeight" class="form-input" placeholder="4.0" required>
+          </div>
+        </div>
+
+        <!-- Live Volume Calculator Bar -->
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-page); padding:0.55rem 0.85rem; border-radius:var(--r-md); border:1px solid var(--border-subtle); font-size:0.8rem;">
+          <span style="color:var(--text-muted); font-weight:600;"><i class="fa-solid fa-cube" style="color:var(--primary);"></i> Calculated Volume:</span>
+          <strong id="presetCalculatedVolPreview" style="color:var(--text-primary); font-size:0.95rem;">768 cm³ (~768 ml)</strong>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="inputPresetNotes">Notes / Description (Optional)</label>
+          <textarea id="inputPresetNotes" class="form-input" rows="2" placeholder="e.g. Primary 3-compartment bento box for daily school lunch"></textarea>
+        </div>
+
+        <div style="display:none;">
+          <input type="checkbox" id="chkPresetIsDefault" style="display:none;">
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:0.5rem;">
+          <button type="button" class="btn-action-outline" id="btnCancelPresetModal" style="padding:0.65rem 1.25rem;">Cancel</button>
+          <button type="submit" class="btn-action-primary" id="btnSavePreset" style="padding:0.65rem 1.5rem;"><i class="fa-solid fa-floppy-disk"></i> Save Preset</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT CHILD PROFILE -->
+  <div class="modal-backdrop" id="editChildModal" style="z-index: 2500;">
+    <div class="modal-container" style="max-width:540px;">
+      <div class="modal-title-row">
+        <h3 style="font-size:1.15rem; display:flex; align-items:center; gap:0.5rem; margin:0;">
+          <i class="fa-solid fa-user-pen" style="color:var(--primary)"></i> Edit Child Profile Details
+        </h3>
+        <button class="modal-close-btn" id="btnCloseEditChildModal">&times;</button>
+      </div>
+
+      <form id="editChildForm" style="display:flex; flex-direction:column; gap:1.15rem; margin-top:1rem;">
+        <input type="hidden" id="editChildId" value="">
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div class="form-group" style="grid-column: span 2;">
+            <label class="form-label" for="editChildName">Full Name *</label>
+            <input type="text" id="editChildName" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Gender</label>
+            <input type="hidden" id="editChildGender" value="Male">
+            <div class="gender-segmented-group" id="editChildGenderGroup">
+              <button type="button" class="gender-segment-btn active" data-gender="Male">
+                <i class="fa-solid fa-mars"></i> Male
+              </button>
+              <button type="button" class="gender-segment-btn" data-gender="Female">
+                <i class="fa-solid fa-venus"></i> Female
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="editChildDob">Date of Birth</label>
+            <input type="date" id="editChildDob" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="editChildWeight">Weight (kg)</label>
+            <input type="number" step="0.1" id="editChildWeight" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="editChildHeight">Height (cm)</label>
+            <input type="number" step="0.1" id="editChildHeight" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="editChildBloodGroup">Blood Group</label>
+            <select id="editChildBloodGroup" class="form-input">
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+            </select>
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label class="form-label" for="editChildClassCode">Classroom Code</label>
+            <input type="text" id="editChildClassCode" class="form-input" placeholder="e.g. CLS3B-9842">
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:0.5rem;">
+          <button type="button" class="btn-action-outline" id="btnCancelEditChildModal" style="padding:0.65rem 1.25rem;">Cancel</button>
+          <button type="submit" class="btn-action-primary" id="btnSaveChildEdit" style="padding:0.65rem 1.5rem;"><i class="fa-solid fa-floppy-disk"></i> Update Profile</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CHANGE CLASSROOM CODE MODAL -->
+  <div class="modal-backdrop" id="changeClassModal" style="z-index: 3000;">
+    <div class="modal-container" style="max-width:440px; padding:1.75rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem;">
+        <h3 style="font-size:1.15rem; margin:0; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem;">
+          <i class="fa-solid fa-chalkboard-user" style="color:var(--primary)"></i> Change Classroom Code
+        </h3>
+        <button class="btn-action-outline" id="btnCloseChangeClassModal" style="padding:0.2rem 0.55rem; font-size:0.8rem; border-radius:50%;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="changeClassForm" style="display:flex; flex-direction:column; gap:1.25rem;">
+        <div>
+          <label for="inputNewClassCode" class="form-label" style="font-weight:700;">Enter New 6-Character Classroom Code</label>
+          <input type="text" id="inputNewClassCode" class="form-input" placeholder="e.g. CLS-6070" required style="text-align:center; font-weight:800; font-size:1.15rem; letter-spacing:1px; padding:0.65rem; text-transform:uppercase;">
+          <small style="color:var(--text-muted); display:block; margin-top:0.4rem; line-height:1.4;">
+            Ask your child's class teacher for their classroom code to link your child's profile to their active classroom.
+          </small>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:0.75rem; border-top:1px solid var(--border-subtle); padding-top:1rem; margin-top:0.5rem;">
+          <button type="button" class="btn-action-outline" id="btnCancelChangeClassModal" style="padding:0.55rem 1.1rem; font-size:0.85rem; font-weight:700;">Cancel</button>
+          <button type="submit" class="btn-action-primary" style="padding:0.55rem 1.25rem; font-size:0.85rem; font-weight:700;">
+            <i class="fa-solid fa-link"></i> Update Classroom
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- EDIT EXTRACTED FOOD ITEMS MODAL (PARENTS CAN ADJUST QUANTITIES & PORTIONS) -->
+  <div class="modal-backdrop" id="editFoodItemsModal" style="z-index: 3000;">
+    <div class="modal-container" style="max-width:640px; padding:2rem; border-radius:var(--r-xl);">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.25rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.85rem;">
+        <div>
+          <h3 style="font-size:1.25rem; margin:0; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem; font-weight:800;">
+            <i class="fa-solid fa-sliders" style="color:var(--primary)"></i> Adjust Meal Portions
+          </h3>
+          <p style="font-size:0.85rem; color:var(--text-secondary); margin:0.25rem 0 0 0;">
+            Easily update serving sizes or food items served to your child.
+          </p>
+        </div>
+        <button class="btn-action-outline" id="btnCloseEditFoodItemsModal" style="width:36px; height:36px; padding:0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;">&times;</button>
+      </div>
+
+      <div id="editFoodItemsListContainer" style="display:flex; flex-direction:column; gap:0.85rem; max-height:360px; overflow-y:auto; margin-bottom:1.5rem; padding-right:0.35rem;">
+        <!-- Dynamically rendered editable food item cards -->
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border-subtle); padding-top:1.25rem;">
+        <button type="button" class="btn-action-outline" id="btnAddCustomFoodItem" style="padding:0.55rem 1.1rem; font-size:0.85rem; font-weight:700;">
+          <i class="fa-solid fa-plus"></i> Add Item
+        </button>
+        <div style="display:flex; gap:0.75rem;">
+          <button type="button" class="btn-action-outline" id="btnCancelEditFoodItemsModal" style="padding:0.6rem 1.15rem; font-size:0.85rem; font-weight:700;">Cancel</button>
+          <button type="button" class="btn-action-primary" id="btnSaveEditedFoodItems" style="padding:0.6rem 1.4rem; font-size:0.85rem; font-weight:700;">
+            <i class="fa-solid fa-check"></i> Save & Recalculate
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOM UI CONFIRMATION MODAL -->
+  <div class="modal-backdrop" id="confirmModal" style="z-index: 3000;">
+    <div class="modal-container" style="max-width:440px; text-align:center; padding:2rem; border-radius:var(--r-xl); box-shadow:var(--shadow-xl);">
+      <div style="width:56px; height:56px; border-radius:50%; background:rgba(239, 68, 68, 0.1); color:var(--accent-rose); display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin:0 auto 1.25rem auto;" id="confirmModalIcon">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h3 style="font-size:1.2rem; font-weight:800; color:var(--text-primary); margin-bottom:0.5rem;" id="confirmModalTitle">Are you sure?</h3>
+      <p style="color:var(--text-secondary); font-size:0.9rem; line-height:1.5; margin-bottom:0.75rem;" id="confirmModalMessage">Do you really want to perform this action?</p>
+      <div style="font-size:0.8rem; color:var(--text-muted); background:var(--bg-page); padding:0.75rem 1rem; border-radius:var(--r-md); border:1px solid var(--border-subtle); margin-bottom:1.5rem; text-align:left; line-height:1.4;" id="confirmModalWarning">
+        This action cannot be undone.
+      </div>
+      <div style="display:flex; gap:0.75rem; justify-content:flex-end;">
+        <button class="btn-action-primary" id="btnConfirmProceed" style="flex:1; padding:0.65rem; background:var(--accent-rose); border-color:var(--accent-rose);">Confirm</button>
+        <button class="btn-action-outline" id="btnConfirmCancel" style="flex:1; padding:0.65rem;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST TRAY -->
+  <div class="toast-container" id="toastTray"></div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

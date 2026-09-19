@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Nutrition Monitoring System — Teammate Migration & Setup Guide</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap');
+    
+    @page {
+      size: A4;
+      margin: 18mm 15mm 18mm 15mm;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #1E1B4B;
+      background: #FFFFFF;
+      line-height: 1.5;
+      font-size: 10.5pt;
+      margin: 0;
+      padding: 0;
+    }
+    
+    h1, h2, h3, h4 {
+      font-family: 'Outfit', 'Inter', sans-serif;
+      color: #1E1B4B;
+      margin-top: 0;
+    }
+
+    .header-banner {
+      background: linear-gradient(135deg, #5B50E5 0%, #3B32B3 100%);
+      color: #FFFFFF;
+      padding: 24px 28px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(91, 80, 229, 0.15);
+    }
+
+    .header-banner h1 {
+      color: #FFFFFF;
+      font-size: 20pt;
+      font-weight: 800;
+      margin: 0 0 6px 0;
+      letter-spacing: -0.5px;
+    }
+
+    .header-banner p {
+      color: #EEEDFE;
+      font-size: 10pt;
+      margin: 0;
+      font-weight: 500;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 8pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-left: 8px;
+    }
+
+    .badge-primary { background: #EEEDFE; color: #5B50E5; }
+    .badge-success { background: #E6F4EA; color: #10B981; }
+
+    .section-title {
+      font-size: 13pt;
+      font-weight: 800;
+      color: #5B50E5;
+      border-bottom: 2px solid #EEEDFE;
+      padding-bottom: 6px;
+      margin-top: 24px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-card {
+      background: #F8F9FE;
+      border: 1px solid #E2E8F0;
+      border-left: 4px solid #5B50E5;
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 14px;
+      page-break-inside: avoid;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .step-number {
+      background: #5B50E5;
+      color: #FFFFFF;
+      font-weight: 800;
+      font-size: 9pt;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-right: 8px;
+    }
+
+    .step-title {
+      font-size: 11pt;
+      font-weight: 800;
+      color: #1E1B4B;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      margin-bottom: 14px;
+      font-size: 9.5pt;
+    }
+
+    th {
+      background: #F3F4FB;
+      color: #475569;
+      font-weight: 700;
+      text-align: left;
+      padding: 8px 12px;
+      border: 1px solid #CBD5E1;
+      font-size: 8.5pt;
+      text-transform: uppercase;
+    }
+
+    td {
+      padding: 8px 12px;
+      border: 1px solid #E2E8F0;
+      color: #1E1B4B;
+    }
+
+    tr:nth-child(even) td {
+      background: #FAFAFD;
+    }
+
+    code, pre {
+      font-family: 'Consolas', 'Courier New', monospace;
+      background: #1E1B4B;
+      color: #F8FAFC;
+      border-radius: 6px;
+    }
+
+    code {
+      padding: 2px 6px;
+      font-size: 8.5pt;
+      color: #5B50E5;
+      background: #EEEDFE;
+      font-weight: 600;
+    }
+
+    pre {
+      padding: 10px 14px;
+      font-size: 8.5pt;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-all;
+      margin: 8px 0;
+    }
+
+    .callout-box {
+      background: #FEF3C7;
+      border: 1px solid #F59E0B;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 9pt;
+      color: #78350F;
+      margin: 10px 0;
+      font-weight: 500;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 9.5pt;
+    }
+
+    .checkbox {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #5B50E5;
+      border-radius: 3px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 8pt;
+      color: #94A3B8;
+      border-top: 1px solid #E2E8F0;
+      padding-top: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Banner -->
+  <div class="header-banner">
+    <h1>🍱 Smart Nutrition Monitoring System</h1>
+    <p>Teammate Migration & Complete System Setup Guide • Step-by-Step Execution Plan</p>
+  </div>
+
+  <!-- Prerequisites Table -->
+  <div class="section-title">🛠️ Step 0: Prerequisites & Tool Verification</div>
+  <p>Verify that your teammate's laptop has the required runtime environments installed prior to starting:</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Tool / Dependency</th>
+        <th>Required Version</th>
+        <th>Verification Command (Terminal / PowerShell)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Java JDK</strong></td>
+        <td>OpenJDK 17 or 21</td>
+        <td><code>java -version</code></td>
+      </tr>
+      <tr>
+        <td><strong>Node.js</strong></td>
+        <td>Node.js v18 LTS or v20 LTS</td>
+        <td><code>node -v</code></td>
+      </tr>
+      <tr>
+        <td><strong>npm</strong></td>
+        <td>v9+ or v10+</td>
+        <td><code>npm -v</code></td>
+      </tr>
+      <tr>
+        <td><strong>MySQL Server</strong></td>
+        <td>MySQL 8.0+ (Port 3306)</td>
+        <td><code>mysql --version</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Step 1 -->
+  <div class="section-title">📁 Step 1: Unpack Migration Package</div>
+  <div class="step-card">
+    <div class="step-header">
+      <span class="step-title"><span class="step-number">1.1</span> Extract Zip Archives</span>
+      <span class="badge badge-primary">Filesystem</span>
+    </div>
+    <p>Copy the <strong>Smart_Nutrition_Migration/</strong> folder to your local disk (e.g. <code>C:\Projects\Smart_Nutrition_Migration\</code>).</p>
+    <ol style="margin-top:6px; padding-left:20px;">
+      <li>Extract <code>smart-nutrition-backend.zip</code> into <code>smart-nutrition-backend</code> directory.</li>
+      <li>Extract <code>smart-nutrition-frontend.zip</code> into <code>smart-nutrition-frontend</code> directory.</li>
+    </ol>
+<pre>Smart_Nutrition_Migration/
+├── smart-nutrition-backend/        <-- (Extracted backend microservices)
+├── smart-nutrition-frontend/       <-- (Extracted frontend web app)
+├── smart_nutrition_db_full_dump.sql  <-- (Full MySQL database dump)
+└── README_STARTUP.md               <-- (Setup reference)
+</pre>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="section-title">🗄️ Step 2: Database Import in MySQL</div>
+  <div class="step-card">
+    <div class="step-header">
+      <span class="step-title"><span class="step-number">2.1</span> Create & Import Database</span>
+      <span class="badge badge-primary">MySQL</span>
+    </div>
+    <p>Open PowerShell/Terminal in the <code>Smart_Nutrition_Migration</code> folder and execute:</p>
+<pre># Create Database
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS smart_nutrition_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# Import Full Database Dump
+mysql -u root -p smart_nutrition_db < smart_nutrition_db_full_dump.sql
+</pre>
+    <div class="callout-box">
+      ⚠️ <strong>IMPORTANT</strong>: The database name MUST be <code>smart_nutrition_db</code> so microservice database connections connect seamlessly without code changes.
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="section-title">🔑 Step 3: Configure Local Database Password & Secrets</div>
+  <div class="step-card">
+    <div class="step-header">
+      <span class="step-title"><span class="step-number">3.1</span> Update secrets.properties</span>
+      <span class="badge badge-primary">Configuration</span>
+    </div>
+    <p>Open <code>smart-nutrition-backend/secrets.properties</code> and update <code>DB_PASSWORD</code> to match your local MySQL password:</p>
+<pre>GEMINI_API_KEY=YOUR_GEMINI_API_KEY_HERE
+DB_USERNAME=root
+DB_PASSWORD=YOUR_LOCAL_MYSQL_PASSWORD
+</pre>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="section-title">📦 Step 4: Install Frontend Dependencies</div>
+  <div class="step-card">
+    <div class="step-header">
+      <span class="step-title"><span class="step-number">4.1</span> Run npm install</span>
+      <span class="badge badge-primary">Frontend</span>
+    </div>
+    <p>Open PowerShell in the frontend directory and install packages:</p>
+<pre>cd smart-nutrition-frontend
+npm install
+</pre>
+  </div>
+
+  <!-- Step 5 -->
+  <div class="section-title">⚙️ Step 5: Start Microservices (Strict Order)</div>
+  <p>Open <strong>6 separate Terminal windows</strong> and launch each microservice in sequence:</p>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>Seq</th>
+        <th>Microservice</th>
+        <th>Port</th>
+        <th>Terminal Command</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>1</strong></td>
+        <td>Eureka Discovery Server</td>
+        <td><code>8761</code></td>
+        <td><code>cd smart-nutrition-backend/smart-nutrition-eureka-server && .\mvnw spring-boot:run</code></td>
+      </tr>
+      <tr>
+        <td><strong>2</strong></td>
+        <td>API Gateway Service</td>
+        <td><code>8080</code></td>
+        <td><code>cd smart-nutrition-backend/smart-nutrition-gateway && .\mvnw spring-boot:run</code></td>
+      </tr>
+      <tr>
+        <td><strong>3</strong></td>
+        <td>Auth & Admin Service</td>
+        <td><code>8081</code></td>
+        <td><code>cd smart-nutrition-backend/smart-nutrition-auth-service && .\mvnw spring-boot:run</code></td>
+      </tr>
+      <tr>
+        <td><strong>4</strong></td>
+        <td>School & Student Service</td>
+        <td><code>8082</code></td>
+        <td><code>cd smart-nutrition-backend/smart-nutrition-school-service && .\mvnw spring-boot:run</code></td>
+      </tr>
+      <tr>
+        <td><strong>5</strong></td>
+        <td>Meal & AI Vision Service</td>
+        <td><code>8083</code></td>
+        <td><code>cd smart-nutrition-backend/smart-nutrition-meal-service && .\mvnw spring-boot:run</code></td>
+      </tr>
+      <tr>
+        <td><strong>6</strong></td>
+        <td>Messaging & Alerts Service</td>
+        <td><code>8084</code></td>
+        <td><code>cd smart-nutrition-backend/smart-nutrition-messaging-service && .\mvnw spring-boot:run</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Step 6 -->
+  <div class="section-title">🌐 Step 6: Launch Web Application</div>
+  <div class="step-card">
+    <div class="step-header">
+      <span class="step-title"><span class="step-number">6.1</span> Start Vite Dev Server</span>
+      <span class="badge badge-primary">Frontend</span>
+    </div>
+    <p>Open a <strong>7th Terminal window</strong>:</p>
+<pre>cd smart-nutrition-frontend
+npm run dev
+</pre>
+    <p>Open web browser at: <strong><code>http://localhost:5173</code></strong></p>
+  </div>
+
+  <!-- Step 7 -->
+  <div class="section-title">✅ Step 7: System Verification & Test Accounts</div>
+  <p>Log in using the pre-configured accounts to verify system operation:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Role</th>
+        <th>Email Account</th>
+        <th>Password</th>
+        <th>Features to Test</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Parent</strong></td>
+        <td><code>dharun@gmail.com</code></td>
+        <td><code>sanjeet</code></td>
+        <td>Dashboard, Child Profiles, Lunchbox Presets, Lunch Scans, AI Assistant</td>
+      </tr>
+      <tr>
+        <td><strong>Teacher</strong></td>
+        <td><code>jothi@greenwood.edu</code></td>
+        <td><code>sanjeet</code></td>
+        <td>Class Overview, Student Roster, Nutrition Compliance, Parent Messages</td>
+      </tr>
+      <tr>
+        <td><strong>Admin</strong></td>
+        <td><code>admin@chewcheckers.com</code></td>
+        <td><code>sanjeet</code></td>
+        <td>User Accounts, School Settings, Audit Logs</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="section-title">🧪 Final Verification Checklist</div>
+  <div class="checklist-item"><div class="checkbox"></div> <div><strong>Eureka Service Registry</strong>: <code>http://localhost:8761</code> shows all 5 services <strong>UP</strong>.</div></div>
+  <div class="checklist-item"><div class="checkbox"></div> <div><strong>Child Profiles & Presets</strong>: Parent portal displays child <code>Sai</code> and presets (<code>Blue Bento Box</code>).</div></div>
+  <div class="checklist-item"><div class="checkbox"></div> <div><strong>Scanned Images</strong>: Recent Lunch Scans display meal photos without broken image links.</div></div>
+  <div class="checklist-item"><div class="checkbox"></div> <div><strong>AI Assistant</strong>: Clicking <em>"What are high-protein lunchbox ideas?"</em> streams formatted responses.</div></div>
+  <div class="checklist-item"><div class="checkbox"></div> <div><strong>Executive Summary</strong>: Clicking <em>"✨ Ask AI Assistant for Detailed Summary"</em> generates custom student insights.</div></div>
+
+  <div class="footer">
+    Smart Nutrition Monitoring System • Automated Migration Package & Setup Guide • Generated 2026
+  </div>
+
+</body>
+</html>

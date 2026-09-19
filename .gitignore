@@ -1,0 +1,89 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Production Builds
+dist/
+**/dist/
+build/
+**/build/
+.git_backend_origin/
+**/.git_backend_origin/
+
+# Maven Targets & Compiled Classes
+target/
+**/target/
+*.class
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.restore
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Large Migration Archives & Backups
+*.zip
+*.tar.gz
+*.rar
+Smart_Nutrition_Migration/
+backup/
+backup_teacher_dashboard/
+
+# Scratch & Temporary Experiment Files
+java-enterprise-quiz/
+java-quiz-portal/
+video_bg_remover.html
+server.js
+cleanup_mysql_image_urls.js
+inspect_mysql_meal_images.js
+test_api.js
+test_update_blood_group.js
+make_gap_pdf.ps1
+make_pdf.ps1
+create_migration_package.ps1
+ChewCheckers_Complete_Gap_Analysis.docx
+SRS_ChewChecker_v5.0.docx
+/ChewCheckers_Complete_Gap_Analysis.pdf
+/SRS_ChewChecker_v5.0_Official.pdf
+/Smart_Nutrition_Teammate_Setup_Guide.pdf
+/chewcheckers_gap_analysis.html
+/setup_guide.html
+/srs_document.html
+/SRS_ChewChecker_v5.0_Official.md
+
+# Frontend Scratch Scripts
+check_passwords.js
+clear_tokens.js
+dump_db_users.js
+inspect_columns.js
+list_gemini_models.js
+test_assistant.js
+test_model_names.js
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+secrets.properties
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE & Editor Settings
+.idea/
+*.iml
+*.iws
+.settings/
+.classpath
+.project
+.vscode/
+
+# Operating System Files
+.DS_Store
+Thumbs.db

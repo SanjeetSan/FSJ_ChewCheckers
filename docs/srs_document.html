@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>System Requirements Specification (SRS) v5.0 — ChewCheckers</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap');
+    @page { size: A4; margin: 18mm 15mm 18mm 15mm; }
+    body { font-family: 'Inter', sans-serif; color: #1E1B4B; background: #FFFFFF; line-height: 1.5; font-size: 10pt; margin: 0; padding: 0; }
+    h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; color: #1E1B4B; margin-top: 18px; margin-bottom: 8px; }
+    .header-banner { background: linear-gradient(135deg, #5B50E5 0%, #3B32B3 100%); color: #FFFFFF; padding: 20px 24px; border-radius: 10px; margin-bottom: 20px; }
+    .header-banner h1 { color: #FFFFFF; font-size: 18pt; margin: 0 0 4px 0; }
+    .header-banner p { color: #EEEDFE; font-size: 9.5pt; margin: 0; }
+    .section-title { font-size: 12pt; font-weight: 800; color: #5B50E5; border-bottom: 2px solid #EEEDFE; padding-bottom: 4px; margin-top: 22px; margin-bottom: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 6px; margin-bottom: 14px; font-size: 9pt; }
+    th { background: #F3F4FB; color: #475569; font-weight: 700; text-align: left; padding: 7px 10px; border: 1px solid #CBD5E1; font-size: 8pt; text-transform: uppercase; }
+    td { padding: 7px 10px; border: 1px solid #E2E8F0; color: #1E1B4B; }
+    tr:nth-child(even) td { background: #FAFAFD; }
+    code, pre { font-family: 'Consolas', monospace; background: #1E1B4B; color: #F8FAFC; border-radius: 4px; }
+    code { padding: 2px 5px; font-size: 8pt; color: #5B50E5; background: #EEEDFE; font-weight: 600; }
+    pre { padding: 8px 12px; font-size: 8pt; line-height: 1.4; white-space: pre-wrap; word-break: break-all; margin: 6px 0; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 7.5pt; font-weight: 700; text-transform: uppercase; }
+    .badge-full { background: #E6F4EA; color: #10B981; }
+    .badge-violet { background: #EEEDFE; color: #5B50E5; }
+  </style>
+</head>
+<body>
+
+  <div class="header-banner">
+    <h1>SYSTEM REQUIREMENTS SPECIFICATION (SRS) v5.0</h1>
+    <p>Smart Nutrition Monitoring Lunchbox for School Children • Team Vanguard Void • SIH25-098</p>
+  </div>
+
+  <table>
+    <tr><th>Project Title</th><td>Smart Nutrition Monitoring Lunchbox for School Children</td><th>Version</th><td>v5.0 (Strict Code-Aligned Update)</td></tr>
+    <tr><th>SIH Problem ID</th><td>SIH25-098</td><th>Date</th><td>13/08/2026</td></tr>
+    <tr><th>Domain Category</th><td>Health / Nutrition</td><th>Institution</th><td>Karpagam College Of Engineering</td></tr>
+    <tr><th>Team Name</th><td>Vanguard Void</td><th>Team Members</th><td>1. Raja SreeDharun | 2. Sanjeet S</td></tr>
+    <tr><th>Faculty Mentors</th><td colspan="3">Dr. Arul Antran Vijay S / Dr. Jothi Prakash V / Mr. Jegathesh P / Mr. Navaneetha Krishnan M / Dr. Castro S.</td></tr>
+  </table>
+
+  <div class="section-title">📄 DOCUMENT REVISION HISTORY & VERSION EVOLUTION</div>
+  <table>
+    <thead><tr><th>Version</th><th>Date</th><th>Author</th><th>Description of Completed Implementations</th></tr></thead>
+    <tbody>
+      <tr><td><strong>v1.0</strong></td><td>10/06/2026</td><td>Team Vanguard Void</td><td>Project Foundation — SIH25-098 problem statement framing, IEEE Std 830 skeleton, user roles (Parent, Teacher, Admin), basic lunchbox monitoring concept without external hardware sensors.</td></tr>
+      <tr><td><strong>v2.0</strong></td><td>18/06/2026</td><td>Team Vanguard Void</td><td>Microservices Architecture — Spring Cloud Gateway (8088), Eureka Server (8761), Auth Service (8081), BCrypt password hashing, JWT security filters & MySQL <code>users</code> table.</td></tr>
+      <tr><td><strong>v3.0</strong></td><td>02/07/2026</td><td>Team Vanguard Void</td><td>Parent Onboarding & Student Management — Parent Onboarding Workflow (<code>ParentService</code>), Child Profiles (<code>students</code>), Classroom Setup & Join Codes (<code>classes</code>, <code>PUT /api/parent/student/{id}/class</code>, <code>POST /api/teacher/classes/{id}/generate-code</code>) & Direct Chat (<code>messages</code>).</td></tr>
+      <tr><td><strong>v4.0</strong></td><td>20/07/2026</td><td>Team Vanguard Void</td><td>Lunchbox Modeling & Target Engine — Lunchbox Shape & Dimension Calibration ($L \times W \times H$ or $\pi r^2 h$, compartments, shapes), Configurable Lunch Target Calculator (0.35 ratio), Photo Scans & Leftover Tracking (<code>POST /api/meals/post-meal</code>).</td></tr>
+      <tr><td><strong>v5.0</strong></td><td>13/08/2026</td><td>Team Vanguard Void</td><td>AI Integration & Insight Engine — Google Gemini 1.5-flash REST Integration (requires <code>GEMINI_API_KEY</code>), Leftover Tracking & <code>nutrition_scores</code> evaluation (<code>NutritionScoringService</code>), <code>NutritionInsightService</code>, <code>AssistantController</code>, Capacity Validation & UI Polish.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-title">1. INTRODUCTION</div>
+  <h3>1.1 Purpose</h3>
+  <p>This System Requirements Specification (SRS) document details the exact implemented functional and non-functional specifications for ChewCheckers (Smart Nutrition Monitoring Lunchbox for School Children) under SIH Problem Statement SIH25-098. It strictly reflects the physical backend Java microservices codebase, true server port allocations, exact JPA entities, exact Service class names, and true REST API contracts.</p>
+
+  <h3>1.2 Scope</h3>
+  <p><strong>ChewCheckers</strong> is a smartphone-assisted lunchbox monitoring system. Parents and teachers upload photos of school lunchboxes before and after mealtime. A cloud-based AI engine powered by Google Gemini 1.5-flash performs image-based food recognition and nutritional intake estimation (integrated via REST API; requires <code>GEMINI_API_KEY</code> in <code>secrets.properties</code>). The backend calculates specific lunch calorie and protein targets using a configurable allocation ratio (default 0.35 via <code>nutrition.lunch.allocation-ratio=0.35</code>), tracks leftover consumption %, evaluates <code>nutrition_scores</code>, validates lunchbox capacity against targets, and provides a conversational AI Pediatric Nutrition Assistant (<code>AssistantController</code>).</p>
+
+  <div class="section-title">3. SYSTEM ARCHITECTURE & HIGH-LEVEL DIAGRAM</div>
+  <pre>
++-----------------------------------------------------------------------+
+|                    PRESENTATION LAYER (Vite SPA)                      |
+|                  Vanilla JavaScript (app.js / styles.css)             |
++-----------------------------------------------------------------------+
+                                   |
+                                   v  (HTTP / REST JSON)
++-----------------------------------------------------------------------+
+|                 API GATEWAY LAYER (Spring Cloud Gateway)              |
+|              Port 8088 • JWT Filter • CORS Router Locator             |
++-----------------------------------------------------------------------+
+                                   |
+           +-----------------------+-----------------------+
+           | (Service Registration)                        | (Routing)
+           v                                               v
++-----------------------+       +---------------------------------------+
+| EUREKA DISCOVERY      |       |           MICROSERVICES LAYER         |
+| Naming Server (8761)  |       |                                       |
++-----------------------+       |  • Auth Service (8081)                 |
+                                |  • Meal Service (8082)                |
+                                |  • School Service (8083)              |
+                                |  • Messaging Service (8084)           |
+                                +---------------------------------------+
+                                   |                       |
+                                   v (JPA / SQL)           v (HTTP REST)
+                        +--------------------+   +----------------------+
+                        | DATA LAYER         |   | EXTERNAL AI CLOUD    |
+                        | MySQL 8.0 (3306)   |   | Google Gemini REST   |
+                        | smart_nutrition_db |   | gemini-1.5-flash API |
+                        +--------------------+   +----------------------+
+  </pre>
+
+  <div class="section-title">3.2 MICROSERVICES BREAKDOWN & EXACT DEPLOYMENT PORTS</div>
+  <table>
+    <thead><tr><th>#</th><th>Microservice Name</th><th>Port</th><th>Primary Database Tables</th><th>Responsibility & Exact Core Services</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><code>smart-nutrition-eureka-server</code></td><td>8761</td><td>None</td><td>Service Discovery & Registry Naming Server</td></tr>
+      <tr><td>2</td><td><code>smart-nutrition-gateway</code></td><td>8088</td><td>None</td><td>API Gateway, Route Locator, CORS & JWT Security Filter</td></tr>
+      <tr><td>3</td><td><code>smart-nutrition-auth-service</code></td><td>8081</td><td><code>users</code></td><td>Registration, Login, JWT Issuance & Admin Controls (<code>AuthService</code>, <code>UserService</code>, <code>AdminService</code>)</td></tr>
+      <tr><td>4</td><td><code>smart-nutrition-meal-service</code></td><td>8082</td><td><code>meals</code>, <code>meal_food_items</code></td><td>Meal Photo Uploads, Leftover Scans & Gemini Vision API (<code>MealService</code>, <code>MealImageService</code>, <code>AssistantController</code>, <code>AssistantService</code>)</td></tr>
+      <tr><td>5</td><td><code>smart-nutrition-school-service</code></td><td>8083</td><td><code>students</code>, <code>classes</code>, <code>schools</code>, <code>parent_students</code>, <code>nutrition_scores</code>, <code>lunchbox_presets</code></td><td>Profiles, Onboarding, Class Linking, Lunch Targets, Scores & Insights (<code>ParentService</code>, <code>TeacherService</code>, <code>NutritionInsightService</code>, <code>NutritionScoringService</code>, <code>TeacherReportService</code>)</td></tr>
+      <tr><td>6</td><td><code>smart-nutrition-messaging-service</code></td><td>8084</td><td><code>messages</code></td><td>Direct Parent-Teacher Chat & System Announcements (<code>MessageService</code>, <code>SocialService</code>)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-title">5. FUNCTIONAL REQUIREMENTS</div>
+  
+  <h3>5.1 Parent Onboarding Workflow</h3>
+  <p>Guides parents through a sequential 4-stage setup prior to dashboard activation:</p>
+  <ol>
+    <li><strong>Create Child Profile</strong>: Register child demographic and biometric parameters.</li>
+    <li><strong>Link Class</strong>: Associate student to classroom via <code>PUT /api/parent/student/{id}/class</code> using class join code.</li>
+    <li><strong>Configure Lunchbox Profile</strong>: Calibrate physical dimensions, shape, and compartment count.</li>
+    <li><strong>Dashboard Access Unlocked</strong>: Full dynamic insights, meal scanner, and AI assistant enabled.</li>
+  </ol>
+
+  <h3>5.2 Student-Class Linking & Teacher Class Code Management</h3>
+  <p>Enables student-class association (<code>PUT /api/parent/student/{id}/class</code>) and dynamic teacher join code generation (<code>POST /api/teacher/classes/{id}/generate-code</code>).</p>
+
+  <h3>5.3 Lunchbox Physical & Compartment Modeling</h3>
+  <p>Models physical lunchbox specifications inside <code>Student</code> entity and <code>lunchbox_presets</code> table:</p>
+  <ul>
+    <li><code>boxLength</code> (Decimal, cm)</li>
+    <li><code>boxWidth</code> (Decimal, cm)</li>
+    <li><code>boxDepth</code> (Decimal, cm)</li>
+    <li><code>boxVolume</code> (Decimal, cm³)</li>
+    <li><code>boxShape</code> (String: <code>Rectangular</code> vs <code>Circular</code>)</li>
+    <li><code>boxCompartments</code> (Integer: 1, 2, 3, or 4 compartments)</li>
+  </ul>
+  <p><strong>Volume Formulae:</strong></p>
+  <ul>
+    <li>Rectangular Box: $\text{Volume} = \text{boxLength} \times \text{boxWidth} \times \text{boxDepth}\text{ cm}^3$</li>
+    <li>Circular Box: $\text{Volume} = \pi \times (\text{boxWidth}/2)^2 \times \text{boxDepth}\text{ cm}^3$</li>
+  </ul>
+
+  <h3>5.4 Lunch Nutrition Target Calculation Engine</h3>
+  <p>Calculates specific lunch calorie and protein requirements using a configurable allocation ratio (default 0.35 via <code>nutrition.lunch.allocation-ratio=0.35</code>):</p>
+  $$\text{Lunch Calorie Target} = \text{Daily Calorie Target} \times \text{nutrition.lunch.allocation-ratio}$$
+  $$\text{Lunch Protein Target} = \text{Daily Protein Target} \times \text{nutrition.lunch.allocation-ratio}$$
+
+  <h3>5.5 Leftover Tracking & Score Evaluation</h3>
+  <p>Processes post-meal leftover image uploads (<code>POST /api/meals/post-meal</code>), records consumption percentages, evaluates <code>nutrition_scores</code>, and handles meal status transitions (<code>PRE_MEAL_UPLOADED</code> $\rightarrow$ <code>PENDING_LEFTOVER_ANALYSIS</code> $\rightarrow$ <code>FULLY_CONSUMED</code>).</p>
+
+  <h3>5.6 Nutrition Insight Engine</h3>
+  <p>Dynamically computes nutrition insights (<code>GET /api/reports/insights/{studentId}</code>) by evaluating <code>meals</code>, <code>meal_food_items</code>, and <code>nutrition_scores</code> without requiring a physical <code>reports</code> database table.</p>
+
+  <div class="section-title">8. DATABASE SCHEMA (10 PHYSICAL TABLES)</div>
+  <p>The relational database <code>smart_nutrition_db</code> runs on MySQL 8.0 port <code>3306</code> comprising 10 physical relational tables managed by JPA entities:</p>
+  <ul>
+    <li><code>users</code> (User.java): Authentication, Roles, BCrypt Passwords</li>
+    <li><code>schools</code> (School.java): School Accounts</li>
+    <li><code>classes</code> (Class_.java): Class Rosters & Class Join Codes</li>
+    <li><code>students</code> (Student.java): Child Profiles, Biometrics, Calorie/Protein Lunch Targets, Box Dimensions (box_length, box_width, box_depth, box_volume, box_shape, box_compartments)</li>
+    <li><code>parent_students</code> (ParentStudent.java): Parent-Child Junction Table</li>
+    <li><code>lunchbox_presets</code> (LunchboxPreset.java): Physical Preset Dimensions</li>
+    <li><code>meals</code> (Meal.java): Meal Scans, Image Paths & Status Transitions</li>
+    <li><code>meal_food_items</code> (MealFoodItem.java): AI Breakdown of Identified Food Items</li>
+    <li><code>nutrition_scores</code> (NutritionScore.java): Consumed vs Target Calculations & Classifications</li>
+    <li><code>messages</code> (Message.java): Parent-Teacher Conversations & Broadcast Alerts</li>
+  </ul>
+
+  <div class="section-title">📊 TRACEABILITY MATRIX (VERIFIED CLASS NAMES)</div>
+  <table>
+    <thead><tr><th>Version</th><th>Core Feature</th><th>Controller</th><th>Service Class</th><th>Entity</th><th>Database Table</th><th>API Endpoint</th></tr></thead>
+    <tbody>
+      <tr><td><strong>v2.0</strong></td><td>Service Discovery</td><td>N/A</td><td><code>EurekaServerApplication</code></td><td>N/A</td><td>N/A</td><td><code>GET :8761</code></td></tr>
+      <tr><td><strong>v2.0</strong></td><td>API Gateway</td><td>N/A</td><td><code>GatewayApplication</code></td><td>N/A</td><td>N/A</td><td><code>ALL :8088/api/**</code></td></tr>
+      <tr><td><strong>v2.0</strong></td><td>User Authentication</td><td><code>AuthController</code></td><td><code>AuthService</code> / <code>UserService</code></td><td><code>User</code></td><td><code>users</code></td><td><code>POST /api/auth/login</code></td></tr>
+      <tr><td><strong>v3.0</strong></td><td>Parent Onboarding Flow</td><td><code>ParentController</code></td><td><code>ParentService</code></td><td><code>Student</code></td><td><code>students</code></td><td><code>POST /api/parent/student</code></td></tr>
+      <tr><td><strong>v3.0</strong></td><td>Class Linkage</td><td><code>ParentController</code></td><td><code>ParentService</code></td><td><code>Class_</code></td><td><code>classes</code></td><td><code>PUT /api/parent/student/{id}/class</code></td></tr>
+      <tr><td><strong>v3.0</strong></td><td>Dynamic Class Code</td><td><code>TeacherController</code></td><td><code>TeacherService</code></td><td><code>Class_</code></td><td><code>classes</code></td><td><code>POST /api/teacher/classes/{id}/generate-code</code></td></tr>
+      <tr><td><strong>v4.0</strong></td><td>Lunchbox Modeling</td><td><code>ParentController</code></td><td><code>ParentService</code> / <code>LunchboxPresetService</code></td><td><code>Student</code></td><td><code>students</code> / <code>lunchbox_presets</code></td><td><code>POST /api/parent/student/{id}/lunchbox-presets</code></td></tr>
+      <tr><td><strong>v4.0</strong></td><td>Lunch Target Engine</td><td><code>ParentController</code></td><td><code>ParentService</code></td><td><code>Student</code></td><td><code>students</code></td><td>Configurable ratio (0.35)</td></tr>
+      <tr><td><strong>v4.0</strong></td><td>Photo Meal Scan</td><td><code>MealController</code></td><td><code>MealService</code></td><td><code>Meal</code></td><td><code>meals</code></td><td><code>POST /api/meals/upload</code></td></tr>
+      <tr><td><strong>v4.0</strong></td><td>Leftover Tracking</td><td><code>MealController</code></td><td><code>MealService</code></td><td><code>Meal</code></td><td><code>meals</code></td><td><code>POST /api/meals/post-meal</code></td></tr>
+      <tr><td><strong>v5.0</strong></td><td>Gemini AI Vision</td><td><code>MealController</code></td><td><code>MealService</code> / <code>MealImageService</code></td><td><code>MealFoodItem</code></td><td><code>meal_food_items</code></td><td><code>POST /api/meals/upload</code> (requires key)</td></tr>
+      <tr><td><strong>v5.0</strong></td><td>Nutrition Score Table</td><td><code>MealController</code></td><td><code>NutritionScoringService</code></td><td><code>NutritionScore</code></td><td><code>nutrition_scores</code></td><td>Internal score evaluation</td></tr>
+      <tr><td><strong>v5.0</strong></td><td>Nutrition Insights</td><td><code>ReportController</code></td><td><code>NutritionInsightService</code></td><td>N/A</td><td>Dynamic Evaluation</td><td><code>GET /api/reports/insights/{id}</code></td></tr>
+      <tr><td><strong>v5.0</strong></td><td>AI Assistant Chatbot</td><td><code>AssistantController</code></td><td><code>AssistantService</code></td><td>N/A</td><td>N/A</td><td><code>POST /api/assistant/chat</code> (requires key)</td></tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:30px; text-align:center; font-size:8.5pt; color:#94A3B8; border-top:1px solid #E2E8F0; padding-top:10px;">
+    Smart Nutrition Monitoring System • Defensible Official SRS v5.0 • Team Vanguard Void • Karpagam College Of Engineering
+  </div>
+
+</body>
+</html>

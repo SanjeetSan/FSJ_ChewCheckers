@@ -1,0 +1,11 @@
+{
+  "name": "fsj-chewcheckers",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ChewCheckers - AI-Powered School Lunchbox & Child Nutrition Monitoring Platform",
+  "scripts": {
+    "build": "npm --prefix smart-nutrition-frontend run build",
+    "dev": "npm --prefix smart-nutrition-frontend run dev",
+    "start": "npm --prefix smart-nutrition-frontend run preview"
+  }
+}

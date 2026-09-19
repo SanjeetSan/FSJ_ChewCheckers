@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "buildCommand": "npm --prefix smart-nutrition-frontend run build",
+  "outputDirectory": "smart-nutrition-frontend/dist",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
+  ]
+}
