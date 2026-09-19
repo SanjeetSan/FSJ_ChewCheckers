@@ -6440,41 +6440,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           }
         }
 
-        // --- SECTION 3: RECENT PARENT ACTIVITY ---
-        const activityContainer = document.getElementById('teacherRecentParentActivityList');
-        if (activityContainer) {
-          const activities = [];
-          if (classMeals && classMeals.length > 0) {
-            classMeals.slice(0, 3).forEach(m => {
-              const sObj = students.find(x => x.id === m.studentId);
-              const pName = sObj && sObj.parentName ? sObj.parentName : (m.studentName ? `Parent of ${m.studentName}` : 'Parent');
-              const sName = m.studentName || (sObj ? sObj.name : 'Child');
-              const dateStr = m.mealDate ? formatDateDDMMYYYY(m.mealDate) : 'Today';
-              activities.push(`
-                <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--r-md); padding:0.75rem 1rem; font-size:0.825rem; display:flex; align-items:center; justify-content:space-between; gap:0.75rem;">
-                  <div style="display:flex; align-items:center; gap:0.65rem; min-width:0;">
-                    <div style="width:32px; height:32px; border-radius:50%; background:rgba(99,102,241,0.08); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:0.8rem; flex-shrink:0;">
-                      <i class="fa-solid fa-cloud-arrow-up"></i>
-                    </div>
-                    <div style="min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                      <strong style="color:var(--text-primary); font-size:0.825rem;">${pName}</strong>
-                      <span style="color:var(--text-muted); font-size:0.78rem;"> • ${sName}'s Lunchbox (${m.foodItems ? m.foodItems.length : 0} items)</span>
-                    </div>
-                  </div>
-                  <span style="font-size:0.72rem; color:var(--text-muted); white-space:nowrap;">${dateStr}</span>
-                </div>
-              `);
-            });
-          }
-
-          if (activities.length === 0) {
-            activityContainer.innerHTML = `<div style="padding:1rem; text-align:center; color:var(--text-muted); font-size:0.825rem;">No recent parent activities recorded today.</div>`;
-          } else {
-            activityContainer.innerHTML = activities.join('');
-          }
-        }
-
-        // --- SECTION 4: NUTRITION HIGHLIGHTS (Derived strictly from real DB data) ---
+        // --- SECTION 3: NUTRITION HIGHLIGHTS (Derived strictly from real DB data) ---
         const aiInsightsContainer = document.getElementById('teacherActionAiInsightsList');
         if (aiInsightsContainer) {
           const rawWaste = parseFloat(report.averageLeftoverPercentage) || 0;
