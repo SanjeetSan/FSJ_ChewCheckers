@@ -1643,7 +1643,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const broadcastItemHTML = `
                   <div class="chat-contact-item ${isBroadcastActive ? 'active' : ''}" data-contact-type="BROADCAST"
                     style="display:flex; align-items:center; gap:0.75rem; padding:0.65rem 0.85rem; border-radius:var(--r-sm); cursor:pointer; transition:all 0.2s ease; border:1px solid var(--accent-violet); background:${isBroadcastActive ? 'var(--primary-light)' : 'rgba(99, 102, 241, 0.05)'}; margin-bottom:0.5rem;">
-                    <div style="width:32px; height:32px; border-radius:50%; background:var(--accent-violet); color:#FFF; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.9rem;"></div>
+                    <div style="width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, var(--accent-violet), #818CF8); color:#FFF; display:flex; align-items:center; justify-content:center; font-size:0.875rem; flex-shrink:0; box-shadow:0 2px 6px rgba(99,102,241,0.25);">
+                      <i class="fa-solid fa-bullhorn"></i>
+                    </div>
                     <div style="flex:1; min-width:0;">
                       <div style="font-weight:700; font-size:0.825rem; color:var(--text-primary);">Class Announcement</div>
                       <div style="font-size:0.7rem; color:var(--accent-violet); font-weight:600;">Broadcast to ALL Parents</div>
@@ -1678,7 +1680,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (contactType === 'BROADCAST') {
                       state.activeChatContact = {
                         id: 'BROADCAST',
-                        name: ' Class Announcement (All Parents)',
+                        name: 'Class Announcement (All Parents)',
+                        subtitle: 'Broadcast to All Class Parents',
                         role: 'BROADCAST'
                       };
                     } else {
@@ -1725,6 +1728,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (chatContactTitle) {
       if (state.activeChatContact.subtitle) {
         chatContactTitle.textContent = state.activeChatContact.subtitle;
+      } else if (state.activeChatContact.id === 'BROADCAST' || state.activeChatContact.role === 'BROADCAST') {
+        chatContactTitle.textContent = "Broadcast to All Class Parents";
       } else if (state.activeChatContact.role === 'TEACHER') {
         const child = state.selectedChild || (state.children && state.children.length > 0 ? state.children[0] : null);
         chatContactTitle.textContent = child ? (child.className || child.classCode || 'Grade 5 B') : "Grade 5 B";
@@ -1732,7 +1737,18 @@ document.addEventListener('DOMContentLoaded', () => {
         chatContactTitle.textContent = "Direct Parent Conversation";
       }
     }
-    if (chatContactAvatar) chatContactAvatar.textContent = state.activeChatContact.name.charAt(0).toUpperCase();
+    if (chatContactAvatar) {
+      if (state.activeChatContact.id === 'BROADCAST' || state.activeChatContact.role === 'BROADCAST') {
+        chatContactAvatar.innerHTML = '<i class="fa-solid fa-bullhorn" style="font-size:0.92rem;"></i>';
+        chatContactAvatar.style.background = 'linear-gradient(135deg, var(--accent-violet), #818CF8)';
+        chatContactAvatar.style.color = '#FFFFFF';
+      } else {
+        chatContactAvatar.innerHTML = '';
+        chatContactAvatar.textContent = (state.activeChatContact.name || 'P').trim().charAt(0).toUpperCase();
+        chatContactAvatar.style.background = '';
+        chatContactAvatar.style.color = '';
+      }
+    }
 
     await loadChatHistory();
     } catch(err) {
