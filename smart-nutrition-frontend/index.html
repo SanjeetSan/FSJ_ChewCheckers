@@ -677,24 +677,14 @@
           <!-- SECTION 2: LUNCHBOX PRESETS MANAGEMENT (RECONSTRUCTED MODERN UI) -->
           <div id="childrenSectionLunchboxPresets" class="presets-container-wrap" style="display:none;">
             
-            <!-- Presets Top Control Deck (Single Row: Title + Segmented Switcher + Add Button) -->
-            <div class="presets-top-deck" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.15rem; gap:16px; flex-wrap:wrap; padding-top:6px;">
-              <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
-                <span class="presets-title-text" style="font-size:1.15rem; font-weight:800; color:var(--text-primary);">Lunchbox Presets</span>
-                <!-- Segmented Child Switcher -->
-                <div id="childrenPresetChildTabs" class="presets-child-segmented-bar" style="margin-bottom:0;"></div>
-              </div>
-              <button class="btn-action-primary" id="btnChildrenAddPreset" style="height:38px; padding:0 16px; font-size:0.825rem; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; gap:6px;">
+            <!-- Presets Top Control Deck (Single Clean Toolbar: Child Switcher + Add Button) -->
+            <div class="presets-top-deck" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; gap:16px; flex-wrap:wrap; padding-top:4px;">
+              <!-- Segmented Child Switcher -->
+              <div id="childrenPresetChildTabs" class="presets-child-segmented-bar" style="margin-bottom:0;"></div>
+
+              <button class="btn-action-primary" id="btnChildrenAddPreset" style="height:38px; padding:0 16px; font-size:0.825rem; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; gap:6px; margin-left:auto;">
                 <i class="fa-solid fa-plus"></i> Add Lunchbox Preset
               </button>
-            </div>
-
-            <!-- Sleek AI Auto-Calibration Helper Strip -->
-            <div class="preset-ai-tip-strip">
-              <i class="fa-solid fa-wand-magic-sparkles preset-ai-tip-icon"></i>
-              <div class="preset-ai-tip-text">
-                <strong>Zero-effort scans:</strong> ChewCheckers AI auto-calibrates lunchbox dimensions directly from meal photos and saves them here for you.
-              </div>
             </div>
 
             <!-- Preset Cards Grid (with responsive columns and ghost add card) -->

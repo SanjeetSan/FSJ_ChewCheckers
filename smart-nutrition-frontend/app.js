@@ -9967,6 +9967,16 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             }
           });
         });
+      } else if (students.length === 1) {
+        childTabsContainer.style.display = 'flex';
+        const s = students[0];
+        const sInit = (s.name || 'C').trim().charAt(0).toUpperCase();
+        childTabsContainer.innerHTML = `
+          <div class="preset-segmented-item active" style="cursor:default; pointer-events:none;">
+            <span class="preset-segmented-avatar">${sInit}</span>
+            <span>${formatStudentName(s.name)}</span>
+          </div>
+        `;
       } else {
         childTabsContainer.style.display = 'none';
       }
