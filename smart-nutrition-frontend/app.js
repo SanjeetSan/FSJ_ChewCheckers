@@ -1347,6 +1347,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ───────────────────────── 6. SMART CONVERSATIONAL CHAT & MESSAGING ─────────────────────────
+  function autoResizeChatInput(el) {
+    if (!el || el.tagName !== 'TEXTAREA') return;
+    el.style.height = 'auto';
+    const newHeight = Math.min(el.scrollHeight, 140);
+    el.style.height = Math.max(newHeight, 42) + 'px';
+  }
+
   function setupChat() {
     const aiChatForm = document.getElementById('aiChatForm');
     const aiChatInput = document.getElementById('aiChatInput');
@@ -1416,6 +1423,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (directChatForm && directChatInput) {
+      directChatInput.addEventListener('input', () => {
+        autoResizeChatInput(directChatInput);
+      });
+
       directChatInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault();
@@ -1494,6 +1505,7 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.setItem(`chewchecker_broadcast_history_${state.user.id}`, JSON.stringify(stored));
 
           directChatInput.value = '';
+          autoResizeChatInput(directChatInput);
           showToast(` Announcement broadcast sent to ${sentCount} parent account(s)!`);
           await loadChatHistory();
           return;
@@ -1513,6 +1525,7 @@ document.addEventListener('DOMContentLoaded', () => {
           });
           if (res.ok) {
             directChatInput.value = '';
+            autoResizeChatInput(directChatInput);
             await loadChatHistory();
           } else {
             showToast("Failed to send message.", "error");
@@ -1875,10 +1888,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (directInput) {
       if (state.pendingDraftMessage) {
         directInput.value = state.pendingDraftMessage;
+        autoResizeChatInput(directInput);
         showToast("AI Smart Draft message pre-filled for Teacher!", "info");
         state.pendingDraftMessage = null;
       } else if (isContactSwitched) {
         directInput.value = '';
+        autoResizeChatInput(directInput);
       }
     }
 
@@ -1894,6 +1909,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const parentLabel = contact ? contact.name : "Parent";
             input.value = `Hello, I am reaching out from ChewCheckers regarding today's classroom lunch intake for ${parentLabel}. Please let me know if you have any questions or dietary updates!`;
           }
+          autoResizeChatInput(input);
           showToast("AI Smart Draft generated!", "info");
         }
       };
