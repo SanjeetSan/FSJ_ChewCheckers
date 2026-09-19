@@ -2194,180 +2194,102 @@ INTELLIGENCE & PERSONALIZATION RULES:
     // Strip any emojis from AI output
     text = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{2300}-\u{23FF}]/gu, '');
     text = text.replace(/```markdown/gi, '').replace(/```json/gi, '').replace(/```/g, '');
+    text = text.replace(/\.\*+$/gm, '.').replace(/\*+$/gm, '');
 
-    // Highlight key nutritional values and percentages
-    function highlightNutrition(str) {
+    const rawLines = text.split(/\r?\n/);
+    const htmlParts = [];
+    let currentParagraph = [];
+
+    function flushParagraph() {
+      if (currentParagraph.length > 0) {
+        const pText = currentParagraph.join(' ').trim();
+        if (pText) {
+          htmlParts.push(`<p class="ai-conv-p">${formatInline(pText)}</p>`);
+        }
+        currentParagraph = [];
+      }
+    }
+
+    function formatInline(str) {
       if (!str) return '';
-      // Protein highlights (e.g. 24g protein, ~ 20g protein)
-      str = str.replace(/(~?\s*\d+(?:\.\d+)?\s*(?:g|mg)\s+(?:of\s+)?protein\b|protein\s*:\s*~?\s*\d+(?:\.\d+)?\s*g\b)/gi, '<span class="nutrition-val-highlight val-protein"><i class="fa-solid fa-bolt" style="font-size:0.75em;"></i> $1</span>');
-      // Calories highlights (e.g. 500 kcal, ~350 calories)
-      str = str.replace(/(~?\s*\d+(?:\.\d+)?\s*(?:kcal|calories|cal)\b|calories\s*:\s*~?\s*\d+(?:\.\d+)?\s*kcal\b)/gi, '<span class="nutrition-val-highlight val-cal"><i class="fa-solid fa-fire" style="font-size:0.75em;"></i> $1</span>');
-      // Carbs, fats, fiber highlights
-      str = str.replace(/(~?\s*\d+(?:\.\d+)?\s*(?:g|mg)\s+(?:of\s+)?(?:carbs|carbohydrates|fat|fats|fiber|fibre)\b)/gi, '<span class="nutrition-val-highlight val-macro"><i class="fa-solid fa-chart-pie" style="font-size:0.75em;"></i> $1</span>');
-      // % target highlights (e.g. (83% of Sai's lunch target))
-      str = str.replace(/\((\s*\d+%\s+of\s+[^)]+)\)/gi, '<span class="ai-chip-target">$1</span>');
+      // Convert bold markdown
+      str = str.replace(/\*\*(.*?)\*\*/g, '<strong class="ai-conv-strong">$1</strong>');
+      str = str.replace(/__(.*?)__/g, '<strong class="ai-conv-strong">$1</strong>');
+      // Normalize whole-sentence italics to normal text (prevents awkward slanted recipe paragraphs)
+      str = str.replace(/\*([^*\n]+)\*/g, '$1');
+      str = str.replace(/\*\*/g, '');
+      // Clean up common AI nutrition patterns to natural text: e.g. "Yields ~ 20g protein" -> "Protein: ~20g"
+      str = str.replace(/yields?\s*(~?\s*\d+(?:\.\d+)?\s*g)\s*(?:of\s+)?protein\b/gi, 'Protein: $1');
+      // Strip intrusive automated percentage target tags e.g. "(83% of Sai's lunch target)"
+      str = str.replace(/\s*\(\s*\d+%\s+of\s+[^)]+\)/gi, '');
       return str;
     }
-
-    // Inline markdown renderer
-    function inlineMarkdown(str) {
-      if (!str) return '';
-      str = str.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#FFFFFF; font-weight:700;">$1</strong>');
-      str = str.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
-      return highlightNutrition(str);
-    }
-
-    // Parse into structured semantic blocks
-    const rawLines = text.split(/\r?\n/);
-    const blocks = [];
-    let currentParagraph = [];
 
     for (let i = 0; i < rawLines.length; i++) {
       let line = rawLines[i].trim();
       if (!line) {
-        if (currentParagraph.length > 0) {
-          blocks.push({ type: 'p', content: currentParagraph.join(' ') });
-          currentParagraph = [];
-        }
+        flushParagraph();
         continue;
       }
 
       // 1. Headings (#, ##, ###)
       const hMatch = line.match(/^(#{1,6})\s+(.*)$/);
       if (hMatch) {
-        if (currentParagraph.length > 0) {
-          blocks.push({ type: 'p', content: currentParagraph.join(' ') });
-          currentParagraph = [];
-        }
-        blocks.push({ type: 'heading', level: hMatch[1].length, title: hMatch[2].replace(/\*\*/g, '').trim() });
+        flushParagraph();
+        htmlParts.push(`<h4 class="ai-conv-heading">${hMatch[2].replace(/\*\*/g, '').trim()}</h4>`);
         continue;
       }
 
-      // 2. Recommendation Cards (* **Title**: Desc or 1. **Title**: Desc or **Title**: Desc)
-      const recMatch = line.match(/^(\d+\.|\*|\-)?\s*\*\*([^*:]+)\*\*:\s*(.*)$/) ||
-                       line.match(/^(\d+)\.\s+([A-Z][^:]{3,45}):\s*(.*)$/);
-
-      if (recMatch) {
-        if (currentParagraph.length > 0) {
-          blocks.push({ type: 'p', content: currentParagraph.join(' ') });
-          currentParagraph = [];
-        }
-        const numOrBullet = recMatch[1] || '';
-        const title = recMatch[2].trim().replace(/\*+$/, '');
-        let body = recMatch[3] ? recMatch[3].trim().replace(/\*+$/, '') : '';
-
-        blocks.push({
-          type: 'rec',
-          num: numOrBullet.replace(/[.\*\-]/g, '').trim(),
-          title: title,
-          body: body
-        });
+      // 2. Recommendation or key action item with bold title (e.g. * **Title**: Desc or 1. **Title**: Desc or **Title**: Desc)
+      const bulletTitleMatch = line.match(/^(\d+\.|\*|\-|\•)?\s*\*\*([^*:]+)\*\*:\s*(.*)$/);
+      if (bulletTitleMatch) {
+        flushParagraph();
+        const title = bulletTitleMatch[2].trim();
+        let body = bulletTitleMatch[3].replace(/\*+$/, '').trim();
+        htmlParts.push(`
+          <div class="ai-conv-bullet">
+            <span class="ai-conv-bullet-dot">•</span>
+            <div class="ai-conv-bullet-content">
+              <strong class="ai-conv-strong">${title}</strong>: ${formatInline(body)}
+            </div>
+          </div>
+        `);
         continue;
       }
 
-      // 3. Clean Bullet points (* or - or •)
-      const bulletMatch = line.match(/^[\*\-•]\s+(.*)$/);
-      if (bulletMatch) {
-        if (currentParagraph.length > 0) {
-          blocks.push({ type: 'p', content: currentParagraph.join(' ') });
-          currentParagraph = [];
-        }
-        blocks.push({ type: 'bullet', content: bulletMatch[1].replace(/\*+$/, '').trim() });
+      // 3. Standard bullet points (* or - or •)
+      const standardBulletMatch = line.match(/^[\*\-•]\s+(.*)$/);
+      if (standardBulletMatch) {
+        flushParagraph();
+        const bText = standardBulletMatch[1].replace(/\*+$/, '').trim();
+        htmlParts.push(`
+          <div class="ai-conv-bullet">
+            <span class="ai-conv-bullet-dot">•</span>
+            <div class="ai-conv-bullet-content">${formatInline(bText)}</div>
+          </div>
+        `);
         continue;
       }
 
-      // 4. Numbered list items
-      const numMatch = line.match(/^(\d+)\.\s+(.*)$/);
-      if (numMatch) {
-        if (currentParagraph.length > 0) {
-          blocks.push({ type: 'p', content: currentParagraph.join(' ') });
-          currentParagraph = [];
-        }
-        blocks.push({ type: 'numbered', num: numMatch[1], content: numMatch[2].replace(/\*+$/, '').trim() });
+      // 4. Numbered list items (e.g. 1. Title or 1. Description)
+      const numberedMatch = line.match(/^(\d+)\.\s+(.*)$/);
+      if (numberedMatch) {
+        flushParagraph();
+        const nText = numberedMatch[2].replace(/\*+$/, '').trim();
+        htmlParts.push(`
+          <div class="ai-conv-bullet">
+            <span class="ai-conv-bullet-dot">•</span>
+            <div class="ai-conv-bullet-content">${formatInline(nText)}</div>
+          </div>
+        `);
         continue;
       }
 
-      // 5. Standard paragraph line
+      // 5. Normal conversational prose
       currentParagraph.push(line);
     }
 
-    if (currentParagraph.length > 0) {
-      blocks.push({ type: 'p', content: currentParagraph.join(' ') });
-    }
-
-    // Assemble visual presentation HTML
-    let recCounter = 1;
-    const htmlParts = [];
-
-    for (let b = 0; b < blocks.length; b++) {
-      const block = blocks[b];
-
-      if (block.type === 'heading') {
-        htmlParts.push(`
-          <div class="ai-section-heading">
-            <i class="fa-solid fa-utensils"></i>
-            <span>${block.title}</span>
-          </div>
-        `);
-      } else if (block.type === 'p') {
-        const isIntro = (b === 0 && blocks.length > 1);
-        const isOutro = (b === blocks.length - 1 && b > 0 && !block.content.endsWith(':'));
-        const cls = isIntro ? 'ai-intro-text' : (isOutro ? 'ai-outro-text' : 'ai-body-text');
-        htmlParts.push(`<div class="${cls}">${inlineMarkdown(block.content)}</div>`);
-      } else if (block.type === 'rec') {
-        const recIndex = block.num || String(recCounter++);
-        let bodyText = block.body;
-
-        // Extract Bento sides or Sides if present
-        let sidesText = '';
-        const sidesMatch = bodyText.match(/(bento sides?|sides?|serve with|pair with)\s*:\s*([^.]+)(\.|$)/i);
-        if (sidesMatch) {
-          sidesText = sidesMatch[2].trim();
-          bodyText = bodyText.replace(sidesMatch[0], '').trim();
-        }
-
-        // Extract Yields / Protein sentence if present
-        let yieldText = '';
-        const yieldMatch = bodyText.match(/(yields?\s*~?[^.]+)(\.|$)/i);
-        if (yieldMatch) {
-          yieldText = yieldMatch[1].trim();
-          bodyText = bodyText.replace(yieldMatch[0], '').trim();
-        }
-
-        const formattedDesc = inlineMarkdown(bodyText);
-
-        htmlParts.push(`
-          <div class="ai-rec-card">
-            <div class="ai-rec-header">
-              <span class="ai-rec-badge">${recIndex}</span>
-              <h4 class="ai-rec-title">${block.title}</h4>
-            </div>
-            ${formattedDesc ? `<p class="ai-rec-desc">${formattedDesc}</p>` : ''}
-            ${(yieldText || sidesText) ? `
-              <div class="ai-rec-meta-row">
-                ${yieldText ? `<span class="ai-chip-protein"><i class="fa-solid fa-bolt" style="font-size:0.75em;"></i> ${inlineMarkdown(yieldText)}</span>` : ''}
-                ${sidesText ? `<span class="ai-chip-sides"><i class="fa-solid fa-box" style="font-size:0.75em; opacity:0.85;"></i> Bento sides: ${inlineMarkdown(sidesText)}</span>` : ''}
-              </div>
-            ` : ''}
-          </div>
-        `);
-      } else if (block.type === 'bullet') {
-        htmlParts.push(`
-          <div class="ai-bullet-item">
-            <span class="ai-bullet-dot"><i class="fa-solid fa-circle-check"></i></span>
-            <div>${inlineMarkdown(block.content)}</div>
-          </div>
-        `);
-      } else if (block.type === 'numbered') {
-        htmlParts.push(`
-          <div class="ai-bullet-item">
-            <span class="ai-rec-badge" style="width:20px; height:20px; font-size:0.7rem; border-radius:5px;">${block.num}</span>
-            <div>${inlineMarkdown(block.content)}</div>
-          </div>
-        `);
-      }
-    }
-
+    flushParagraph();
     return htmlParts.join('').trim();
   }
 
