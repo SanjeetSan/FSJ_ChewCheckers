@@ -40,7 +40,12 @@
   --color-success-bg:     rgba(16, 185, 129, 0.12);
   --color-success-border: rgba(16, 185, 129, 0.25);
 
-  /* Warning = Pending Review, Missing Information, Attention Required */
+  /* Pending Review / Awaiting Verification (Refined Sky Blue, not hazard yellow) */
+  --color-pending:        #0284C7;
+  --color-pending-bg:     rgba(2, 132, 199, 0.08);
+  --color-pending-border: rgba(2, 132, 199, 0.25);
+
+  /* Warning = Attention Required, Missing Information */
   --color-warning:        #F59E0B;
   --color-warning-bg:     rgba(245, 158, 11, 0.12);
   --color-warning-border: rgba(245, 158, 11, 0.25);
@@ -1652,8 +1657,15 @@ body.dark-theme .user-profile-badge:hover {
   border: 1px solid var(--color-success-border);
 }
 
-/* Amber: Pending Review / Needs Attention / Attention Required */
-.badge-pending, .badge-warning {
+/* Sky Blue: Pending Review / Awaiting Action (Refined & Presentable) */
+.badge-pending {
+  background: var(--color-pending-bg);
+  color: var(--color-pending);
+  border: 1px solid var(--color-pending-border);
+}
+
+/* Amber: Attention Required / Warning */
+.badge-warning {
   background: var(--color-warning-bg);
   color: var(--color-warning);
   border: 1px solid var(--color-warning-border);
@@ -3518,6 +3530,11 @@ body.dark-theme {
   --color-success-bg:     rgba(52, 211, 153, 0.15);
   --color-success-border: rgba(52, 211, 153, 0.3);
 
+  /* Pending Review / Awaiting Verification (Luminous, calm Sky Blue in dark theme) */
+  --color-pending:        #38BDF8;
+  --color-pending-bg:     rgba(56, 189, 248, 0.12);
+  --color-pending-border: rgba(56, 189, 248, 0.28);
+
   --color-warning:        #FBBF24;
   --color-warning-bg:     rgba(251, 191, 36, 0.15);
   --color-warning-border: rgba(251, 191, 36, 0.3);
@@ -4254,11 +4271,11 @@ body.dark-theme .btn-pct-select:hover .btn-pct-label {
 .teacher-count-badge {
   font-size: 0.725rem;
   font-weight: 600;
-  padding: 0.15rem 0.5rem;
-  border-radius: var(--r-full);
-  background: rgba(245, 158, 11, 0.12);
-  color: #F59E0B;
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--r-badge);
+  background: var(--color-pending-bg);
+  color: var(--color-pending);
+  border: 1px solid var(--color-pending-border);
 }
 
 .teacher-count-badge.badge-done {
@@ -4297,9 +4314,9 @@ body.dark-theme .btn-pct-select:hover .btn-pct-label {
 
 /* 5. Simplified Badges (Pill-shaped 999px, semantic colors) */
 .badge-status-pending {
-  background: var(--color-warning-bg);
-  color: var(--color-warning);
-  border: 1px solid var(--color-warning-border);
+  background: var(--color-pending-bg);
+  color: var(--color-pending);
+  border: 1px solid var(--color-pending-border);
   font-size: 12px;
   font-weight: 600;
   padding: 4px 10px;

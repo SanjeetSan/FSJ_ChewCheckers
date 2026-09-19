@@ -4751,11 +4751,9 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         badgePendingCount.textContent = `${pendingCount} Pending`;
         if (pendingCount > 0) {
           badgePendingCount.className = 'teacher-count-badge';
-          if (cardPending) cardPending.style.borderLeftColor = 'var(--accent-amber)';
         } else {
           badgePendingCount.className = 'teacher-count-badge badge-done';
           badgePendingCount.textContent = 'All Caught Up';
-          if (cardPending) cardPending.style.borderLeftColor = 'var(--accent-green)';
         }
       }
 
@@ -5167,7 +5165,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           statusBadgeHTML = `<span class="badge-status-consumed"><i class="fa-solid fa-check"></i> Fully Consumed</span>`;
         } else if (meal.status === 'PARTIALLY_CONSUMED' || (pct > 0 && pct < 100)) {
           mealSummaryHTML = `
-            <div><strong style="color:var(--text-primary); font-size:0.85rem;">${calcPacked} kcal</strong> <span style="color:var(--accent-amber); font-size:0.8rem; font-weight:600;">· ${pct}% eaten</span></div>
+            <div><strong style="color:var(--text-primary); font-size:0.85rem;">${calcPacked} kcal</strong> <span style="color:var(--text-muted); font-size:0.8rem; font-weight:500;">· ${pct}% eaten</span></div>
             <div style="font-size:0.75rem; margin-top:0.15rem;">${formatFoodItemList(items, meal.id)}</div>
           `;
           statusBadgeHTML = `<span class="badge-status-partial"><i class="fa-solid fa-chart-pie"></i> ${pct}% Consumed</span>`;
@@ -5533,7 +5531,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     }
 
     if (meal.status === 'PRE_MEAL_UPLOADED' || meal.status === 'PENDING_LEFTOVER_ANALYSIS') {
-      blockEl.innerHTML = `<div style="color:var(--accent-amber); font-weight:600; font-size:0.85rem;"><i class="fa-solid fa-clock"></i> Meal review is pending or leftover photo is required. Deficits will be computed after consumption is recorded.</div>`;
+      blockEl.innerHTML = `<div style="color:var(--color-pending); font-weight:600; font-size:0.85rem;"><i class="fa-solid fa-clock"></i> Meal review is pending or leftover photo is required. Deficits will be computed after consumption is recorded.</div>`;
       return;
     }
 
