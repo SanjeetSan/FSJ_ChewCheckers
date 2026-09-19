@@ -24,7 +24,11 @@ import {
   supabaseGetMessages,
   supabaseSendMessage,
   supabaseGetAllUserMessages,
-  supabaseGetStudentsByClassCode
+  supabaseGetStudentsByClassCode,
+  supabaseGetStudentNutritionReports,
+  supabaseGetClassMeals,
+  supabaseGetTeacherClassReport,
+  supabaseGetStudentInsights
 } from './supabaseClient.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -3363,6 +3367,24 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         const classCode = urlObj.searchParams.get('classCode') || (state.activeClass?.classCode || 'CLS-3214');
         const students = await supabaseGetStudentsByClassCode(classCode);
         return new Response(JSON.stringify(students || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path.startsWith('/api/reports/weekly/') || path.startsWith('/api/reports/monthly/')) {
+        const studentId = parseInt(path.split('/').pop()) || (state.selectedChild?.id || 34);
+        const reports = await supabaseGetStudentNutritionReports(studentId);
+        return new Response(JSON.stringify(reports || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path.startsWith('/api/reports/insights/')) {
+        const studentId = parseInt(path.split('/').pop()) || (state.selectedChild?.id || 34);
+        const insights = await supabaseGetStudentInsights(studentId);
+        return new Response(JSON.stringify(insights || {}), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path.startsWith('/api/meals/today/class/')) {
+        const classCode = path.split('/').pop() || (state.activeClass?.classCode || 'CLS-3214');
+        const classMeals = await supabaseGetClassMeals(classCode);
+        return new Response(JSON.stringify(classMeals || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path.startsWith('/api/teacher/reports/')) {
+        const urlObj = new URL('http://dummy.com' + path);
+        const classCode = urlObj.searchParams.get('classCode') || (state.activeClass?.classCode || 'CLS-3214');
+        const isWeekly = path.includes('/weekly');
+        const report = await supabaseGetTeacherClassReport(classCode, isWeekly);
+        return new Response(JSON.stringify(report), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
     } catch (sbErr) {
       console.warn("Supabase query attempt:", sbErr);
@@ -6869,7 +6891,11 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const elScoreInterpretation = document.getElementById('dashNutritionInterpretation');
 
     // Retrieve latest persisted score record returned by the backend API
-    const scoreRecord = (reports && Array.isArray(reports) && reports.length > 0) ? reports[0] : null;
+    const scoreRecord = (reports && Array.isArray(reports) && reports.length > 0) 
+      ? reports[0] 
+      : (meals && meals.length > 0 && (meals[0].nutritionScore || (meals[0].nutritionScores && meals[0].nutritionScores.length > 0))
+          ? (meals[0].nutritionScores && meals[0].nutritionScores.length > 0 ? meals[0].nutritionScores[0] : { score: meals[0].nutritionScore, classification: meals[0].classification })
+          : null);
 
     if (scoreRecord && scoreRecord.score !== null && scoreRecord.score !== undefined) {
       const scoreNum = Math.round(parseFloat(scoreRecord.score));
@@ -7032,8 +7058,8 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       fullDateLabels.push(d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }));
 
       // Check for score record in backend reports for this date
-      const rep = reports.find(r => r.calculatedAt && r.calculatedAt.startsWith(dateStr));
-      const dayMeals = meals.filter(m => m.mealDate && m.mealDate.startsWith(dateStr));
+      const rep = reports.find(r => (r.calculatedAt && r.calculatedAt.startsWith(dateStr)) || (r.mealDate && r.mealDate.startsWith(dateStr)));
+      const dayMeals = meals.filter(m => (m.mealDate && m.mealDate.startsWith(dateStr)) || (m.created_at && m.created_at.startsWith(dateStr)));
 
       let scoreVal = null;
       let consPct = null;
@@ -7042,12 +7068,22 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         scoreVal = Math.round(parseFloat(rep.score));
       }
 
+      // If rep didn't have a score for this day, check dayMeals
+      if (scoreVal === null && dayMeals.length > 0) {
+        const mealWithScore = dayMeals.find(m => (m.nutritionScore && m.nutritionScore > 0) || (m.nutritionScores && m.nutritionScores.length > 0));
+        if (mealWithScore) {
+          scoreVal = Math.round(parseFloat(mealWithScore.nutritionScore || (mealWithScore.nutritionScores && mealWithScore.nutritionScores[0].score)));
+        }
+      }
+
       if (dayMeals.length > 0) {
         const lastMeal = dayMeals[dayMeals.length - 1];
         if (lastMeal.overallConsumptionPercentage !== null && lastMeal.overallConsumptionPercentage !== undefined) {
           consPct = Math.round(Number(lastMeal.overallConsumptionPercentage));
         } else if (lastMeal.status === 'FULLY_CONSUMED') {
           consPct = 100;
+        } else if (lastMeal.status === 'PARTIALLY_CONSUMED') {
+          consPct = 50;
         }
       }
 
