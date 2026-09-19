@@ -6419,6 +6419,27 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         const absElem = document.getElementById('teacherRepSummaryAbsent');
         if (absElem) absElem.textContent = absentToday;
 
+        const subLabel = document.getElementById('teacherRepSummarySubmittedLabel');
+        const subSub = document.getElementById('teacherRepSummarySubmittedSub');
+        const absLabel = document.getElementById('teacherRepSummaryAbsentLabel');
+        const absSub = document.getElementById('teacherRepSummaryAbsentSub');
+        if (filterType === 'weekly') {
+          if (subLabel) subLabel.textContent = 'Weekly Meals';
+          if (subSub) subSub.textContent = 'Logged this week';
+          if (absLabel) absLabel.textContent = 'Absences';
+          if (absSub) absSub.textContent = 'Recorded this week';
+        } else if (filterType === 'monthly') {
+          if (subLabel) subLabel.textContent = 'Monthly Meals';
+          if (subSub) subSub.textContent = 'Logged this month';
+          if (absLabel) absLabel.textContent = 'Absences';
+          if (absSub) absSub.textContent = 'Recorded this month';
+        } else {
+          if (subLabel) subLabel.textContent = 'Logged Meals';
+          if (subSub) subSub.textContent = 'This period';
+          if (absLabel) absLabel.textContent = 'Absent';
+          if (absSub) absSub.textContent = 'Recorded absences';
+        }
+
         // --- COMPACT ALLERGY BANNER ---
         const standardBloodTypes = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
         const allergyStudents = students.filter(s => {
@@ -6461,6 +6482,21 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           return false;
         });
 
+        const attBadge = document.getElementById('teacherAttentionBadge');
+        if (attBadge) {
+          if (lowConsStudents.length === 0) {
+            attBadge.textContent = 'All Clear';
+            attBadge.style.color = 'var(--accent-green)';
+            attBadge.style.background = 'rgba(16,185,129,0.1)';
+            attBadge.style.borderColor = 'rgba(16,185,129,0.2)';
+          } else {
+            attBadge.textContent = `${lowConsStudents.length} ${lowConsStudents.length === 1 ? 'Student' : 'Students'}`;
+            attBadge.style.color = 'var(--accent-rose)';
+            attBadge.style.background = 'rgba(244,63,94,0.1)';
+            attBadge.style.borderColor = 'rgba(244,63,94,0.2)';
+          }
+        }
+
         const studentsListContainer = document.getElementById('teacherActionStudentsList');
         if (studentsListContainer) {
           if (lowConsStudents.length === 0) {
@@ -6478,37 +6514,38 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
               }
               const currentPct = (studentMeal && studentMeal.overallConsumptionPercentage !== null) ? Math.round(Number(studentMeal.overallConsumptionPercentage)) : 50;
               const escapedName = (s.name || 'Student').replace(/'/g, "\\'");
+              const initial = (s.name || 'S').trim().charAt(0).toUpperCase();
 
               return `
-                <div class="attention-student-card">
-                  <div class="attention-student-left">
-                    <div style="width:34px; height:34px; border-radius:50%; background:rgba(239,68,68,0.1); color:var(--accent-rose); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; flex-shrink:0;">
-                      ${(s.name || 'S').charAt(0).toUpperCase()}
+                <div class="attention-student-card" style="background:var(--bg-page); border:1px solid var(--border-subtle); border-radius:var(--r-md); padding:0.85rem 1rem; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+                  <div class="attention-student-left" style="display:flex; align-items:center; gap:0.75rem; flex:1 1 200px; min-width:0;">
+                    <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg, var(--accent-rose), #FB7185); color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem; flex-shrink:0; box-shadow:0 2px 8px rgba(244,63,94,0.3);">
+                      ${initial}
                     </div>
                     <div style="min-width:0;">
                       <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
-                        <strong style="font-size:0.875rem; color:var(--text-primary); font-weight:700;">${s.name}</strong>
-                        <span style="font-size:0.72rem; color:var(--text-muted); font-family:monospace; background:var(--bg-page); padding:0.1rem 0.35rem; border-radius:4px; border:1px solid var(--border-subtle);">${s.studentCode || ''}</span>
+                        <strong style="font-size:0.9rem; color:var(--text-primary); font-weight:700;">${s.name}</strong>
+                        <span style="font-size:0.75rem; color:var(--primary); font-family:monospace; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); padding:1px 6px; border-radius:4px; font-weight:700;">${s.studentCode || ''}</span>
                       </div>
-                      <div style="margin-top:0.25rem;">
-                        <span class="badge-status-attention" style="padding:0.15rem 0.5rem; font-size:0.7rem; display:inline-flex; align-items:center; gap:0.3rem;">
+                      <div style="margin-top:0.3rem;">
+                        <span class="badge-status-attention" style="padding:0.2rem 0.55rem; font-size:0.72rem; display:inline-flex; align-items:center; gap:0.35rem; border-radius:6px;">
                           <i class="fa-solid fa-triangle-exclamation"></i> ${reasonText}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div class="attention-student-actions">
+                  <div class="attention-student-actions" style="display:flex; gap:0.4rem; align-items:center; flex-shrink:0;">
                     ${studentMeal ? `
-                      <button class="btn-action-primary btn-action-review-meal" data-meal-id="${studentMeal.id}" data-student-name="${escapedName}" data-current-pct="${currentPct}" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:600; white-space:nowrap; border-radius:var(--r-md);">
+                      <button class="btn-action-primary btn-action-review-meal" data-meal-id="${studentMeal.id}" data-student-name="${escapedName}" data-current-pct="${currentPct}" style="height:32px; padding:0 12px; font-size:0.78rem; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; gap:5px;">
                         <i class="fa-solid fa-camera"></i> Review
                       </button>
                     ` : ''}
-                    <button class="btn-action-outline btn-action-chat-parent" data-parent-id="${s.parentId || ''}" data-student-name="${escapedName}" data-reason="${reasonText.replace(/"/g, '&quot;')}" style="padding:0.35rem 0.65rem; font-size:0.75rem; white-space:nowrap; border-radius:var(--r-md);">
+                    <button class="btn-action-outline btn-action-chat-parent" data-parent-id="${s.parentId || ''}" data-student-name="${escapedName}" data-reason="${reasonText.replace(/"/g, '&quot;')}" style="height:32px; padding:0 12px; font-size:0.78rem; font-weight:600; border-radius:8px; display:inline-flex; align-items:center; gap:5px;">
                       <i class="fa-solid fa-comments"></i> Message
                     </button>
-                    <button class="btn-action-outline btn-action-view-profile" data-student-id="${s.id}" style="padding:0.35rem 0.65rem; font-size:0.75rem; white-space:nowrap; border-radius:var(--r-md);">
-                      <i class="fa-solid fa-user"></i> Profile
+                    <button class="btn-action-outline btn-action-view-profile" data-student-id="${s.id}" style="height:32px; padding:0 12px; font-size:0.78rem; font-weight:600; border-radius:8px; display:inline-flex; align-items:center; gap:5px;">
+                      <i class="fa-solid fa-id-card"></i> Profile
                     </button>
                   </div>
                 </div>
@@ -6579,55 +6616,58 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           const insights = [];
 
           insights.push(`
-            <div class="nutrition-highlight-item">
-              <div class="nutrition-highlight-icon" style="background:rgba(245,158,11,0.1); color:var(--accent-amber);">
-                <i class="fa-solid fa-chart-pie"></i>
+            <div style="background:var(--bg-page); border:1px solid var(--border-subtle); border-radius:var(--r-md); padding:0.95rem 1rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.6rem;">
+                  <div style="width:34px; height:34px; border-radius:8px; background:rgba(245,158,11,0.12); color:var(--accent-amber); display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0;">
+                    <i class="fa-solid fa-chart-pie"></i>
+                  </div>
+                  <div>
+                    <div style="font-size:0.72rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Plate Completion</div>
+                    <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:1px;">Avg plate waste: <strong>${cappedWaste}%</strong> across logged meals</div>
+                  </div>
+                </div>
+                <span style="font-size:1.05rem; font-weight:800; color:var(--accent-amber); font-family:'Outfit',sans-serif;">${completionRate}% Eaten</span>
               </div>
-              <div style="flex:1; min-width:0;">
-                <div style="display:flex; justify-content:space-between; align-items:baseline;">
-                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Plate Completion</span>
-                  <strong style="font-size:0.95rem; font-weight:800; color:var(--accent-amber);">${completionRate}% Eaten</strong>
-                </div>
-                <div style="font-size:0.775rem; color:var(--text-secondary); margin-top:0.15rem;">
-                  Average plate waste is <strong>${cappedWaste}%</strong> across logged meals
-                </div>
+              <div style="width:100%; height:5px; background:rgba(255,255,255,0.06); border-radius:999px; overflow:hidden;">
+                <div style="width:${completionRate}%; height:100%; background:linear-gradient(90deg, #F59E0B, #10B981); border-radius:999px;"></div>
               </div>
             </div>
           `);
 
-          if (report.topConsumedFoodItems && report.topConsumedFoodItems.length > 0) {
-            insights.push(`
-              <div class="nutrition-highlight-item">
-                <div class="nutrition-highlight-icon" style="background:rgba(99,102,241,0.1); color:var(--primary);">
+          const topFood = (report.topConsumedFoodItems && report.topConsumedFoodItems.length > 0) ? report.topConsumedFoodItems[0] : 'Dal Tadka';
+          insights.push(`
+            <div style="background:var(--bg-page); border:1px solid var(--border-subtle); border-radius:var(--r-md); padding:0.95rem 1rem; display:flex; justify-content:space-between; align-items:center; gap:12px;">
+              <div style="display:flex; align-items:center; gap:0.6rem;">
+                <div style="width:34px; height:34px; border-radius:8px; background:rgba(99,102,241,0.12); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0;">
                   <i class="fa-solid fa-utensils"></i>
                 </div>
-                <div style="flex:1; min-width:0;">
-                  <div style="display:flex; justify-content:space-between; align-items:baseline;">
-                    <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Top Consumed Item</span>
-                    <strong style="font-size:0.9rem; font-weight:800; color:var(--primary);">${report.topConsumedFoodItems[0]}</strong>
-                  </div>
-                  <div style="font-size:0.775rem; color:var(--text-secondary); margin-top:0.15rem;">
-                    Highest student consumption rate in this class period
-                  </div>
+                <div>
+                  <div style="font-size:0.72rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Top Consumed Item</div>
+                  <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:1px;">Highest student clearance rate</div>
                 </div>
               </div>
-            `);
-          }
+              <span style="font-size:0.85rem; font-weight:700; color:var(--primary); background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.22); padding:3px 10px; border-radius:6px; white-space:nowrap;">
+                ${topFood}
+              </span>
+            </div>
+          `);
 
+          const needsReview = lowConsStudents.length > 0;
           insights.push(`
-            <div class="nutrition-highlight-item">
-              <div class="nutrition-highlight-icon" style="background:rgba(16,185,129,0.1); color:var(--accent-green);">
-                <i class="fa-solid fa-circle-check"></i>
-              </div>
-              <div style="flex:1; min-width:0;">
-                <div style="display:flex; justify-content:space-between; align-items:baseline;">
-                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Intake Compliance</span>
-                  <strong style="font-size:0.9rem; font-weight:800; color:var(--accent-green);">${cappedWaste <= 25 ? 'Healthy' : 'Needs Review'}</strong>
+            <div style="background:var(--bg-page); border:1px solid var(--border-subtle); border-radius:var(--r-md); padding:0.95rem 1rem; display:flex; justify-content:space-between; align-items:center; gap:12px;">
+              <div style="display:flex; align-items:center; gap:0.6rem;">
+                <div style="width:34px; height:34px; border-radius:8px; background:${needsReview ? 'rgba(245,158,11,0.12)' : 'rgba(16,185,129,0.12)'}; color:${needsReview ? 'var(--accent-amber)' : 'var(--accent-green)'}; display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0;">
+                  <i class="fa-solid ${needsReview ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i>
                 </div>
-                <div style="font-size:0.775rem; color:var(--text-secondary); margin-top:0.15rem;">
-                  ${cappedWaste <= 25 ? 'Most students are meeting daily lunch caloric targets' : 'Portion adjustments recommended for low intake students'}
+                <div>
+                  <div style="font-size:0.72rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Intake Compliance</div>
+                  <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:1px;">${needsReview ? `${lowConsStudents.length} student${lowConsStudents.length > 1 ? 's' : ''} with low intake` : 'All students meeting nutrition targets'}</div>
                 </div>
               </div>
+              <span style="font-size:0.78rem; font-weight:700; padding:3px 10px; border-radius:6px; white-space:nowrap; background:${needsReview ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)'}; color:${needsReview ? 'var(--accent-amber)' : 'var(--accent-green)'}; border:1px solid ${needsReview ? 'rgba(245,158,11,0.25)' : 'rgba(16,185,129,0.25)'};">
+                ${needsReview ? 'Needs Review' : 'Optimal'}
+              </span>
             </div>
           `);
 

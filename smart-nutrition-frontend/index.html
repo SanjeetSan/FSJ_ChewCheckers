@@ -1453,10 +1453,10 @@
         <div class="pane-container" id="pane-teacher-reports">
           
           <!-- Compact Header Card -->
-          <div class="card mb-3" style="padding:1.15rem 1.5rem; border-top: 3px solid var(--primary); background: linear-gradient(135deg, var(--bg-card) 0%, rgba(99, 102, 241, 0.03) 100%);">
+          <div class="card mb-3" style="padding:1.15rem 1.5rem; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--r-xl);">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
               <div style="display:flex; align-items:center; gap:1rem;">
-                <div style="width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg, var(--primary) 0%, #4F46E5 100%); color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-size:1.25rem; box-shadow:0 4px 12px rgba(99,102,241,0.25);">
+                <div style="width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg, var(--primary) 0%, #4F46E5 100%); color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-size:1.25rem; box-shadow:0 4px 12px rgba(99,102,241,0.25); flex-shrink:0;">
                   <i class="fa-solid fa-chart-line"></i>
                 </div>
                 <div>
@@ -1472,13 +1472,13 @@
               </div>
               <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
                 <div style="background:var(--bg-page); padding:0.2rem; border-radius:var(--r-md); border:1px solid var(--border-subtle); display:flex; gap:0.2rem;">
-                  <button class="btn-action-outline active" id="btnTeacherReportWeekly" style="padding:0.3rem 0.75rem; font-size:0.775rem; border:none; border-radius:var(--r-sm);">Weekly</button>
-                  <button class="btn-action-outline" id="btnTeacherReportMonthly" style="padding:0.3rem 0.75rem; font-size:0.775rem; border:none; border-radius:var(--r-sm);">Monthly</button>
+                  <button class="btn-action-outline active" id="btnTeacherReportWeekly" style="padding:0.35rem 0.85rem; font-size:0.775rem; font-weight:700; border:none; border-radius:var(--r-sm);">Weekly</button>
+                  <button class="btn-action-outline" id="btnTeacherReportMonthly" style="padding:0.35rem 0.85rem; font-size:0.775rem; font-weight:700; border:none; border-radius:var(--r-sm);">Monthly</button>
                 </div>
                 
                 <!-- Compact Reports Dropdown Group -->
                 <div style="position:relative; display:inline-block;" id="reportsExportDropdownWrapper">
-                  <button class="btn-action-primary" id="btnToggleReportsDropdown" style="padding:0.4rem 0.85rem; font-size:0.775rem; background:var(--bg-card); color:var(--primary); border:1px solid var(--primary); font-weight:700; border-radius:var(--r-md); display:flex; align-items:center; gap:0.4rem;">
+                  <button class="btn-action-primary" id="btnToggleReportsDropdown" style="height:36px; padding:0 0.95rem; font-size:0.8rem; font-weight:700; border-radius:var(--r-md); display:flex; align-items:center; gap:0.4rem;">
                     <i class="fa-solid fa-file-export"></i> Export <i class="fa-solid fa-chevron-down" style="font-size:0.65rem;"></i>
                   </button>
                   <div id="reportsDropdownMenu" style="display:none; position:absolute; right:0; top:115%; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--r-md); box-shadow:var(--shadow-md); z-index:100; min-width:140px; padding:0.35rem 0;">
@@ -1494,49 +1494,49 @@
             </div>
           </div>
 
-          <!-- SECTION 1: Today's Classroom Summary (Clean Modern KPI Cards) -->
+          <!-- SECTION 1: Classroom Summary KPI Cards -->
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
             
-            <div class="card" style="padding:1.1rem 1.25rem; border-left: 4px solid var(--primary); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
+            <div class="card" style="padding:1.15rem 1.25rem; border-left: 4px solid var(--primary); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.25rem;">Submitted Today</span>
-                <div class="metric-box-val" id="teacherRepSummarySubmitted" style="font-size:1.6rem; font-weight:800; color:var(--text-primary); line-height:1.2;">0</div>
-                <small style="font-size:0.72rem; color:var(--text-muted);">Logged meals</small>
+                <span id="teacherRepSummarySubmittedLabel" style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.25rem;">Logged Meals</span>
+                <div class="metric-box-val" id="teacherRepSummarySubmitted" style="font-size:1.85rem; font-weight:800; font-family:'Outfit',sans-serif; color:var(--text-primary); line-height:1.2;">0</div>
+                <small id="teacherRepSummarySubmittedSub" style="font-size:0.72rem; color:var(--text-muted);">This period</small>
               </div>
-              <div style="width:38px; height:38px; border-radius:50%; background:rgba(99,102,241,0.08); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
-                <i class="fa-solid fa-box-archive"></i>
+              <div style="width:38px; height:38px; border-radius:50%; background:rgba(99,102,241,0.1); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
+                <i class="fa-solid fa-utensils"></i>
               </div>
             </div>
 
-            <div class="card" style="padding:1.1rem 1.25rem; border-left: 4px solid var(--accent-green); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
+            <div class="card" style="padding:1.15rem 1.25rem; border-left: 4px solid var(--accent-green); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
               <div>
                 <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.25rem;">Reviewed</span>
-                <div class="metric-box-val" id="teacherRepSummaryReviewed" style="font-size:1.6rem; font-weight:800; color:var(--accent-green); line-height:1.2;">0</div>
+                <div class="metric-box-val" id="teacherRepSummaryReviewed" style="font-size:1.85rem; font-weight:800; font-family:'Outfit',sans-serif; color:var(--accent-green); line-height:1.2;">0</div>
                 <small style="font-size:0.72rem; color:var(--accent-green); font-weight:600;">Verified</small>
               </div>
-              <div style="width:38px; height:38px; border-radius:50%; background:rgba(16,185,129,0.08); color:var(--accent-green); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
+              <div style="width:38px; height:38px; border-radius:50%; background:rgba(16,185,129,0.1); color:var(--accent-green); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
                 <i class="fa-solid fa-circle-check"></i>
               </div>
             </div>
 
-            <div class="card" style="padding:1.1rem 1.25rem; border-left: 4px solid var(--accent-amber); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
+            <div class="card" style="padding:1.15rem 1.25rem; border-left: 4px solid var(--accent-amber); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
               <div>
                 <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.25rem;">Pending</span>
-                <div class="metric-box-val" id="teacherRepSummaryPending" style="font-size:1.6rem; font-weight:800; color:var(--accent-amber); line-height:1.2;">0</div>
+                <div class="metric-box-val" id="teacherRepSummaryPending" style="font-size:1.85rem; font-weight:800; font-family:'Outfit',sans-serif; color:var(--accent-amber); line-height:1.2;">0</div>
                 <small style="font-size:0.72rem; color:var(--accent-amber); font-weight:600;">Action needed</small>
               </div>
-              <div style="width:38px; height:38px; border-radius:50%; background:rgba(245,158,11,0.08); color:var(--accent-amber); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
+              <div style="width:38px; height:38px; border-radius:50%; background:rgba(245,158,11,0.1); color:var(--accent-amber); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
                 <i class="fa-solid fa-clock"></i>
               </div>
             </div>
 
-            <div class="card" style="padding:1.1rem 1.25rem; border-left: 4px solid var(--accent-blue); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
+            <div class="card" style="padding:1.15rem 1.25rem; border-left: 4px solid var(--accent-blue); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.25rem;">Absent</span>
-                <div class="metric-box-val" id="teacherRepSummaryAbsent" style="font-size:1.6rem; font-weight:800; color:var(--accent-blue); line-height:1.2;">0</div>
-                <small style="font-size:0.72rem; color:var(--text-muted);">Today</small>
+                <span id="teacherRepSummaryAbsentLabel" style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.25rem;">Absent</span>
+                <div class="metric-box-val" id="teacherRepSummaryAbsent" style="font-size:1.85rem; font-weight:800; font-family:'Outfit',sans-serif; color:var(--accent-blue); line-height:1.2;">0</div>
+                <small id="teacherRepSummaryAbsentSub" style="font-size:0.72rem; color:var(--text-muted);">Recorded absences</small>
               </div>
-              <div style="width:38px; height:38px; border-radius:50%; background:rgba(59,130,246,0.08); color:var(--accent-blue); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
+              <div style="width:38px; height:38px; border-radius:50%; background:rgba(59,130,246,0.1); color:var(--accent-blue); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
                 <i class="fa-solid fa-user-xmark"></i>
               </div>
             </div>
@@ -1554,11 +1554,15 @@
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; align-items: stretch;">
             
             <!-- Column 1: SECTION 2 (Students Requiring Attention) -->
-            <div class="card" style="padding:1.25rem; display:flex; flex-direction:column; border-top:4px solid var(--accent-rose);">
+            <div class="card" style="padding:1.25rem; display:flex; flex-direction:column; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--r-xl);">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border-subtle);">
                 <h3 style="font-size:1.05rem; margin:0; font-weight:800; display:flex; align-items:center; gap:0.5rem; color:var(--text-primary);">
-                  <i class="fa-solid fa-user-clock" style="color:var(--accent-rose)"></i> Students Requiring Attention
+                  <div style="width:30px; height:30px; border-radius:8px; background:rgba(244,63,94,0.12); color:var(--accent-rose); display:flex; align-items:center; justify-content:center; font-size:0.85rem;">
+                    <i class="fa-solid fa-user-clock"></i>
+                  </div>
+                  <span>Students Requiring Attention</span>
                 </h3>
+                <span id="teacherAttentionBadge" style="font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:999px; background:rgba(244,63,94,0.1); color:var(--accent-rose); border:1px solid rgba(244,63,94,0.2);">0 Flagged</span>
               </div>
               <div id="teacherActionStudentsList" style="display:flex; flex-direction:column; gap:0.75rem; flex:1;">
                 <div style="padding:1.25rem; text-align:center; color:var(--accent-green); font-size:0.85rem; font-weight:600; background:rgba(16,185,129,0.04); border-radius:var(--r-md); border:1px dashed rgba(16,185,129,0.2);">
@@ -1568,11 +1572,15 @@
             </div>
 
             <!-- Column 2: SECTION 3 (Nutrition Highlights) -->
-            <div class="card" style="padding:1.25rem; display:flex; flex-direction:column; border-top:4px solid var(--accent-violet);">
+            <div class="card" style="padding:1.25rem; display:flex; flex-direction:column; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--r-xl);">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border-subtle);">
                 <h3 style="font-size:1.05rem; margin:0; font-weight:800; display:flex; align-items:center; gap:0.5rem; color:var(--text-primary);">
-                  <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent-violet)"></i> Nutrition Highlights
+                  <div style="width:30px; height:30px; border-radius:8px; background:rgba(99,102,241,0.12); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:0.85rem;">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                  </div>
+                  <span>Nutrition Highlights</span>
                 </h3>
+                <span style="font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:999px; background:rgba(99,102,241,0.1); color:var(--primary); border:1px solid rgba(99,102,241,0.2);">Class Summary</span>
               </div>
               <div id="teacherActionAiInsightsList" style="display:flex; flex-direction:column; gap:0.75rem; flex:1;">
                 <div style="font-size:0.85rem; color:var(--text-secondary);">Analyzing classroom meal data...</div>
