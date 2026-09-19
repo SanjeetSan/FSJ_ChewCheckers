@@ -5558,6 +5558,24 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       if (elSubmitted) elSubmitted.textContent = submittedCount;
       const elPending = document.getElementById('teacherMetricPendingReviews');
       if (elPending) elPending.textContent = pendingCount;
+
+      const cardPendingKpi = document.getElementById('teacherMetricPendingCard');
+      const subPendingKpi = document.getElementById('teacherMetricPendingSub');
+      const iconPendingKpi = document.getElementById('teacherMetricPendingIcon');
+      if (cardPendingKpi && subPendingKpi && iconPendingKpi) {
+        if (pendingCount === 0) {
+          cardPendingKpi.className = 'teacher-kpi-card kpi-green';
+          iconPendingKpi.className = 'teacher-kpi-icon icon-green';
+          iconPendingKpi.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+          subPendingKpi.innerHTML = '<span class="kpi-sub-pill verified"><i class="fa-solid fa-circle-check"></i> All Cleared</span>';
+        } else {
+          cardPendingKpi.className = 'teacher-kpi-card kpi-amber';
+          iconPendingKpi.className = 'teacher-kpi-icon icon-amber';
+          iconPendingKpi.innerHTML = '<i class="fa-solid fa-clock"></i>';
+          subPendingKpi.innerHTML = '<span class="kpi-sub-pill pending"><i class="fa-solid fa-clock"></i> Action required</span>';
+        }
+      }
+
       const elAvg = document.getElementById('teacherMetricAvgConsumption');
       if (elAvg) elAvg.textContent = `${avgConsumptionPct}%`;
 
@@ -6116,7 +6134,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
                 ${(s.rollNumber && s.rollNumber !== 'N/A' && s.rollNumber !== 'null' && s.rollNumber !== '') ? `
                   <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.1rem;">Roll #${s.rollNumber}</div>
                 ` : `
-                  <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.1rem; font-family:monospace;">${s.studentCode || ''}</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.1rem;">Enrolled</div>
                 `}
               </div>
             </div>
@@ -6338,9 +6356,11 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
               <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, var(--primary), #818CF8); color:#FFFFFF; font-weight:700; font-size:0.875rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 6px rgba(99,102,241,0.25);">
                 ${initial}
               </div>
-              <div>
-                <div style="font-weight:700; color:var(--text-primary); font-size:0.9rem;">${s.name}</div>
-                ${rollText ? `<div style="font-size:0.75rem; color:var(--text-muted); font-weight:500;">Roll: ${rollText}</div>` : ''}
+              <div style="display:flex; flex-direction:column; justify-content:center;">
+                <div style="font-weight:700; color:var(--text-primary); font-size:0.9rem; line-height:1.25;">${s.name}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:500; margin-top:2px;">
+                  ${rollText ? `Roll: ${rollText}` : 'Enrolled Student'}
+                </div>
               </div>
             </div>
           </td>
@@ -7414,38 +7434,38 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
               const initial = (s.name || 'S').trim().charAt(0).toUpperCase();
 
               rows.push(`
-                <div class="insight-bullet-row warning" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0.85rem; flex-wrap:wrap;">
-                  <div style="display:flex; align-items:center; gap:0.75rem; flex:1; min-width:200px;">
+                <div class="insight-bullet-row warning" style="display:flex; justify-content:space-between; align-items:center; gap:0.6rem; padding:0.55rem 0.85rem;">
+                  <div style="display:flex; align-items:center; gap:0.65rem; flex:1; min-width:0;">
                     <div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, #F43F5E 0%, #BE123C 100%); color:#FFF; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.85rem; flex-shrink:0; box-shadow:0 2px 6px rgba(244,63,94,0.3);">
                       ${initial}
                     </div>
-                    <div style="display:flex; flex-direction:column; gap:2px;">
+                    <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
                       <div style="display:flex; align-items:center; gap:6px;">
                         <strong style="color:var(--text-primary); font-size:0.875rem; font-family:'Outfit',sans-serif;">${s.name}</strong>
                         <span style="font-size:0.68rem; color:var(--text-muted); font-family:monospace; background:rgba(255,255,255,0.06); padding:1px 5px; border-radius:4px;">${s.studentCode || ''}</span>
                       </div>
-                      <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:0.75rem; color:#FDA4AF; display:flex; align-items:center; gap:4px;">
-                          <i class="fa-solid fa-triangle-exclamation" style="font-size:0.7rem;"></i> ${reasonText} (${currentPct}% consumed)
+                      <div style="display:flex; align-items:center; gap:6px;">
+                        <span style="font-size:0.725rem; color:#FDA4AF; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;">
+                          <i class="fa-solid fa-triangle-exclamation" style="font-size:0.68rem;"></i> Low intake (${currentPct}%)
                         </span>
-                        <div style="width:55px; height:4px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden;">
+                        <div style="width:38px; height:4px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden; flex-shrink:0;">
                           <div style="width:${Math.max(5, currentPct)}%; height:100%; background:linear-gradient(90deg, #F43F5E, #F59E0B); border-radius:999px;"></div>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div style="display:flex; gap:0.35rem; align-items:center; flex-shrink:0;">
+                  <div style="display:flex; gap:0.3rem; align-items:center; flex-shrink:0;">
                     ${studentMeal ? `
-                      <button type="button" class="btn-action-primary btn-action-review-meal" data-meal-id="${studentMeal.id}" data-student-name="${escapedName}" data-current-pct="${currentPct}" style="height:28px; padding:0 0.65rem; font-size:0.75rem; border-radius:6px; display:inline-flex; align-items:center; gap:4px;">
+                      <button type="button" class="btn-action-primary btn-action-review-meal" data-meal-id="${studentMeal.id}" data-student-name="${escapedName}" data-current-pct="${currentPct}" style="height:28px; padding:0 0.6rem; font-size:0.75rem; border-radius:6px; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;">
                         <i class="fa-solid fa-camera"></i> Review
                       </button>
                     ` : ''}
-                    <button type="button" class="btn-action-outline btn-action-chat-parent" data-parent-id="${s.parentId || ''}" data-student-name="${escapedName}" data-reason="${reasonText.replace(/"/g, '&quot;')}" style="height:28px; padding:0 0.65rem; font-size:0.75rem; border-radius:6px; display:inline-flex; align-items:center; gap:4px;">
+                    <button type="button" class="btn-action-outline btn-action-chat-parent" data-parent-id="${s.parentId || ''}" data-student-name="${escapedName}" data-reason="${reasonText.replace(/"/g, '&quot;')}" style="height:28px; padding:0 0.6rem; font-size:0.75rem; border-radius:6px; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;">
                       <i class="fa-solid fa-comments"></i> Message
                     </button>
-                    <button type="button" class="btn-action-outline btn-action-view-profile" data-student-id="${s.id}" style="height:28px; padding:0 0.65rem; font-size:0.75rem; border-radius:6px; display:inline-flex; align-items:center; gap:4px;">
-                      <i class="fa-solid fa-id-card"></i> Profile
+                    <button type="button" class="btn-action-outline btn-action-view-profile" data-student-id="${s.id}" title="Student Profile" style="height:28px; width:28px; padding:0; font-size:0.75rem; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;">
+                      <i class="fa-solid fa-id-card"></i>
                     </button>
                   </div>
                 </div>
@@ -7453,35 +7473,67 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             });
           } else {
             rows.push(`
-              <div class="insight-bullet-row positive" style="padding:0.6rem 0.85rem;">
-                <span class="bullet-icon"><i class="fa-solid fa-circle-check"></i></span>
-                <span style="font-size:0.835rem; color:var(--text-secondary);">All students have met today's meal intake targets (no clearance action required).</span>
+              <div class="insight-bullet-row positive" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0.85rem;">
+                <div style="display:flex; align-items:center; gap:0.7rem;">
+                  <span class="bullet-icon"><i class="fa-solid fa-circle-check"></i></span>
+                  <div>
+                    <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">All Intake Goals Met</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">No student clearance action required today</div>
+                  </div>
+                </div>
+                <span style="font-size:0.75rem; font-weight:700; padding:3px 9px; border-radius:6px; background:rgba(16,185,129,0.12); color:#34D399; border:1px solid rgba(16,185,129,0.25); white-space:nowrap;">
+                  <i class="fa-solid fa-circle-check"></i> Clear
+                </span>
               </div>
             `);
           }
 
-          // Operational & nutritional rows to equalize card height symmetrically to 4 rows
+          // Operational & nutritional rows with matching status badges to equalize card height symmetrically to 4 rows
           if (rows.length < 2) {
             rows.push(`
-              <div class="insight-bullet-row warning" style="padding:0.6rem 0.85rem;">
-                <span class="bullet-icon"><i class="fa-solid fa-chart-pie"></i></span>
-                <span style="font-size:0.835rem; color:var(--text-secondary);">Average plate waste was ~<strong>${cappedWaste}%</strong> across logged meals (opportunity to reduce leftovers)</span>
+              <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0.85rem;">
+                <div style="display:flex; align-items:center; gap:0.7rem;">
+                  <span class="bullet-icon" style="background:rgba(245,158,11,0.12); color:#F59E0B;"><i class="fa-solid fa-chart-pie"></i></span>
+                  <div>
+                    <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Plate Waste Level</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">Avg leftovers ~<strong>${cappedWaste}%</strong> across logged meals</div>
+                  </div>
+                </div>
+                <span style="font-size:0.75rem; font-weight:700; padding:3px 9px; border-radius:6px; background:rgba(245,158,11,0.12); color:#F59E0B; border:1px solid rgba(245,158,11,0.25); white-space:nowrap;">
+                  <i class="fa-solid fa-chart-pie"></i> ${cappedWaste}% Waste
+                </span>
               </div>
             `);
           }
           if (rows.length < 3) {
             rows.push(`
-              <div class="insight-bullet-row warning" style="padding:0.6rem 0.85rem;">
-                <span class="bullet-icon"><i class="fa-solid fa-arrow-trend-up"></i></span>
-                <span style="font-size:0.835rem; color:var(--text-secondary);">Recommend hydrating fruits or fresh vegetables for students with lower intake</span>
+              <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0.85rem;">
+                <div style="display:flex; align-items:center; gap:0.7rem;">
+                  <span class="bullet-icon" style="background:rgba(99,102,241,0.12); color:var(--primary);"><i class="fa-solid fa-lightbulb"></i></span>
+                  <div>
+                    <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Nutritional Guidance</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">Recommend hydrating fruits & veggies for low intake</div>
+                  </div>
+                </div>
+                <span style="font-size:0.75rem; font-weight:700; padding:3px 9px; border-radius:6px; background:rgba(99,102,241,0.12); color:var(--primary-light); border:1px solid rgba(99,102,241,0.25); white-space:nowrap;">
+                  <i class="fa-solid fa-lightbulb"></i> Advisory
+                </span>
               </div>
             `);
           }
           if (rows.length < 4) {
             rows.push(`
-              <div class="insight-bullet-row positive" style="padding:0.6rem 0.85rem;">
-                <span class="bullet-icon"><i class="fa-solid fa-clipboard-check"></i></span>
-                <span style="font-size:0.835rem; color:var(--text-secondary);">Classroom attendance and daily meal logs fully verified for this period</span>
+              <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0.85rem;">
+                <div style="display:flex; align-items:center; gap:0.7rem;">
+                  <span class="bullet-icon" style="background:rgba(16,185,129,0.12); color:#10B981;"><i class="fa-solid fa-clipboard-check"></i></span>
+                  <div>
+                    <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Attendance & Logs</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">Classroom roster attendance fully confirmed</div>
+                  </div>
+                </div>
+                <span style="font-size:0.75rem; font-weight:700; padding:3px 9px; border-radius:6px; background:rgba(16,185,129,0.12); color:#34D399; border:1px solid rgba(16,185,129,0.25); white-space:nowrap;">
+                  <i class="fa-solid fa-check"></i> Verified
+                </span>
               </div>
             `);
           }
@@ -7942,11 +7994,13 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           <td class="nowrap" style="font-size:0.8rem;"><strong>${meal.consumedCal}</strong> <span style="color:var(--text-muted); font-size:0.75rem;">/ ${meal.packedCal} kcal</span></td>
           <td class="nowrap" style="font-size:0.8rem; font-weight:600; color:var(--text-primary);">${proteinFormatted}g</td>
           <td class="nowrap">
-            <span style="font-weight:700; font-size:0.8rem; color:${meal.pct >= 75 ? 'var(--accent-green)' : (meal.pct >= 50 ? 'var(--accent-teal)' : 'var(--accent-rose)')};">
-              ${meal.pct}%
-            </span>
+            <div style="display:inline-flex; align-items:center; gap:0.5rem;">
+              <span style="font-weight:800; font-size:0.825rem; font-family:'Outfit',sans-serif; color:${meal.pct >= 75 ? 'var(--accent-green)' : (meal.pct >= 50 ? 'var(--accent-amber)' : 'var(--accent-rose)')};">
+                ${meal.pct}%
+              </span>
+              ${statusBadge}
+            </div>
           </td>
-          <td class="nowrap">${statusBadge}</td>
           <td class="nowrap" style="text-align:right;">
             <button class="btn-action-outline" onclick="window.openMealDetailModalById(${meal.id})" style="padding:0.25rem 0.65rem; font-size:0.75rem; font-weight:600; white-space:nowrap;">
               <i class="fa-solid fa-circle-info"></i> Details

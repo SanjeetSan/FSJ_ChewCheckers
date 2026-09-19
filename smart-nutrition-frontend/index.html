@@ -1319,14 +1319,16 @@
               </div>
             </div>
 
-            <div class="teacher-kpi-card kpi-amber">
+            <div class="teacher-kpi-card kpi-green" id="teacherMetricPendingCard">
               <div class="teacher-kpi-content">
                 <span class="teacher-kpi-label">Pending Reviews</span>
                 <div class="teacher-kpi-value" id="teacherMetricPendingReviews">0</div>
-                <small class="teacher-kpi-subtext" style="color:var(--accent-amber); font-weight:600;">Action required</small>
+                <small class="teacher-kpi-subtext" id="teacherMetricPendingSub">
+                  <span class="kpi-sub-pill verified"><i class="fa-solid fa-circle-check"></i> All Cleared</span>
+                </small>
               </div>
-              <div class="teacher-kpi-icon icon-amber">
-                <i class="fa-solid fa-clock"></i>
+              <div class="teacher-kpi-icon icon-green" id="teacherMetricPendingIcon">
+                <i class="fa-solid fa-circle-check"></i>
               </div>
             </div>
 
@@ -1655,7 +1657,7 @@
                 <p style="font-size:0.8rem; color:var(--text-muted); margin:0.25rem 0 0 0;">Student intake records, nutrient targets, and plate completion metrics</p>
               </div>
 
-              <!-- Controls Toolbar: Search, Sort, Filter & CSV -->
+              <!-- Controls Toolbar: Search, Sort & CSV -->
               <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
                 
                 <!-- Quick Search Input -->
@@ -1680,15 +1682,6 @@
                     <option value="name-desc" style="background:#1E293B; color:#F8FAFC;">Student (Z – A)</option>
                   </select>
                 </div>
-
-                <!-- Status Filter Dropdown -->
-                <select id="teacherReportsStatusFilter" class="form-input" style="font-size:0.8rem; padding:0.4rem 0.65rem; height:36px; min-width:130px; font-weight:600; border-radius:var(--r-md); color-scheme:dark; background:var(--bg-card); color:var(--text-primary);">
-                  <option value="all" style="background:#1E293B; color:#F8FAFC;">All Statuses</option>
-                  <option value="low" style="background:#1E293B; color:#F8FAFC;">Low Intake (&lt; 50%)</option>
-                  <option value="clean" style="background:#1E293B; color:#F8FAFC;">Clean Plate</option>
-                  <option value="partial" style="background:#1E293B; color:#F8FAFC;">Partial Intake</option>
-                  <option value="pending" style="background:#1E293B; color:#F8FAFC;">Review Pending</option>
-                </select>
 
                 <!-- Download CSV -->
                 <button class="btn-action-primary" id="btnExportTeacherReportsCSV" style="font-size:0.8rem; padding:0.45rem 0.85rem; height:36px; display:flex; align-items:center; gap:0.4rem; white-space:nowrap; border-radius:var(--r-md);">
@@ -1729,24 +1722,21 @@
                     <th class="sortable-th active-sort" data-sort="date" style="white-space:nowrap; cursor:pointer;" title="Click to sort by Date">
                       Date <i class="fa-solid fa-sort-down sort-icon"></i>
                     </th>
-                    <th>Food Items</th>
+                    <th style="min-width:170px;">Food Items</th>
                     <th class="sortable-th" data-sort="calories" style="white-space:nowrap; cursor:pointer;" title="Click to sort by Calories">
                       Calories (Eaten / Goal) <i class="fa-solid fa-sort sort-icon"></i>
                     </th>
                     <th class="sortable-th" data-sort="protein" style="white-space:nowrap; cursor:pointer;" title="Click to sort by Protein">
                       Protein <i class="fa-solid fa-sort sort-icon"></i>
                     </th>
-                    <th class="sortable-th" data-sort="intake" style="white-space:nowrap; cursor:pointer;" title="Click to sort by Intake %">
-                      Intake % <i class="fa-solid fa-sort sort-icon"></i>
+                    <th class="sortable-th" data-sort="intake" style="white-space:nowrap; cursor:pointer;" title="Click to sort by Intake">
+                      Intake &amp; Status <i class="fa-solid fa-sort sort-icon"></i>
                     </th>
-                    <th class="sortable-th" data-sort="status" style="white-space:nowrap; cursor:pointer;" title="Click to sort by Status">
-                      Status <i class="fa-solid fa-sort sort-icon"></i>
-                    </th>
-                    <th style="text-align:right; white-space:nowrap;">Actions</th>
+                    <th style="text-align:right; white-space:nowrap;">Action</th>
                   </tr>
                 </thead>
                 <tbody id="teacherClassNutritionLedgerBody">
-                  <tr><td colspan="9" class="text-center" style="padding:1.5rem; color:var(--text-muted);">Loading classroom nutrition history...</td></tr>
+                  <tr><td colspan="8" class="text-center" style="padding:1.5rem; color:var(--text-muted);">Loading classroom nutrition history...</td></tr>
                 </tbody>
               </table>
             </div>
