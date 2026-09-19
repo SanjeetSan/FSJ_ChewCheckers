@@ -4728,8 +4728,16 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       let totalConsumptionPct = 0;
       let ratedMealsCount = 0;
       meals.forEach(m => {
-        if (m.overallConsumptionPercentage !== null && m.overallConsumptionPercentage !== undefined) {
-          totalConsumptionPct += Number(m.overallConsumptionPercentage);
+        const items = m.foodItems || [];
+        const validItemPcts = items.filter(i => i.consumptionPercentage !== null && i.consumptionPercentage !== undefined);
+        let mPct = (m.overallConsumptionPercentage !== null && m.overallConsumptionPercentage !== undefined)
+          ? Number(m.overallConsumptionPercentage)
+          : (validItemPcts.length > 0
+              ? (validItemPcts.reduce((acc, i) => acc + Number(i.consumptionPercentage), 0) / validItemPcts.length)
+              : (m.status === 'FULLY_CONSUMED' ? 100 : (m.status === 'PARTIALLY_CONSUMED' ? 50 : null)));
+
+        if (mPct !== null && (m.status === 'FULLY_CONSUMED' || m.status === 'PARTIALLY_CONSUMED')) {
+          totalConsumptionPct += mPct;
           ratedMealsCount++;
         }
       });
@@ -4823,13 +4831,17 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           const pendingRows = pendingStudents.map(s => {
             const meal = meals.find(m => m.studentId === s.id && m.status !== 'MEAL_NOT_PACKED');
             const items = meal.foodItems || [];
+            const validItemPcts = items.filter(i => i.consumptionPercentage !== null && i.consumptionPercentage !== undefined);
+            const pendingPct = (meal.overallConsumptionPercentage !== null && meal.overallConsumptionPercentage !== undefined)
+              ? Math.round(Number(meal.overallConsumptionPercentage))
+              : (validItemPcts.length > 0 ? Math.round(validItemPcts.reduce((acc, i) => acc + Number(i.consumptionPercentage), 0) / validItemPcts.length) : (meal.status === 'PARTIALLY_CONSUMED' ? 50 : 100));
             const totalCal = items.reduce((acc, i) => acc + (i.calories || 0), 0);
             const escapedName = (s.name || 'Student').replace(/'/g, "\\'");
 
             let statusBadge = `<span class="badge-status-pending"><i class="fa-solid fa-clock"></i> Pending Review</span>`;
             let actionCell = `
               <div style="display:flex; justify-content:flex-end; gap:0.4rem; align-items:center;">
-                <button class="btn-action-primary" onclick="openPortionChangeModal(${meal.id}, '${escapedName}', ${meal.consumptionPercentage ?? 100})" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600;">Review Meal</button>
+                <button class="btn-action-primary" onclick="openPortionChangeModal(${meal.id}, '${escapedName}', ${pendingPct})" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600;">Review Meal</button>
                 <button class="btn-action-outline" onclick="recordTeacherQuickConsumption(${meal.id}, 100)" title="Quick mark as 100% clean plate" style="padding:0.35rem 0.7rem; font-size:0.775rem;">100% Eaten</button>
               </div>
             `;
@@ -4839,7 +4851,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
               actionCell = `
                 <div style="display:flex; justify-content:flex-end; gap:0.4rem; align-items:center;">
                   <button class="btn-action-primary" onclick="openLeftoverModalForMeal(${meal.id})" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600;">Upload Leftover Photo</button>
-                  <button class="btn-action-outline" onclick="openPortionChangeModal(${meal.id}, '${escapedName}', ${meal.consumptionPercentage ?? 50})" style="padding:0.35rem 0.7rem; font-size:0.775rem;">Change %</button>
+                  <button class="btn-action-outline" onclick="openPortionChangeModal(${meal.id}, '${escapedName}', ${pendingPct})" style="padding:0.35rem 0.7rem; font-size:0.775rem;">Change %</button>
                 </div>
               `;
             }
@@ -5146,29 +5158,27 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         statusBadgeHTML = `<span class="badge-status-neutral"><i class="fa-solid fa-user-slash"></i> Absent</span>`;
       } else if (meal) {
         const items = meal.foodItems || [];
+        const validItemPcts = items.filter(i => i.consumptionPercentage !== null && i.consumptionPercentage !== undefined);
         const calcPacked = meal.packedCalories || (items.reduce((acc, i) => acc + (i.calories || 0), 0)) || 400;
-        
+
         let pct = (meal.overallConsumptionPercentage !== null && meal.overallConsumptionPercentage !== undefined)
           ? Math.round(Number(meal.overallConsumptionPercentage))
-          : 100;
-
-        if (meal.status === 'FULLY_CONSUMED') pct = 100;
-        if (meal.status === 'PARTIALLY_CONSUMED' && pct === 100) pct = 75;
-
-        const calcConsumed = Math.round(calcPacked * (pct / 100));
+          : (validItemPcts.length > 0 ? Math.round(validItemPcts.reduce((acc, i) => acc + Number(i.consumptionPercentage), 0) / validItemPcts.length) : null);
 
         if (meal.status === 'FULLY_CONSUMED' || pct === 100) {
+          pct = 100;
           mealSummaryHTML = `
             <div><strong style="color:var(--text-primary); font-size:0.85rem;">${calcPacked} kcal</strong> <span style="color:var(--text-muted); font-size:0.8rem;">· 100% eaten</span></div>
             <div style="font-size:0.75rem; margin-top:0.15rem;">${formatFoodItemList(items, meal.id)}</div>
           `;
           statusBadgeHTML = `<span class="badge-status-consumed"><i class="fa-solid fa-check"></i> Fully Consumed</span>`;
-        } else if (meal.status === 'PARTIALLY_CONSUMED' || (pct > 0 && pct < 100)) {
+        } else if (meal.status === 'PARTIALLY_CONSUMED' || (pct !== null && pct !== undefined)) {
+          const displayPct = pct !== null && pct !== undefined ? pct : 50;
           mealSummaryHTML = `
-            <div><strong style="color:var(--text-primary); font-size:0.85rem;">${calcPacked} kcal</strong> <span style="color:var(--text-muted); font-size:0.8rem; font-weight:500;">· ${pct}% eaten</span></div>
+            <div><strong style="color:var(--text-primary); font-size:0.85rem;">${calcPacked} kcal</strong> <span style="color:var(--text-muted); font-size:0.8rem; font-weight:500;">· ${displayPct}% eaten</span></div>
             <div style="font-size:0.75rem; margin-top:0.15rem;">${formatFoodItemList(items, meal.id)}</div>
           `;
-          statusBadgeHTML = `<span class="badge-status-partial"><i class="fa-solid fa-chart-pie"></i> ${pct}% Consumed</span>`;
+          statusBadgeHTML = `<span class="badge-status-partial"><i class="fa-solid fa-chart-pie"></i> ${displayPct}% Consumed</span>`;
         } else if (meal.status === 'PENDING_LEFTOVER_ANALYSIS') {
           mealSummaryHTML = `
             <div><strong style="color:var(--text-primary); font-size:0.85rem;">${calcPacked} kcal</strong> <span style="color:var(--accent-rose); font-size:0.8rem; font-weight:600;">· photo needed</span></div>
@@ -5187,7 +5197,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       const escapedName = (s.name || 'Student').replace(/'/g, "\\'");
       const actionsHTML = `
         <div style="display:flex; gap:0.4rem; justify-content:flex-end; align-items:center;">
-          ${meal ? `<button class="btn-action-primary" onclick="openPortionChangeModal(${meal.id}, '${escapedName}', ${meal.consumptionPercentage ?? 100})" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600;">Review Meal</button>` : ''}
+          ${meal ? `<button class="btn-action-primary" onclick="openPortionChangeModal(${meal.id}, '${escapedName}', ${pct !== null && pct !== undefined ? pct : 100})" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600;">Review Meal</button>` : ''}
           <button class="btn-action-outline btn-view-profile" data-student-id="${s.id}" style="padding:0.35rem 0.65rem; font-size:0.775rem; font-weight:500;">Profile</button>
           <button class="btn-action-outline btn-mark-absent" data-student-id="${s.id}" data-student-name="${escapedName}" style="padding:0.35rem 0.65rem; font-size:0.775rem; font-weight:500;">${isAbsent ? 'Present' : 'Absent'}</button>
         </div>

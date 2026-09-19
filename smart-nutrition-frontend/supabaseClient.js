@@ -787,16 +787,22 @@ export async function supabaseSaveMeal(mealData) {
 export async function supabaseSavePostMeal(postMealData) {
   try {
     const mealId = postMealData.mealId;
-    const consPct = parseFloat(postMealData.overallConsumptionPercentage) || 0;
-    const status = consPct >= 90 ? 'FULLY_CONSUMED' : (consPct >= 20 ? 'PARTIALLY_CONSUMED' : 'NOT_CONSUMED');
+    const consPct = (postMealData.overallConsumptionPercentage !== null && postMealData.overallConsumptionPercentage !== undefined)
+      ? parseFloat(postMealData.overallConsumptionPercentage)
+      : 0;
+    const status = consPct >= 90 ? 'FULLY_CONSUMED' : 'PARTIALLY_CONSUMED';
 
     // Update meal status and post meal photo
+    const updatePayload = {
+      status: status
+    };
+    if (postMealData.postMealImageUrl) {
+      updatePayload.post_meal_image_url = postMealData.postMealImageUrl;
+    }
+
     const { data: updatedMeal, error: mErr } = await supabase
       .from('meals')
-      .update({
-        status: status,
-        post_meal_image_url: postMealData.postMealImageUrl || null
-      })
+      .update(updatePayload)
       .eq('id', mealId)
       .select('*, student:students (*)')
       .single();
@@ -816,13 +822,19 @@ export async function supabaseSavePostMeal(postMealData) {
 
     if (foodItems && foodItems.length > 0) {
       for (const item of foodItems) {
-        const itemCons = (item.consumption_percentage !== null && item.consumption_percentage > 0) ? item.consumption_percentage : consPct;
+        let itemCons = consPct;
+        if (Array.isArray(postMealData.foodItems)) {
+          const specific = postMealData.foodItems.find(fi => fi.id === item.id || fi.foodName === item.food_name);
+          if (specific && specific.consumptionPercentage !== undefined && specific.consumptionPercentage !== null) {
+            itemCons = parseFloat(specific.consumptionPercentage);
+          }
+        }
         const ratio = itemCons / 100;
-        const cCal = parseFloat((item.calories * ratio).toFixed(2));
-        const cProt = parseFloat((item.protein_g * ratio).toFixed(2));
-        const cCarb = parseFloat((item.carbs_g * ratio).toFixed(2));
-        const cFat = parseFloat((item.fat_g * ratio).toFixed(2));
-        const cFib = parseFloat((item.fiber_g * ratio).toFixed(2));
+        const cCal = parseFloat(((item.calories || 0) * ratio).toFixed(2));
+        const cProt = parseFloat(((item.protein_g || 0) * ratio).toFixed(2));
+        const cCarb = parseFloat(((item.carbs_g || 0) * ratio).toFixed(2));
+        const cFat = parseFloat(((item.fat_g || 0) * ratio).toFixed(2));
+        const cFib = parseFloat(((item.fiber_g || 0) * ratio).toFixed(2));
 
         totalConsCal += cCal;
         totalConsProt += cProt;
