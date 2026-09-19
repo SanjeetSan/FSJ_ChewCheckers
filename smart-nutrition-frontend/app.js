@@ -6391,16 +6391,16 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
               return `
                 <div class="attention-student-card">
-                  <div style="display:flex; align-items:center; gap:0.75rem; min-width:0;">
+                  <div class="attention-student-left">
                     <div style="width:34px; height:34px; border-radius:50%; background:rgba(239,68,68,0.1); color:var(--accent-rose); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; flex-shrink:0;">
                       ${(s.name || 'S').charAt(0).toUpperCase()}
                     </div>
                     <div style="min-width:0;">
-                      <div style="display:flex; align-items:center; gap:0.4rem; white-space:nowrap;">
+                      <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
                         <strong style="font-size:0.875rem; color:var(--text-primary); font-weight:700;">${s.name}</strong>
-                        <span style="font-size:0.72rem; color:var(--text-muted); font-family:monospace;">${s.studentCode || ''}</span>
+                        <span style="font-size:0.72rem; color:var(--text-muted); font-family:monospace; background:var(--bg-page); padding:0.1rem 0.35rem; border-radius:4px; border:1px solid var(--border-subtle);">${s.studentCode || ''}</span>
                       </div>
-                      <div style="margin-top:0.15rem; white-space:nowrap;">
+                      <div style="margin-top:0.25rem;">
                         <span class="badge-status-attention" style="padding:0.15rem 0.5rem; font-size:0.7rem; display:inline-flex; align-items:center; gap:0.3rem;">
                           <i class="fa-solid fa-triangle-exclamation"></i> ${reasonText}
                         </span>
@@ -6408,16 +6408,16 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
                     </div>
                   </div>
 
-                  <div style="display:flex; gap:0.4rem; align-items:center; flex-shrink:0; white-space:nowrap;">
+                  <div class="attention-student-actions">
                     ${studentMeal ? `
-                      <button class="btn-action-primary btn-action-review-meal" data-meal-id="${studentMeal.id}" data-student-name="${escapedName}" data-current-pct="${currentPct}" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:600; white-space:nowrap;">
+                      <button class="btn-action-primary btn-action-review-meal" data-meal-id="${studentMeal.id}" data-student-name="${escapedName}" data-current-pct="${currentPct}" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:600; white-space:nowrap; border-radius:var(--r-md);">
                         <i class="fa-solid fa-camera"></i> Review
                       </button>
                     ` : ''}
-                    <button class="btn-action-outline btn-action-chat-parent" data-parent-id="${s.parentId || ''}" data-student-name="${escapedName}" data-reason="${reasonText.replace(/"/g, '&quot;')}" style="padding:0.35rem 0.65rem; font-size:0.75rem; white-space:nowrap;">
+                    <button class="btn-action-outline btn-action-chat-parent" data-parent-id="${s.parentId || ''}" data-student-name="${escapedName}" data-reason="${reasonText.replace(/"/g, '&quot;')}" style="padding:0.35rem 0.65rem; font-size:0.75rem; white-space:nowrap; border-radius:var(--r-md);">
                       <i class="fa-solid fa-comments"></i> Message
                     </button>
-                    <button class="btn-action-outline btn-action-view-profile" data-student-id="${s.id}" style="padding:0.35rem 0.65rem; font-size:0.75rem; white-space:nowrap;">
+                    <button class="btn-action-outline btn-action-view-profile" data-student-id="${s.id}" style="padding:0.35rem 0.65rem; font-size:0.75rem; white-space:nowrap; border-radius:var(--r-md);">
                       <i class="fa-solid fa-user"></i> Profile
                     </button>
                   </div>

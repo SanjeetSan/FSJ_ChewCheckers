@@ -1553,16 +1553,16 @@
           </div>
 
           <!-- Main Grid: SECTION 2 & SECTION 3 (Students Requiring Attention & Nutrition Highlights) -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; align-items: start;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; align-items: stretch;">
             
             <!-- Column 1: SECTION 2 (Students Requiring Attention) -->
-            <div class="card" style="padding:1.25rem;">
+            <div class="card" style="padding:1.25rem; display:flex; flex-direction:column; border-top:4px solid var(--accent-rose);">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border-subtle);">
                 <h3 style="font-size:1.05rem; margin:0; font-weight:800; display:flex; align-items:center; gap:0.5rem; color:var(--text-primary);">
                   <i class="fa-solid fa-user-clock" style="color:var(--accent-rose)"></i> Students Requiring Attention
                 </h3>
               </div>
-              <div id="teacherActionStudentsList" style="display:flex; flex-direction:column; gap:0.75rem;">
+              <div id="teacherActionStudentsList" style="display:flex; flex-direction:column; gap:0.75rem; flex:1;">
                 <div style="padding:1.25rem; text-align:center; color:var(--accent-green); font-size:0.85rem; font-weight:600; background:rgba(16,185,129,0.04); border-radius:var(--r-md); border:1px dashed rgba(16,185,129,0.2);">
                   <i class="fa-solid fa-circle-check" style="margin-right:0.35rem;"></i> All students are meeting today's meal goals.
                 </div>
@@ -1570,13 +1570,13 @@
             </div>
 
             <!-- Column 2: SECTION 3 (Nutrition Highlights) -->
-            <div class="card" style="padding:1.25rem; border-top:4px solid var(--accent-violet);">
+            <div class="card" style="padding:1.25rem; display:flex; flex-direction:column; border-top:4px solid var(--accent-violet);">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border-subtle);">
                 <h3 style="font-size:1.05rem; margin:0; font-weight:800; display:flex; align-items:center; gap:0.5rem; color:var(--text-primary);">
                   <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent-violet)"></i> Nutrition Highlights
                 </h3>
               </div>
-              <div id="teacherActionAiInsightsList" style="display:flex; flex-direction:column; gap:0.75rem;">
+              <div id="teacherActionAiInsightsList" style="display:flex; flex-direction:column; gap:0.75rem; flex:1;">
                 <div style="font-size:0.85rem; color:var(--text-secondary);">Analyzing classroom meal data...</div>
               </div>
             </div>
