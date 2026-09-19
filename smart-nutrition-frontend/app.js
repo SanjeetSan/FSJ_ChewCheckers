@@ -9886,14 +9886,14 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     // Render top 3 of each
     strengthsEl.innerHTML = strengths.slice(0, 3).map(text => `
       <div class="insight-bullet-row positive">
-        <span class="bullet-icon">✓</span>
+        <span class="bullet-icon"><i class="fa-solid fa-check"></i></span>
         <span>${text}</span>
       </div>
     `).join('');
 
     attentionEl.innerHTML = attentions.slice(0, 3).map(text => `
       <div class="insight-bullet-row warning">
-        <span class="bullet-icon">⚠</span>
+        <span class="bullet-icon"><i class="fa-solid fa-arrow-trend-up"></i></span>
         <span>${text}</span>
       </div>
     `).join('');
@@ -10508,7 +10508,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             <div>
               ${isRecent ? `
                 <span class="preset-status-pill active">
-                  <i class="fa-solid fa-check-double"></i> Current Scanner Preset
+                  <i class="fa-solid fa-circle-check" style="color:var(--primary);"></i> Current Scanner Preset
                 </span>
               ` : `
                 <button type="button" class="btn-use-as-scan-box btn-use-for-scanner" data-id="${p.id}">
