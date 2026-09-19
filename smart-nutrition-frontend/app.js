@@ -8156,8 +8156,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       }
     }
 
-    // --- PRO NUTRITIONIST CLINICAL ASSESSMENT SECTION ---
-    const target = (typeof calculateLunchTargets === 'function' && child) ? calculateLunchTargets(child) : { calories: 550, protein: 20 };
+    // --- AI NUTRITION INSIGHTS SECTION ---
+    const targetObj = (typeof calculateLunchTargets === 'function' && child) ? calculateLunchTargets(child) : {};
+    const targetCal = targetObj.lunchCalTarget || targetObj.dailyCal || (child && child.lunchCalories) || 550;
+    const targetProt = targetObj.lunchProteinTarget || targetObj.dailyProtein || (child && child.lunchProtein) || 20;
     let totalConsumedCals = 0;
     let totalConsumedProts = 0;
     const foodItemIntakeMap = {};
@@ -8167,7 +8169,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       const mPct = (getEffectiveMealConsumption(m) || 100) / 100;
       items.forEach(it => {
         const itCal = (parseFloat(it.calories) || 0) * mPct;
-        const itProt = (parseFloat(it.proteinG) || 0) * mPct;
+        const itProt = (parseFloat(it.proteinG || it.protein) || 0) * mPct;
         totalConsumedCals += itCal;
         totalConsumedProts += itProt;
 
@@ -8179,12 +8181,12 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     });
 
     const mealCount = sortedMeals.length || 1;
-    const avgConsumedCal = Math.round(totalConsumedCals / mealCount) || (avgClearance > 0 ? Math.round(target.calories * (avgClearance / 100)) : 0);
-    const avgConsumedProt = Math.round((totalConsumedProts / mealCount) * 10) / 10 || (avgClearance > 0 ? Math.round(target.protein * (avgClearance / 100) * 10) / 10 : 0);
+    const avgConsumedCal = Math.round(totalConsumedCals / mealCount) || (avgClearance > 0 ? Math.round(targetCal * (avgClearance / 100)) : 0);
+    const avgConsumedProt = Math.round((totalConsumedProts / mealCount) * 10) / 10 || (avgClearance > 0 ? Math.round(targetProt * (avgClearance / 100) * 10) / 10 : 0);
 
     // Nutrition Quality Score Calculation
-    const calScore = target.calories > 0 ? Math.min(100, Math.round((avgConsumedCal / target.calories) * 100)) : 80;
-    const protScore = target.protein > 0 ? Math.min(100, Math.round((avgConsumedProt / target.protein) * 100)) : 80;
+    const calScore = targetCal > 0 ? Math.min(100, Math.round((avgConsumedCal / targetCal) * 100)) : 80;
+    const protScore = targetProt > 0 ? Math.min(100, Math.round((avgConsumedProt / targetProt) * 100)) : 80;
     const compositeScore = Math.round((calScore * 0.45) + (protScore * 0.35) + ((avgClearance || 75) * 0.2));
 
     const scoreBadge = document.getElementById('nutritionistScoreBadge');
@@ -8204,51 +8206,28 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const nutrCal = document.getElementById('nutrCalStat');
     if (nutrCal) {
       nutrCal.innerHTML = avgConsumedCal > 0
-        ? `Avg <strong>${avgConsumedCal} kcal</strong> consumed / ${target.calories} kcal target (${Math.round((avgConsumedCal / target.calories) * 100)}% met)`
-        : `Target: <strong>${target.calories} kcal</strong> per lunch`;
+        ? `Avg <strong>${avgConsumedCal} kcal</strong> / ${targetCal} kcal (${calScore}%)`
+        : `Target: <strong>${targetCal} kcal</strong>`;
     }
 
     const nutrProt = document.getElementById('nutrProtStat');
     if (nutrProt) {
       nutrProt.innerHTML = avgConsumedProt > 0
-        ? `Avg <strong>${avgConsumedProt}g</strong> protein / ${target.protein}g target (${Math.round((avgConsumedProt / target.protein) * 100)}% met - Optimal growth)`
-        : `Target: <strong>${target.protein}g</strong> protein per lunch`;
+        ? `Avg <strong>${avgConsumedProt}g</strong> / ${targetProt}g target`
+        : `Target: <strong>${targetProt}g</strong> protein`;
     }
-
-    const nutrCarb = document.getElementById('nutrCarbStat');
-    if (nutrCarb) {
-      nutrCarb.textContent = avgClearance >= 75
-        ? "Excellent complex carbohydrate & dietary fiber intake from whole grains & pulses."
-        : "Moderate intake; encourage grains & legumes for sustained afternoon focus.";
-    }
-
-    // Identify Favorite vs Frequent Leftovers
-    const foodRanking = Object.keys(foodItemIntakeMap).map(name => ({
-      name,
-      avgPct: Math.round(foodItemIntakeMap[name].totalPct / foodItemIntakeMap[name].count)
-    }));
-    foodRanking.sort((a, b) => b.avgPct - a.avgPct);
-
-    const favorites = foodRanking.filter(f => f.avgPct >= 70).map(f => f.name).slice(0, 3);
-    const leftovers = foodRanking.filter(f => f.avgPct < 60).map(f => f.name).slice(0, 3);
-
-    const elFav = document.getElementById('nutrFavFoods');
-    if (elFav) elFav.textContent = favorites.length > 0 ? favorites.join(', ') : "Rice, Dal, Roti & Paneer";
-
-    const elWaste = document.getElementById('nutrWasteFoods');
-    if (elWaste) elWaste.textContent = leftovers.length > 0 ? leftovers.join(', ') : "Leafy greens / Raw salad vegetables";
 
     const elTrend = document.getElementById('nutrClearanceTrend');
     if (elTrend) {
-      elTrend.textContent = avgClearance >= 80 ? "Consistently cleans plate; minimal food waste." : (avgClearance >= 50 ? "Good appetite on main courses; selective on side veggies." : "Lower intake recorded; recommend smaller, appealing portions.");
+      elTrend.textContent = avgClearance >= 80 ? `${avgClearance}% Avg (Consistently cleans plate)` : (avgClearance >= 50 ? `${avgClearance}% Avg (Balanced appetite)` : `${avgClearance}% Avg (Portion support advised)`);
     }
 
     const elAdvice = document.getElementById('nutritionistRecommendations');
     if (elAdvice) {
       if (avgClearance >= 80) {
-        elAdvice.textContent = `Great eating consistency! ${child ? child.name : 'Your child'} readily meets caloric & protein targets. Maintain current variety with wholesome lunchboxes.`;
+        elAdvice.textContent = `Great eating consistency! ${child ? child.name : 'Your child'} is meeting caloric and protein targets steadily.`;
       } else {
-        elAdvice.textContent = `To reduce vegetable plate waste, try pairing chopped veggies with mild yogurt dips or blending spinach into lentils/parathas to ensure balanced micronutrients.`;
+        elAdvice.textContent = `Good overall progress! Try adding a mild yogurt dip with vegetables to increase side dish clearance.`;
       }
     }
 
@@ -8265,64 +8244,54 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       } else {
         container.innerHTML = sortedMeals.map(meal => {
           const formattedDate = meal.mealDate ? new Date(meal.mealDate).toLocaleDateString('en-US', {
-            weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
-          }) : 'Today';
+            weekday: 'short', month: 'short', day: 'numeric'
+          }) : 'Recent';
 
           const isPending = isMealPendingReview(meal);
           const eatenPercent = getEffectiveMealConsumption(meal);
           const items = meal.foodItems || [];
-          const foodNames = items.map(f => f.foodName).join(', ');
-          const totalCal = Math.round(items.reduce((acc, f) => acc + (parseFloat(f.calories) || 0), 0)) || target.calories;
-          const eatenCal = eatenPercent !== null ? Math.round(totalCal * (eatenPercent / 100)) : totalCal;
-          const protein = Math.round(items.reduce((acc, f) => acc + (parseFloat(f.proteinG) || 0), 0)) || 12;
+          const foodNames = items.map(f => f.foodName).join(', ') || 'Lunchbox Meal';
+          const totalCal = Math.round(items.reduce((acc, f) => acc + (parseFloat(f.calories) || 0), 0)) || targetCal;
+          const totalProt = items.reduce((acc, f) => acc + (parseFloat(f.proteinG || f.protein) || 0), 0);
+          const protFormatted = totalProt > 0 ? (totalProt % 1 === 0 ? `${totalProt.toFixed(0)}g` : `${totalProt.toFixed(1)}g`) : '15g';
 
+          let badgeMarkup = '';
           if (isPending || eatenPercent === null) {
-            return `
-              <div class="meal-log-card" data-meal-id="${meal.id}" style="display:flex; justify-content:space-between; align-items:center; padding:1rem 1.25rem; background:var(--bg-page); border-radius:var(--r-lg); border:1px solid var(--border-subtle); cursor:pointer; margin-bottom:0.5rem; transition:border-color 0.15s ease;">
-                <div style="display:flex; gap:0.85rem; align-items:center; min-width:0; flex:1; margin-right:0.75rem;">
-                  <div style="width:40px; height:40px; border-radius:var(--r-md); background:rgba(99, 102, 241, 0.12); color:#818CF8; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;">
-                    <i class="fa-solid fa-clock"></i>
-                  </div>
-                  <div style="min-width:0; flex:1;">
-                    <strong style="font-size:0.9rem; display:block; color:var(--text-primary); line-height:1.35; word-break:break-word;">${foodNames || 'Balanced Lunchbox Meal'}</strong>
-                    <small style="color:var(--text-muted); font-size:0.75rem; display:block; margin-top:0.2rem;">${formattedDate} • Packed: ${totalCal} kcal • Protein: ${protein}g • <em>Awaiting teacher clearance</em></small>
-                  </div>
-                </div>
-                <div style="flex-shrink:0; display:flex; gap:0.5rem; align-items:center;">
-                  <span class="badge-status-pending" style="font-weight:700;"><i class="fa-solid fa-clock"></i> Review Pending</span>
-                  <button class="btn-action-outline" onclick="event.stopPropagation(); window.openMealDetailModalById(${meal.id})" style="padding:0.3rem 0.65rem; font-size:0.75rem;">View</button>
-                </div>
-              </div>
+            badgeMarkup = `
+              <span class="badge-status badge-violet" style="white-space:nowrap; font-weight:700; font-size:0.75rem;">
+                <i class="fa-solid fa-clock"></i> Pending Review
+              </span>
+            `;
+          } else {
+            badgeMarkup = `
+              <span class="badge-status ${eatenPercent >= 70 ? 'badge-full' : 'badge-partial'}" style="white-space:nowrap; font-weight:700; font-size:0.75rem;">
+                <i class="fa-solid fa-circle-check"></i> ${eatenPercent}% Eaten
+              </span>
             `;
           }
 
-          const isCleanPlate = (eatenPercent >= 90 || meal.status === 'FULLY_CONSUMED');
-
           return `
-            <div class="meal-log-card" data-meal-id="${meal.id}" style="display:flex; justify-content:space-between; align-items:center; padding:1rem 1.25rem; background:var(--bg-page); border-radius:var(--r-lg); border:1px solid var(--border-subtle); cursor:pointer; margin-bottom:0.5rem; transition:border-color 0.15s ease;">
-              <div style="display:flex; gap:0.85rem; align-items:center; min-width:0; flex:1; margin-right:0.75rem;">
-                <div style="width:40px; height:40px; border-radius:var(--r-md); background:${isCleanPlate ? 'rgba(16, 185, 129, 0.12)' : 'rgba(56, 189, 248, 0.12)'}; color:${isCleanPlate ? 'var(--accent-green)' : 'var(--accent-teal)'}; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;">
-                  <i class="fa-solid ${isCleanPlate ? 'fa-circle-check' : 'fa-chart-pie'}"></i>
+            <div class="simplified-meal-card meal-log-card" data-meal-id="${meal.id}" style="cursor:pointer; margin-bottom:0.6rem;">
+              <div class="simplified-meal-left">
+                <div class="simplified-meal-icon">
+                  <i class="fa-solid fa-utensils"></i>
                 </div>
-                <div style="min-width:0; flex:1;">
-                  <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
-                    <strong style="font-size:0.9rem; color:var(--text-primary); line-height:1.35; word-break:break-word;">
-                      ${foodNames || 'Balanced School Lunch'}
-                    </strong>
-                    <span style="font-size:0.75rem; font-weight:700; color:${isCleanPlate ? 'var(--accent-green)' : 'var(--accent-teal)'};">
-                      · ${eatenPercent}% Eaten (${eatenCal} kcal)
-                    </span>
-                  </div>
-                  <small style="color:var(--text-muted); font-size:0.75rem; display:block; margin-top:0.2rem;">
-                    ${formattedDate} • Packed: ${totalCal} kcal • Consumed: ${eatenCal} kcal • Protein: ${protein}g • Leftover: ${Math.max(0, 100 - eatenPercent)}%
-                  </small>
+                <div class="simplified-meal-info">
+                  <div class="simplified-meal-name">${foodNames}</div>
+                  <div class="simplified-meal-date">${formattedDate}</div>
                 </div>
               </div>
-              <div style="flex-shrink:0; display:flex; gap:0.5rem; align-items:center;">
-                <span class="${isCleanPlate ? 'badge-status-consumed' : 'badge-status-partial'}" style="font-weight:700;">
-                  <i class="fa-solid ${isCleanPlate ? 'fa-circle-check' : 'fa-chart-pie'}"></i> ${isCleanPlate ? 'Clean Plate' : `${eatenPercent}% Consumed`}
-                </span>
-                <button class="btn-action-outline" onclick="event.stopPropagation(); window.openMealDetailModalById(${meal.id})" style="padding:0.3rem 0.65rem; font-size:0.75rem;">View</button>
+              <div class="simplified-meal-stats" style="display:flex; align-items:center; gap:0.85rem; flex-wrap:wrap;">
+                <div class="simplified-meal-stat-item">
+                  <strong>${totalCal}</strong> kcal
+                </div>
+                <div class="simplified-meal-stat-item" style="color:#10B981;">
+                  <strong>${protFormatted}</strong> Protein
+                </div>
+                <div>
+                  ${badgeMarkup}
+                </div>
+                <button class="btn-action-outline" onclick="event.stopPropagation(); window.openMealDetailModalById(${meal.id})" style="padding:0.25rem 0.65rem; font-size:0.75rem; border-radius:var(--r-md);"><i class="fa-solid fa-eye"></i> View</button>
               </div>
             </div>
           `;
