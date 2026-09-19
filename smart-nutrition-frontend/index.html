@@ -317,7 +317,7 @@
           </div>
 
           <!-- Onboarding State 1: No Child Profile -->
-          <div id="parentOnboardingState1" class="card hidden" style="margin-bottom:1.75rem; padding:2rem; border:1px solid var(--border-subtle);">
+          <div id="parentOnboardingState1" class="card hidden" style="margin-bottom:1.75rem; padding:2rem; border-top:4px solid var(--primary);">
             <div class="onboarding-hero">
               <div class="onboarding-hero-icon" style="color:var(--primary); font-size:2rem;"><i class="fa-solid fa-child"></i></div>
               <h3 style="font-size:1.5rem; font-weight:800; font-family:'Outfit', sans-serif; color:var(--text-primary); margin:0.5rem 0 0.25rem 0;">Create Child Profile</h3>
@@ -378,7 +378,7 @@
           </div>
 
           <!-- Onboarding State 2: Enter Class Code -->
-          <div id="parentOnboardingState2" class="card hidden" style="margin-bottom:1.75rem; padding:2rem; border:1px solid var(--border-subtle);">
+          <div id="parentOnboardingState2" class="card hidden" style="margin-bottom:1.75rem; padding:2rem; border-top:4px solid var(--accent-amber);">
             <div class="onboarding-hero" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.01) 100%); border-color: rgba(245, 158, 11, 0.15);">
               <div class="onboarding-hero-icon" style="color:var(--accent-amber); font-size:2rem;"><i class="fa-solid fa-key"></i></div>
               <h3 style="font-size:1.5rem; font-weight:800; font-family:'Outfit', sans-serif; color:var(--text-primary); margin:0.5rem 0 0.25rem 0;">Link Child to Classroom</h3>
@@ -397,7 +397,7 @@
           </div>
 
           <!-- Onboarding State 4: Configure Lunchbox Profile -->
-          <div id="parentOnboardingState4" class="card hidden" style="margin-bottom:1.75rem; padding:2rem; border:1px solid var(--border-subtle);">
+          <div id="parentOnboardingState4" class="card hidden" style="margin-bottom:1.75rem; padding:2rem; border-top:4px solid var(--primary-light);">
             <div class="onboarding-hero" style="background: linear-gradient(135deg, rgba(91, 80, 229, 0.06) 0%, rgba(91, 80, 229, 0.01) 100%); border-color: rgba(91, 80, 229, 0.1);">
               <div class="onboarding-hero-icon" style="color:var(--primary); font-size:2rem;"><i class="fa-solid fa-box-open"></i></div>
               <h3 style="font-size:1.5rem; font-weight:800; font-family:'Outfit', sans-serif; color:var(--text-primary); margin:0.5rem 0 0.25rem 0;">Calibrate Lunchbox Profile</h3>
@@ -1007,8 +1007,8 @@
 
             <div class="reports-kpi-card">
               <span class="reports-kpi-label"><i class="fa-solid fa-clock-rotate-left" style="color:#F59E0B;"></i> Latest Meal Record</span>
-              <div class="reports-kpi-val" id="parentRepLatestStatus" style="font-size:1.05rem; color:var(--text-muted); margin:0.6rem 0 0.35rem 0;">Waiting for first evaluation</div>
-              <span class="reports-kpi-sub">Most recent lunchbox audit</span>
+              <div class="reports-kpi-val" id="parentRepLatestStatus" style="color:var(--text-muted);">—</div>
+              <span class="reports-kpi-sub" id="parentRepLatestStatusSub">Most recent lunchbox audit</span>
             </div>
           </div>
 
@@ -1044,10 +1044,10 @@
           </details>
 
           <!-- Short & Clean AI Nutrition Insights Card -->
-          <div class="card" id="parentNutritionistAssessmentCard" style="padding:1.15rem 1.4rem; margin-bottom:1.5rem; background:var(--bg-card); border:1px solid var(--border-subtle);">
+          <div class="card" id="parentNutritionistAssessmentCard" style="padding:1.15rem 1.4rem; margin-bottom:1.5rem; border-top:3px solid var(--accent-teal); background:var(--bg-card);">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:0.85rem; padding-bottom:0.65rem; border-bottom:1px solid var(--border-subtle);">
               <div style="display:flex; align-items:center; gap:0.65rem;">
-                <div style="width:34px; height:34px; border-radius:10px; background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
+                <div style="width:34px; height:34px; border-radius:10px; background:rgba(20, 184, 166, 0.1); color:var(--accent-teal); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
                   <i class="fa-solid fa-wand-magic-sparkles"></i>
                 </div>
                 <div>
@@ -1420,16 +1420,16 @@
         <div class="pane-container" id="pane-teacher-reports">
           
           <!-- Compact Header Card -->
-          <div class="card mb-3" style="padding:1.15rem 1.5rem; background:var(--bg-card); border:1px solid var(--border-subtle);">
+          <div class="card mb-3" style="padding:1.15rem 1.5rem; border-top: 3px solid var(--primary); background: linear-gradient(135deg, var(--bg-card) 0%, rgba(99, 102, 241, 0.03) 100%);">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
               <div style="display:flex; align-items:center; gap:1rem;">
-                <div style="width:40px; height:40px; border-radius:var(--r-md); background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; font-size:1.15rem;">
+                <div style="width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg, var(--primary) 0%, #4F46E5 100%); color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-size:1.25rem; box-shadow:0 4px 12px rgba(99,102,241,0.25);">
                   <i class="fa-solid fa-chart-line"></i>
                 </div>
                 <div>
                   <h3 style="font-size:1.2rem; margin:0 0 0.2rem 0; font-weight:800; font-family:'Outfit', sans-serif; display:flex; align-items:center; gap:0.6rem;">
                     <span id="teacherReportsClassTitle">Grade 5B</span>
-                    <span id="teacherReportsClassCode" style="font-size:0.75rem; background:var(--bg-page); border:1px solid var(--border-subtle); padding:0.15rem 0.5rem; border-radius:6px; color:var(--text-secondary); font-weight:700;">CLS-6070</span>
+                    <span id="teacherReportsClassCode" style="font-size:0.75rem; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); padding:0.15rem 0.5rem; border-radius:6px; color:var(--primary); font-weight:700;">CLS-6070</span>
                   </h3>
                   <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; font-size:0.775rem; color:var(--text-secondary);">
                     <span id="teacherReportTimePeriod"><i class="fa-regular fa-calendar" style="margin-right:0.25rem;"></i> Active Date Range: Loading...</span>
@@ -1445,15 +1445,15 @@
                 
                 <!-- Compact Reports Dropdown Group -->
                 <div style="position:relative; display:inline-block;" id="reportsExportDropdownWrapper">
-                  <button class="btn-action-primary" id="btnToggleReportsDropdown" style="padding:0.4rem 0.85rem; font-size:0.775rem; background:var(--bg-card); color:var(--text-primary); border:1px solid var(--border-subtle); font-weight:700; border-radius:var(--r-md); display:flex; align-items:center; gap:0.4rem;">
+                  <button class="btn-action-primary" id="btnToggleReportsDropdown" style="padding:0.4rem 0.85rem; font-size:0.775rem; background:var(--bg-card); color:var(--primary); border:1px solid var(--primary); font-weight:700; border-radius:var(--r-md); display:flex; align-items:center; gap:0.4rem;">
                     <i class="fa-solid fa-file-export"></i> Export <i class="fa-solid fa-chevron-down" style="font-size:0.65rem;"></i>
                   </button>
                   <div id="reportsDropdownMenu" style="display:none; position:absolute; right:0; top:115%; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--r-md); box-shadow:var(--shadow-md); z-index:100; min-width:140px; padding:0.35rem 0;">
                     <button id="btnExportCsv" style="width:100%; text-align:left; background:none; border:none; padding:0.45rem 0.95rem; font-size:0.775rem; color:var(--text-primary); cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
-                      <i class="fa-solid fa-file-csv" style="color:var(--text-secondary);"></i> Export CSV
+                      <i class="fa-solid fa-file-csv" style="color:var(--accent-green);"></i> Export CSV
                     </button>
                     <button id="btnExportPdf" style="width:100%; text-align:left; background:none; border:none; padding:0.45rem 0.95rem; font-size:0.775rem; color:var(--text-primary); cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
-                      <i class="fa-solid fa-file-pdf" style="color:var(--text-secondary);"></i> Export PDF
+                      <i class="fa-solid fa-file-pdf" style="color:var(--accent-rose);"></i> Export PDF
                     </button>
                   </div>
                 </div>
@@ -1461,49 +1461,49 @@
             </div>
           </div>
 
-          <!-- SECTION 1: Today's Classroom Summary (Clean Monochromatic Neutral Cards) -->
+          <!-- SECTION 1: Today's Classroom Summary (Clean Modern KPI Cards) -->
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
             
-            <div class="card" style="padding:1.1rem 1.25rem; background:var(--bg-card); border:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center;">
+            <div class="card" style="padding:1.1rem 1.25rem; border-left: 4px solid var(--primary); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
               <div>
                 <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.25rem;">Submitted Today</span>
                 <div class="metric-box-val" id="teacherRepSummarySubmitted" style="font-size:1.6rem; font-weight:800; color:var(--text-primary); line-height:1.2;">0</div>
                 <small style="font-size:0.72rem; color:var(--text-muted);">Logged meals</small>
               </div>
-              <div style="width:38px; height:38px; border-radius:var(--r-md); background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; font-size:1rem;">
+              <div style="width:38px; height:38px; border-radius:50%; background:rgba(99,102,241,0.08); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
                 <i class="fa-solid fa-box-archive"></i>
               </div>
             </div>
 
-            <div class="card" style="padding:1.1rem 1.25rem; background:var(--bg-card); border:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center;">
+            <div class="card" style="padding:1.1rem 1.25rem; border-left: 4px solid var(--accent-green); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
               <div>
                 <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.25rem;">Reviewed</span>
-                <div class="metric-box-val" id="teacherRepSummaryReviewed" style="font-size:1.6rem; font-weight:800; color:var(--text-primary); line-height:1.2;">0</div>
-                <small style="font-size:0.72rem; color:var(--text-muted);">Verified</small>
+                <div class="metric-box-val" id="teacherRepSummaryReviewed" style="font-size:1.6rem; font-weight:800; color:var(--accent-green); line-height:1.2;">0</div>
+                <small style="font-size:0.72rem; color:var(--accent-green); font-weight:600;">Verified</small>
               </div>
-              <div style="width:38px; height:38px; border-radius:var(--r-md); background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; font-size:1rem;">
+              <div style="width:38px; height:38px; border-radius:50%; background:rgba(16,185,129,0.08); color:var(--accent-green); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
                 <i class="fa-solid fa-circle-check"></i>
               </div>
             </div>
 
-            <div class="card" style="padding:1.1rem 1.25rem; background:var(--bg-card); border:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center;">
+            <div class="card" style="padding:1.1rem 1.25rem; border-left: 4px solid var(--accent-amber); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
               <div>
                 <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.25rem;">Pending</span>
-                <div class="metric-box-val" id="teacherRepSummaryPending" style="font-size:1.6rem; font-weight:800; color:var(--text-primary); line-height:1.2;">0</div>
-                <small style="font-size:0.72rem; color:var(--text-muted);">Action needed</small>
+                <div class="metric-box-val" id="teacherRepSummaryPending" style="font-size:1.6rem; font-weight:800; color:var(--accent-amber); line-height:1.2;">0</div>
+                <small style="font-size:0.72rem; color:var(--accent-amber); font-weight:600;">Action needed</small>
               </div>
-              <div style="width:38px; height:38px; border-radius:var(--r-md); background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; font-size:1rem;">
+              <div style="width:38px; height:38px; border-radius:50%; background:rgba(245,158,11,0.08); color:var(--accent-amber); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
                 <i class="fa-solid fa-clock"></i>
               </div>
             </div>
 
-            <div class="card" style="padding:1.1rem 1.25rem; background:var(--bg-card); border:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center;">
+            <div class="card" style="padding:1.1rem 1.25rem; border-left: 4px solid var(--accent-blue); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
               <div>
                 <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.25rem;">Absent</span>
-                <div class="metric-box-val" id="teacherRepSummaryAbsent" style="font-size:1.6rem; font-weight:800; color:var(--text-primary); line-height:1.2;">0</div>
+                <div class="metric-box-val" id="teacherRepSummaryAbsent" style="font-size:1.6rem; font-weight:800; color:var(--accent-blue); line-height:1.2;">0</div>
                 <small style="font-size:0.72rem; color:var(--text-muted);">Today</small>
               </div>
-              <div style="width:38px; height:38px; border-radius:var(--r-md); background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; font-size:1rem;">
+              <div style="width:38px; height:38px; border-radius:50%; background:rgba(59,130,246,0.08); color:var(--accent-blue); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
                 <i class="fa-solid fa-user-xmark"></i>
               </div>
             </div>
@@ -1512,8 +1512,8 @@
 
           <!-- Compact Allergy Status Banner -->
           <div id="teacherClassroomAllergyBanner" style="margin-bottom:1.5rem;">
-            <div style="background:var(--bg-page); border:1px solid var(--border-subtle); border-radius:var(--r-md); padding:0.75rem 1.15rem; font-size:0.85rem; color:var(--text-secondary); font-weight:600; display:flex; align-items:center; gap:0.6rem;">
-              <i class="fa-solid fa-shield-check" style="font-size:1.1rem; color:var(--text-muted);"></i> <span>No active food allergies in this class</span>
+            <div style="background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.15); border-radius:var(--r-md); padding:0.75rem 1.15rem; font-size:0.85rem; color:var(--accent-green); font-weight:600; display:flex; align-items:center; gap:0.6rem;">
+              <i class="fa-solid fa-shield-check" style="font-size:1.1rem;"></i> <span>No active food allergies in this class</span>
             </div>
           </div>
 
@@ -1521,24 +1521,24 @@
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; align-items: start;">
             
             <!-- Column 1: SECTION 2 (Students Requiring Attention) -->
-            <div class="card" style="padding:1.25rem; border:1px solid var(--border-subtle);">
+            <div class="card" style="padding:1.25rem;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border-subtle);">
                 <h3 style="font-size:1.05rem; margin:0; font-weight:800; display:flex; align-items:center; gap:0.5rem; color:var(--text-primary);">
-                  <i class="fa-solid fa-user-clock" style="color:var(--text-secondary)"></i> Students Requiring Attention
+                  <i class="fa-solid fa-user-clock" style="color:var(--accent-rose)"></i> Students Requiring Attention
                 </h3>
               </div>
               <div id="teacherActionStudentsList" style="display:flex; flex-direction:column; gap:0.75rem;">
-                <div style="padding:1.25rem; text-align:center; color:var(--text-secondary); font-size:0.85rem; font-weight:600; background:var(--bg-page); border-radius:var(--r-md); border:1px dashed var(--border-subtle);">
-                  <i class="fa-solid fa-circle-check" style="margin-right:0.35rem; color:var(--text-muted);"></i> All students are meeting today's meal goals.
+                <div style="padding:1.25rem; text-align:center; color:var(--accent-green); font-size:0.85rem; font-weight:600; background:rgba(16,185,129,0.04); border-radius:var(--r-md); border:1px dashed rgba(16,185,129,0.2);">
+                  <i class="fa-solid fa-circle-check" style="margin-right:0.35rem;"></i> All students are meeting today's meal goals.
                 </div>
               </div>
             </div>
 
             <!-- Column 2: SECTION 3 (Nutrition Highlights) -->
-            <div class="card" style="padding:1.25rem; border:1px solid var(--border-subtle);">
+            <div class="card" style="padding:1.25rem; border-top:4px solid var(--accent-violet);">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border-subtle);">
                 <h3 style="font-size:1.05rem; margin:0; font-weight:800; display:flex; align-items:center; gap:0.5rem; color:var(--text-primary);">
-                  <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--text-secondary)"></i> Nutrition Highlights
+                  <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent-violet)"></i> Nutrition Highlights
                 </h3>
               </div>
               <div id="teacherActionAiInsightsList" style="display:flex; flex-direction:column; gap:0.75rem;">
@@ -1644,31 +1644,31 @@
           <!-- Admin User Statistics Cards -->
           <div class="admin-stats-grid">
             <div class="admin-stat-card">
-              <div class="admin-stat-icon" style="color: var(--text-secondary); background: var(--bg-page); border: 1px solid var(--border-subtle);"><i class="fa-solid fa-users"></i></div>
+              <div class="admin-stat-icon" style="color: var(--primary); background: var(--primary-light);"><i class="fa-solid fa-users"></i></div>
               <div class="admin-stat-info">
                 <span class="admin-stat-label">Total Users</span>
-                <strong class="admin-stat-value" id="adminStatTotalUsers" style="color:var(--text-primary);">0</strong>
+                <strong class="admin-stat-value" id="adminStatTotalUsers">0</strong>
               </div>
             </div>
             <div class="admin-stat-card">
-              <div class="admin-stat-icon" style="color: var(--text-secondary); background: var(--bg-page); border: 1px solid var(--border-subtle);"><i class="fa-solid fa-baby"></i></div>
+              <div class="admin-stat-icon" style="color: var(--accent-green); background: var(--accent-green-bg);"><i class="fa-solid fa-baby"></i></div>
               <div class="admin-stat-info">
                 <span class="admin-stat-label">Parents</span>
-                <strong class="admin-stat-value" id="adminStatParents" style="color:var(--text-primary);">0</strong>
+                <strong class="admin-stat-value" id="adminStatParents">0</strong>
               </div>
             </div>
             <div class="admin-stat-card">
-              <div class="admin-stat-icon" style="color: var(--text-secondary); background: var(--bg-page); border: 1px solid var(--border-subtle);"><i class="fa-solid fa-chalkboard-user"></i></div>
+              <div class="admin-stat-icon" style="color: var(--accent-blue); background: var(--accent-blue-bg);"><i class="fa-solid fa-chalkboard-user"></i></div>
               <div class="admin-stat-info">
                 <span class="admin-stat-label">Teachers</span>
-                <strong class="admin-stat-value" id="adminStatTeachers" style="color:var(--text-primary);">0</strong>
+                <strong class="admin-stat-value" id="adminStatTeachers">0</strong>
               </div>
             </div>
             <div class="admin-stat-card">
-              <div class="admin-stat-icon" style="color: var(--text-secondary); background: var(--bg-page); border: 1px solid var(--border-subtle);"><i class="fa-solid fa-shield-halved"></i></div>
+              <div class="admin-stat-icon" style="color: var(--accent-rose); background: var(--accent-rose-bg);"><i class="fa-solid fa-shield-halved"></i></div>
               <div class="admin-stat-info">
                 <span class="admin-stat-label">Admins</span>
-                <strong class="admin-stat-value" id="adminStatAdmins" style="color:var(--text-primary);">0</strong>
+                <strong class="admin-stat-value" id="adminStatAdmins">0</strong>
               </div>
             </div>
           </div>

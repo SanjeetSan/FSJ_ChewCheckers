@@ -6486,13 +6486,13 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
           insights.push(`
             <div class="nutrition-highlight-item">
-              <div class="nutrition-highlight-icon" style="background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-secondary);">
+              <div class="nutrition-highlight-icon" style="background:rgba(245,158,11,0.1); color:var(--accent-amber);">
                 <i class="fa-solid fa-chart-pie"></i>
               </div>
               <div style="flex:1; min-width:0;">
                 <div style="display:flex; justify-content:space-between; align-items:baseline;">
                   <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Plate Completion</span>
-                  <strong style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${completionRate}% Eaten</strong>
+                  <strong style="font-size:0.95rem; font-weight:800; color:var(--accent-amber);">${completionRate}% Eaten</strong>
                 </div>
                 <div style="font-size:0.775rem; color:var(--text-secondary); margin-top:0.15rem;">
                   Average plate waste is <strong>${cappedWaste}%</strong> across logged meals
@@ -6504,13 +6504,13 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           if (report.topConsumedFoodItems && report.topConsumedFoodItems.length > 0) {
             insights.push(`
               <div class="nutrition-highlight-item">
-                <div class="nutrition-highlight-icon" style="background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-secondary);">
+                <div class="nutrition-highlight-icon" style="background:rgba(99,102,241,0.1); color:var(--primary);">
                   <i class="fa-solid fa-utensils"></i>
                 </div>
                 <div style="flex:1; min-width:0;">
                   <div style="display:flex; justify-content:space-between; align-items:baseline;">
                     <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Top Consumed Item</span>
-                    <strong style="font-size:0.9rem; font-weight:800; color:var(--text-primary);">${report.topConsumedFoodItems[0]}</strong>
+                    <strong style="font-size:0.9rem; font-weight:800; color:var(--primary);">${report.topConsumedFoodItems[0]}</strong>
                   </div>
                   <div style="font-size:0.775rem; color:var(--text-secondary); margin-top:0.15rem;">
                     Highest student consumption rate in this class period
@@ -6522,13 +6522,13 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
           insights.push(`
             <div class="nutrition-highlight-item">
-              <div class="nutrition-highlight-icon" style="background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-secondary);">
+              <div class="nutrition-highlight-icon" style="background:rgba(16,185,129,0.1); color:var(--accent-green);">
                 <i class="fa-solid fa-circle-check"></i>
               </div>
               <div style="flex:1; min-width:0;">
                 <div style="display:flex; justify-content:space-between; align-items:baseline;">
                   <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Intake Compliance</span>
-                  <strong style="font-size:0.9rem; font-weight:800; color:var(--text-primary);">${cappedWaste <= 25 ? 'Healthy' : 'Needs Review'}</strong>
+                  <strong style="font-size:0.9rem; font-weight:800; color:var(--accent-green);">${cappedWaste <= 25 ? 'Healthy' : 'Needs Review'}</strong>
                 </div>
                 <div style="font-size:0.775rem; color:var(--text-secondary); margin-top:0.15rem;">
                   ${cappedWaste <= 25 ? 'Most students are meeting daily lunch caloric targets' : 'Portion adjustments recommended for low intake students'}
@@ -8573,46 +8573,57 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
     // Top 4 Actionable KPI Metric Cards
     if (elAvgClearance) {
-      elAvgClearance.textContent = verifiedMeals.length > 0 ? `${avgClearance}%` : '—';
+      elAvgClearance.innerHTML = verifiedMeals.length > 0 ? `<span>${avgClearance}%</span>` : '—';
       elAvgClearance.style.color = verifiedMeals.length > 0 ? 'var(--accent-green)' : 'var(--text-muted)';
     }
     if (elAvgStatus) elAvgStatus.textContent = verifiedMeals.length > 0 ? 'Verified consumption rate' : 'Waiting for first meal evaluation';
 
     if (elCleanPlates) {
-      elCleanPlates.textContent = verifiedMeals.length > 0 ? `${cleanPlateCount} Days` : '—';
-      elCleanPlates.style.color = verifiedMeals.length > 0 ? 'var(--primary)' : 'var(--text-muted)';
+      if (verifiedMeals.length > 0) {
+        const unit = cleanPlateCount === 1 ? 'Day' : 'Days';
+        elCleanPlates.innerHTML = `<span>${cleanPlateCount}</span> <span class="reports-kpi-unit">${unit}</span>`;
+        elCleanPlates.style.color = 'var(--primary)';
+      } else {
+        elCleanPlates.textContent = '—';
+        elCleanPlates.style.color = 'var(--text-muted)';
+      }
     }
     if (elCleanStatus) elCleanStatus.textContent = verifiedMeals.length > 0 ? 'Clearance rate ≥ 90%' : 'Awaiting lunch records';
 
     if (elTeacherVerifications) {
-      elTeacherVerifications.textContent = teacherVerificationCount;
+      elTeacherVerifications.innerHTML = `<span>${teacherVerificationCount}</span>`;
       elTeacherVerifications.style.color = teacherVerificationCount > 0 ? 'var(--accent-teal)' : 'var(--text-muted)';
     }
     if (elTeacherStatus) elTeacherStatus.textContent = teacherVerificationCount > 0 ? 'Confirmed by Class Teacher' : 'Awaiting lunchtime review';
 
     const latestMeal = sortedMeals.length > 0 ? sortedMeals[0] : null;
+    const elLatestStatusSub = document.getElementById('parentRepLatestStatusSub');
     if (elLatestStatus) {
+      elLatestStatus.style.removeProperty('font-size');
       if (!latestMeal) {
-        elLatestStatus.textContent = 'Waiting for first evaluation';
-        elLatestStatus.style.fontSize = '1.05rem';
+        elLatestStatus.textContent = '—';
         elLatestStatus.style.color = 'var(--text-muted)';
+        if (elLatestStatusSub) elLatestStatusSub.textContent = 'Waiting for first evaluation';
       } else if (isMealPendingReview(latestMeal)) {
-        elLatestStatus.textContent = 'Review Pending';
-        elLatestStatus.style.fontSize = '1.25rem';
-        elLatestStatus.style.color = '#818CF8';
+        elLatestStatus.innerHTML = `<span>—</span> <span class="badge-status-pending" style="font-size:0.75rem; font-weight:700; padding:0.2rem 0.55rem; vertical-align:middle; text-transform:none;"><i class="fa-solid fa-clock"></i> Review Pending</span>`;
+        elLatestStatus.style.color = 'var(--accent-amber)';
+        if (elLatestStatusSub) elLatestStatusSub.textContent = 'Awaiting teacher evaluation';
       } else {
-        elLatestStatus.style.fontSize = '1.25rem';
         const eatenPercent = getEffectiveMealConsumption(latestMeal);
-        if (eatenPercent !== null && eatenPercent >= 90) {
-          elLatestStatus.textContent = '100% Clean Plate';
+        const displayPct = eatenPercent !== null ? Math.round(eatenPercent) : 100;
+        let badgeHtml = '';
+        if (displayPct >= 90) {
+          badgeHtml = `<span class="badge-status-consumed" style="font-size:0.75rem; font-weight:700; padding:0.2rem 0.55rem; vertical-align:middle; text-transform:none;"><i class="fa-solid fa-check"></i> Clean Plate</span>`;
           elLatestStatus.style.color = 'var(--accent-green)';
-        } else if (eatenPercent !== null) {
-          elLatestStatus.textContent = `${eatenPercent}% Consumed`;
+        } else if (displayPct >= 50) {
+          badgeHtml = `<span class="badge-status-partial" style="font-size:0.75rem; font-weight:700; padding:0.2rem 0.55rem; vertical-align:middle; text-transform:none;"><i class="fa-solid fa-chart-pie"></i> Partial</span>`;
           elLatestStatus.style.color = 'var(--accent-teal)';
         } else {
-          elLatestStatus.textContent = 'Recorded';
-          elLatestStatus.style.color = 'var(--text-primary)';
+          badgeHtml = `<span class="badge-status-attention" style="font-size:0.75rem; font-weight:700; padding:0.2rem 0.55rem; vertical-align:middle; text-transform:none;"><i class="fa-solid fa-triangle-exclamation"></i> Low Intake</span>`;
+          elLatestStatus.style.color = 'var(--accent-rose)';
         }
+        elLatestStatus.innerHTML = `<span>${displayPct}%</span> ${badgeHtml}`;
+        if (elLatestStatusSub) elLatestStatusSub.textContent = 'Most recent lunchbox audit';
       }
     }
 

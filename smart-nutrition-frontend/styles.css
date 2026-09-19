@@ -2421,16 +2421,29 @@ body.is-messaging-active .topbar-header {
 
 .reports-kpi-val {
   font-size: 1.85rem;
-  font-weight: 900;
+  font-weight: 800;
   font-family: 'Outfit', sans-serif;
   color: var(--text-primary);
   margin: 0.4rem 0 0.25rem 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  min-height: 2.35rem;
+  line-height: 1.2;
+}
+
+.reports-kpi-unit {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
 .reports-kpi-sub {
   font-size: 0.75rem;
   color: var(--text-secondary);
   font-weight: 500;
+  line-height: 1.35;
 }
 
 .reports-protocol-card {
