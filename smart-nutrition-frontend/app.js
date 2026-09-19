@@ -5288,16 +5288,65 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const elCountFull = document.getElementById('countFilterFull');
     if (elCountFull) elCountFull.textContent = countFull;
 
+    function getChipCount(type) {
+      if (type === 'all') return students.length;
+      if (type === 'attention') return countAttention;
+      if (type === 'pending') return countPending;
+      if (type === 'partial') return countPartial;
+      if (type === 'full') return countFull;
+      return 0;
+    }
+
+    // Automatically push options with available data to the front in descending order (3 > 2 > 1)
+    // and move options with no data (count === 0) to the end
+    const filterBar = document.getElementById('teacherFilterBar');
+    if (filterBar) {
+      const chips = Array.from(filterBar.querySelectorAll('.teacher-filter-chip'));
+      const defaultOrder = { 'all': 0, 'attention': 1, 'pending': 2, 'partial': 3, 'full': 4 };
+
+      chips.sort((a, b) => {
+        const typeA = a.getAttribute('data-filter');
+        const typeB = b.getAttribute('data-filter');
+        
+        // 'all' is always kept first
+        if (typeA === 'all') return -1;
+        if (typeB === 'all') return 1;
+
+        const countA = getChipCount(typeA);
+        const countB = getChipCount(typeB);
+
+        const hasDataA = countA > 0;
+        const hasDataB = countB > 0;
+
+        // Push chips with data ahead of chips with zero data
+        if (hasDataA && !hasDataB) return -1;
+        if (!hasDataA && hasDataB) return 1;
+
+        // Both have data: sort descending by count (3 > 2 > 1)
+        if (hasDataA && hasDataB) {
+          if (countB !== countA) return countB - countA;
+          return (defaultOrder[typeA] || 0) - (defaultOrder[typeB] || 0);
+        }
+
+        // Both are zero: push to end in natural order
+        return (defaultOrder[typeA] || 0) - (defaultOrder[typeB] || 0);
+      });
+
+      chips.forEach(chip => filterBar.appendChild(chip));
+    }
+
+    // If currently selected filter became 0, fallback to 'all'
+    if (state.teacherRosterFilter && state.teacherRosterFilter !== 'all') {
+      if (getChipCount(state.teacherRosterFilter) === 0) {
+        state.teacherRosterFilter = 'all';
+      }
+    }
+
     // Active Filter State Handling & Zero-Count De-emphasis
     const activeFilter = state.teacherRosterFilter || 'all';
     document.querySelectorAll('.teacher-filter-chip').forEach(chip => {
       const filterType = chip.getAttribute('data-filter');
-      let count = 0;
-      if (filterType === 'all') count = students.length;
-      else if (filterType === 'attention') count = countAttention;
-      else if (filterType === 'pending') count = countPending;
-      else if (filterType === 'partial') count = countPartial;
-      else if (filterType === 'full') count = countFull;
+      const count = getChipCount(filterType);
 
       const isZero = (count === 0 && filterType !== 'all');
       chip.classList.toggle('filter-zero', isZero);
