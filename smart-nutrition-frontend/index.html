@@ -1043,60 +1043,34 @@
             </div>
           </details>
 
-          <!-- Short & Clean AI Nutrition Insights Card -->
-          <div class="card" id="parentNutritionistAssessmentCard" style="padding:1.15rem 1.4rem; margin-bottom:1.5rem; border-top:3px solid var(--accent-teal); background:var(--bg-card);">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:0.85rem; padding-bottom:0.65rem; border-bottom:1px solid var(--border-subtle);">
-              <div style="display:flex; align-items:center; gap:0.65rem;">
-                <div style="width:34px; height:34px; border-radius:10px; background:rgba(20, 184, 166, 0.1); color:var(--accent-teal); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
-                  <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <!-- NUTRITION STRENGTHS & NEEDS ATTENTION (2-COLUMN GRID) -->
+          <div class="dashboard-insights-grid" style="margin-bottom:1.5rem;">
+            <!-- Nutrition Strengths -->
+            <div class="card strength-card">
+              <div class="insight-card-header">
+                <div class="insight-card-title">
+                  <span class="insight-title-badge strength"><i class="fa-solid fa-circle-check"></i></span>
+                  Nutrition Strengths
                 </div>
-                <div>
-                  <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-primary); margin:0;">AI Nutrition Insights</h3>
-                  <small style="color:var(--text-muted); font-size:0.75rem;">Daily dietary intake & meal clearance summary</small>
-                </div>
+                <span class="insight-subtitle">What's working well</span>
               </div>
-              <span id="nutritionistScoreBadge" class="badge-status-consumed" style="font-size:0.8rem; font-weight:700;">
-                <i class="fa-solid fa-medal"></i> Optimal Balance (85/100)
-              </span>
-            </div>
-
-            <!-- 3 Compact Metric Highlight Chips -->
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.85rem; margin-bottom:0.85rem;">
-              <!-- Chip 1: Calories -->
-              <div style="background:var(--bg-page); padding:0.75rem 1rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
-                <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.25rem;">
-                  <i class="fa-solid fa-fire" style="color:var(--primary); margin-right:0.3rem;"></i> Caloric Intake
-                </div>
-                <div id="nutrCalStat" style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">
-                  Avg 402 kcal / 550 kcal (73%)
-                </div>
-              </div>
-
-              <!-- Chip 2: Protein -->
-              <div style="background:var(--bg-page); padding:0.75rem 1rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
-                <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.25rem;">
-                  <i class="fa-solid fa-dumbbell" style="color:var(--accent-green); margin-right:0.3rem;"></i> Growth Protein
-                </div>
-                <div id="nutrProtStat" style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">
-                  Avg 13.3g / 20g target
-                </div>
-              </div>
-
-              <!-- Chip 3: Plate Clearance -->
-              <div style="background:var(--bg-page); padding:0.75rem 1rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
-                <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.25rem;">
-                  <i class="fa-solid fa-chart-pie" style="color:var(--accent-teal); margin-right:0.3rem;"></i> Plate Clearance
-                </div>
-                <div id="nutrClearanceTrend" style="font-size:0.85rem; font-weight:700; color:var(--accent-teal);">
-                  Consistent eater (Low waste)
-                </div>
+              <div id="reportsStrengthsList" class="insight-bullet-list">
+                <!-- Dynamic items -->
               </div>
             </div>
 
-            <!-- Single 1-line Parent Tip -->
-            <div style="background:rgba(245, 158, 11, 0.06); border:1px solid rgba(245, 158, 11, 0.2); border-radius:var(--r-md); padding:0.6rem 0.9rem; font-size:0.825rem; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem;">
-              <i class="fa-solid fa-lightbulb" style="color:var(--accent-amber); font-size:0.95rem; flex-shrink:0;"></i>
-              <span id="nutritionistRecommendations" style="line-height:1.35;">Good meal consistency! Try adding a mild yogurt dip with chopped veggies to reduce vegetable plate waste.</span>
+            <!-- Needs Attention -->
+            <div class="card attention-card">
+              <div class="insight-card-header">
+                <div class="insight-card-title">
+                  <span class="insight-title-badge attention"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                  Needs Attention
+                </div>
+                <span class="insight-subtitle">Opportunities to improve</span>
+              </div>
+              <div id="reportsNeedsAttentionList" class="insight-bullet-list">
+                <!-- Dynamic items -->
+              </div>
             </div>
           </div>
 

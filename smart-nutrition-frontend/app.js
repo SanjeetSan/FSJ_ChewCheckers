@@ -9876,6 +9876,13 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         exportParentNutritionHistoryCSV(child, sortedMeals, targetCal);
       };
     }
+
+    // --- SYNC INSIGHTS TO REPORTS PAGE ---
+    try {
+      updateAiInsights(insightsData, child, sortedMeals, targetObj);
+    } catch(err) {
+      console.warn("Reports AI insights sync warning:", err);
+    }
   }
 
   function exportParentNutritionHistoryCSV(child, meals, fallbackCal = 500) {
@@ -10321,24 +10328,30 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
   function updateAiInsights(insightsData, child, meals, targets) {
     const strengthsEl = document.getElementById('nutritionStrengthsList');
     const attentionEl = document.getElementById('needsAttentionList');
-    if (!strengthsEl || !attentionEl) return;
+    const repStrengthsEl = document.getElementById('reportsStrengthsList');
+    const repAttentionEl = document.getElementById('reportsNeedsAttentionList');
+    if (!strengthsEl && !attentionEl && !repStrengthsEl && !repAttentionEl) return;
 
     const validMeals = Array.isArray(meals) ? meals : [];
     const childName = child ? formatStudentName(child.name) : 'Child';
 
     if (validMeals.length === 0) {
-      strengthsEl.innerHTML = `
+      const emptyStrengths = `
         <div class="insight-bullet-row" style="color:var(--text-muted);">
           <span class="bullet-icon" style="color:var(--text-muted); font-size:0.8rem;">ℹ</span>
           <span>No meals logged yet. Upload lunch to see nutrition strengths.</span>
         </div>
       `;
-      attentionEl.innerHTML = `
+      const emptyAttention = `
         <div class="insight-bullet-row" style="color:var(--text-muted);">
           <span class="bullet-icon" style="color:var(--text-muted); font-size:0.8rem;">ℹ</span>
           <span>No observations yet. Insights will generate automatically once meals are recorded.</span>
         </div>
       `;
+      if (strengthsEl) strengthsEl.innerHTML = emptyStrengths;
+      if (attentionEl) attentionEl.innerHTML = emptyAttention;
+      if (repStrengthsEl) repStrengthsEl.innerHTML = emptyStrengths;
+      if (repAttentionEl) repAttentionEl.innerHTML = emptyAttention;
 
       const btnAskSummary = document.getElementById('btnAskAiInsightsSummary');
       if (btnAskSummary) {
@@ -10438,19 +10451,24 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     }
 
     // Render top 3 of each
-    strengthsEl.innerHTML = strengths.slice(0, 3).map(text => `
+    const strengthsHtml = strengths.slice(0, 3).map(text => `
       <div class="insight-bullet-row positive">
         <span class="bullet-icon"><i class="fa-solid fa-check"></i></span>
         <span>${text}</span>
       </div>
     `).join('');
 
-    attentionEl.innerHTML = attentions.slice(0, 3).map(text => `
+    const attentionHtml = attentions.slice(0, 3).map(text => `
       <div class="insight-bullet-row warning">
         <span class="bullet-icon"><i class="fa-solid fa-arrow-trend-up"></i></span>
         <span>${text}</span>
       </div>
     `).join('');
+
+    if (strengthsEl) strengthsEl.innerHTML = strengthsHtml;
+    if (attentionEl) attentionEl.innerHTML = attentionHtml;
+    if (repStrengthsEl) repStrengthsEl.innerHTML = strengthsHtml;
+    if (repAttentionEl) repAttentionEl.innerHTML = attentionHtml;
 
     // Unconditionally wire up "Ask AI Assistant for Detailed Summary" button
     const btnAskSummary = document.getElementById('btnAskAiInsightsSummary');
