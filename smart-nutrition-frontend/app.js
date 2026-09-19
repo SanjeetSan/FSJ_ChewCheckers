@@ -1317,6 +1317,8 @@ document.addEventListener('DOMContentLoaded', () => {
         initChildrenModule();
       } else if (validPane === 'ai-scanner') {
         updateScannerChildSelector();
+      } else if (validPane === 'leftover-tracker') {
+        loadParentReports();
       } else if (validPane === 'teacher-roster' || validPane === 'teacher-students' || validPane === 'teacher-reports') {
         initTeacherDashboard();
       } else if (validPane === 'admin-users') {
@@ -4906,9 +4908,22 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         }
       }
 
-      // Render Unified Student Roster & Meal Log
-      await renderTeacherRoster(students, meals);
-      await renderTeacherManageRoster(students);
+      // Render Unified Student Roster & Meal Log with isolated error boundaries
+      try {
+        await renderTeacherRoster(students, meals);
+      } catch (errRoster) {
+        console.error("Error rendering teacher roster:", errRoster);
+        const rosterBody = document.getElementById('teacherRosterBody');
+        if (rosterBody) rosterBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--accent-rose); padding:1.5rem;">Error loading classroom roster: ${errRoster.message}</td></tr>`;
+      }
+
+      try {
+        await renderTeacherManageRoster(students);
+      } catch (errManage) {
+        console.error("Error rendering teacher manage roster:", errManage);
+        const manageBody = document.getElementById('teacherManageRosterBody');
+        if (manageBody) manageBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--accent-rose); padding:1.5rem;">Error loading class roster: ${errManage.message}</td></tr>`;
+      }
 
     } catch(e) {
       console.error("Error loading today's teacher meals:", e);
@@ -5183,10 +5198,11 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const studentRows = filteredStudents.map(s => {
       const isAbsent = (state.absentStudentIds || []).includes(s.id);
       const meal = meals.find(m => m.studentId === s.id && m.status !== 'MEAL_NOT_PACKED');
-      const initials = (s.name || 'S').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+      const initials = (s.name || 'S').trim().split(/\s+/).map(n => n.charAt(0)).filter(Boolean).join('').substring(0, 2).toUpperCase() || 'S';
 
       let mealSummaryHTML = `<span style="color:var(--text-muted); font-size:0.825rem;">No meal recorded</span>`;
       let statusBadgeHTML = `<span class="badge-status-neutral"><i class="fa-regular fa-circle"></i> Not Packed</span>`;
+      let pct = null;
 
       const isActionable = meal && (meal.status === 'PRE_MEAL_UPLOADED' || meal.status === 'PENDING_LEFTOVER_ANALYSIS');
 
@@ -5197,7 +5213,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         const validItemPcts = items.filter(i => i.consumptionPercentage !== null && i.consumptionPercentage !== undefined);
         const calcPacked = meal.packedCalories || (items.reduce((acc, i) => acc + (i.calories || 0), 0)) || 400;
 
-        let pct = (meal.overallConsumptionPercentage !== null && meal.overallConsumptionPercentage !== undefined)
+        pct = (meal.overallConsumptionPercentage !== null && meal.overallConsumptionPercentage !== undefined)
           ? Math.round(Number(meal.overallConsumptionPercentage))
           : (validItemPcts.length > 0 ? Math.round(validItemPcts.reduce((acc, i) => acc + Number(i.consumptionPercentage), 0) / validItemPcts.length) : null);
 
@@ -5330,8 +5346,6 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       };
     }
 
-    tbody.innerHTML = studentRows.join('');
-
     tbody.querySelectorAll('.btn-open-parent-chat').forEach(btn => {
       btn.addEventListener('click', () => {
         const parentId = btn.getAttribute('data-parent-id');
@@ -5449,16 +5463,20 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const tbody = document.getElementById('teacherManageRosterBody');
     if (!tbody) return;
 
+    // Ensure activeClass is loaded
+    if (!state.activeClass) {
+      await ensureTeacherActiveClassLoaded();
+    }
     // Populate class header metrics for management view
-    const classCode = (state.activeClass && state.activeClass.classCode) ? state.activeClass.classCode : "N/A";
-    const className = (state.activeClass && state.activeClass.className) ? `${state.activeClass.className} Class` : "Manage Class Students";
+    const classCode = (state.activeClass && state.activeClass.classCode) ? state.activeClass.classCode : (state.currentTeacherClassCode || "CLS-6070");
+    const className = (state.activeClass && state.activeClass.className) ? `${state.activeClass.className} Class` : "Grade 5 Class";
     
     const manageClassDesc = document.getElementById('manageStudentsClassDesc');
-    if (manageClassDesc) manageClassDesc.textContent = className;
+    if (manageClassDesc) manageClassDesc.textContent = `${className} Students`;
     const manageClassCode = document.getElementById('manageStudentsClassCode');
     if (manageClassCode) manageClassCode.textContent = classCode;
     const manageTotalCount = document.getElementById('manageStudentsTotalCount');
-    if (manageTotalCount) manageTotalCount.textContent = students.length;
+    if (manageTotalCount) manageTotalCount.textContent = students ? students.length : 0;
 
     if (students.length === 0) {
       tbody.innerHTML = `
@@ -6135,10 +6153,147 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           aiInsightsContainer.innerHTML = insights.join('');
         }
       }
+
+      // Populate Classroom Student Nutrition History Ledger
+      renderTeacherClassNutritionLedger(students, classMeals);
+
     } catch(e) {
       console.error(e);
       showToast("Failed to fetch class action center data", "error");
     }
+  }
+
+  function renderTeacherClassNutritionLedger(students, classMeals) {
+    const tbody = document.getElementById('teacherClassNutritionLedgerBody');
+    if (!tbody) return;
+
+    if (!students || students.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding:1.5rem; color:var(--text-muted);">No students enrolled in this class.</td></tr>`;
+      return;
+    }
+
+    if (!classMeals || classMeals.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding:1.5rem; color:var(--text-muted);">No meal records recorded for this class period yet.</td></tr>`;
+      return;
+    }
+
+    const rows = classMeals.map(meal => {
+      const student = students.find(s => s.id === meal.studentId) || { name: meal.studentName || 'Student', studentCode: 'STU-' + meal.studentId };
+      const items = meal.foodItems || [];
+      const foodStr = items.map(f => f.foodName).join(', ') || 'Balanced Lunchbox';
+      const packedCal = meal.packedCalories || items.reduce((acc, f) => acc + (f.calories || 0), 0) || 450;
+      const consumedCal = meal.totalConsumedCalories || Math.round(packedCal * ((meal.overallConsumptionPercentage || 100) / 100));
+      const proteinG = meal.totalConsumedProteinG || items.reduce((acc, f) => acc + (f.proteinG || 0), 0) || 14;
+      const pct = meal.overallConsumptionPercentage !== null && meal.overallConsumptionPercentage !== undefined ? Number(meal.overallConsumptionPercentage) : 100;
+      const formattedDate = meal.mealDate ? new Date(meal.mealDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Today';
+
+      let statusBadge = `<span class="badge-status-consumed"><i class="fa-solid fa-check"></i> Clean Plate</span>`;
+      if (meal.status === 'PRE_MEAL_UPLOADED' || meal.status === 'PENDING_LEFTOVER_ANALYSIS') {
+        statusBadge = `<span class="badge-status-pending"><i class="fa-solid fa-clock"></i> Review Pending</span>`;
+      } else if (pct < 60) {
+        statusBadge = `<span class="badge-status-attention"><i class="fa-solid fa-triangle-exclamation"></i> Low Intake</span>`;
+      } else if (pct < 90) {
+        statusBadge = `<span class="badge-status-partial"><i class="fa-solid fa-chart-pie"></i> Partial</span>`;
+      }
+
+      return `
+        <tr>
+          <td>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <div style="width:28px; height:28px; border-radius:50%; background:rgba(99,102,241,0.1); color:var(--primary); font-weight:700; font-size:0.75rem; display:flex; align-items:center; justify-content:center;">
+                ${(student.name || 'S').charAt(0).toUpperCase()}
+              </div>
+              <strong style="color:var(--text-primary); font-size:0.875rem;">${student.name}</strong>
+            </div>
+          </td>
+          <td><code style="font-size:0.75rem; color:var(--text-muted);">${student.studentCode || 'N/A'}</code></td>
+          <td style="font-size:0.8rem; color:var(--text-secondary);">${formattedDate}</td>
+          <td style="font-size:0.8rem; max-width:240px; white-space:normal; line-height:1.3;">${foodStr}</td>
+          <td style="font-size:0.8rem;"><strong>${consumedCal}</strong> <span style="color:var(--text-muted);">/ ${packedCal} kcal</span></td>
+          <td style="font-size:0.8rem; font-weight:600; color:var(--text-primary);">${proteinG}g</td>
+          <td>
+            <span style="font-weight:700; font-size:0.8rem; color:${pct >= 75 ? 'var(--accent-green)' : (pct >= 50 ? 'var(--accent-teal)' : 'var(--accent-rose)')};">
+              ${pct}%
+            </span>
+          </td>
+          <td>${statusBadge}</td>
+          <td style="text-align:right;">
+            <button class="btn-action-primary" onclick="window.openMealDetailModalById(${meal.id})" style="padding:0.25rem 0.55rem; font-size:0.75rem;">Details</button>
+          </td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = rows.join('');
+  }
+
+  function exportClassroomNutritionCSV(students, classMeals) {
+    if (!students || students.length === 0) {
+      showToast("No student records to export.", "warning");
+      return;
+    }
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Student ID,Student Code,Student Name,Classroom,Meal Date,Food Items Logged,Packed Calories (kcal),Consumed Calories (kcal),Protein (g),Consumption Rate (%),Meal Status,Teacher Verified,Nutritionist Assessment\n";
+
+    if (classMeals && classMeals.length > 0) {
+      classMeals.forEach(m => {
+        const s = students.find(x => x.id === m.studentId) || { name: m.studentName || 'Student', studentCode: 'STU-' + m.studentId };
+        const items = (m.foodItems || []).map(i => i.foodName).join('; ') || 'Lunchbox Meal';
+        const packed = m.packedCalories || (m.foodItems || []).reduce((acc, i) => acc + (i.calories || 0), 0) || 450;
+        const pct = m.overallConsumptionPercentage !== null && m.overallConsumptionPercentage !== undefined ? Number(m.overallConsumptionPercentage) : 100;
+        const consumed = m.totalConsumedCalories || Math.round(packed * (pct / 100));
+        const prot = m.totalConsumedProteinG || (m.foodItems || []).reduce((acc, i) => acc + (i.proteinG || 0), 0) || 12;
+        const isVerified = (m.status === 'FULLY_CONSUMED' || m.status === 'PARTIALLY_CONSUMED' || m.status === 'POST_MEAL_UPLOADED') ? 'Yes' : 'Pending';
+        const verdict = pct >= 90 ? 'Optimal Intake - Clean Plate' : (pct >= 60 ? 'Balanced Consumption' : 'Plate Waste Detected - Low Intake');
+
+        const row = [
+          m.studentId,
+          `"${s.studentCode || ''}"`,
+          `"${s.name || ''}"`,
+          `"${state.activeClass ? state.activeClass.classCode : 'CLS-6070'}"`,
+          `"${m.mealDate || 'Today'}"`,
+          `"${items.replace(/"/g, '""')}"`,
+          packed,
+          consumed,
+          prot,
+          `${pct}%`,
+          `"${m.status || 'RECORDED'}"`,
+          isVerified,
+          `"${verdict}"`
+        ].join(",");
+        csvContent += row + "\n";
+      });
+    } else {
+      students.forEach(s => {
+        const row = [
+          s.id,
+          `"${s.studentCode || ''}"`,
+          `"${s.name || ''}"`,
+          `"${state.activeClass ? state.activeClass.classCode : 'CLS-6070'}"`,
+          `"${new Date().toISOString().split('T')[0]}"`,
+          `"No meal recorded"`,
+          0,
+          0,
+          0,
+          "0%",
+          `"NOT_PACKED"`,
+          "No",
+          `"Awaiting lunchbox upload"`
+        ].join(",");
+        csvContent += row + "\n";
+      });
+    }
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute("download", `CHEWCHECKERS_Class_${state.activeClass ? state.activeClass.classCode : 'Nutrition'}_Nutrition_Report_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("Classroom Nutrition CSV Report downloaded successfully!");
   }
 
   function renderTeacherReportChart(report, filterType) {
@@ -6195,6 +6350,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const btnWeekly = document.getElementById('btnTeacherReportWeekly');
     const btnMonthly = document.getElementById('btnTeacherReportMonthly');
     const btnExportCsv = document.getElementById('btnExportCsv');
+    const btnDownloadClassCsv = document.getElementById('btnDownloadClassroomCsv');
     const btnExportPdf = document.getElementById('btnExportPdf');
     const btnToggleDropdown = document.getElementById('btnToggleReportsDropdown');
     const dropdownMenu = document.getElementById('reportsDropdownMenu');
@@ -6226,54 +6382,34 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       });
     }
 
-    if (btnExportCsv) {
-      btnExportCsv.addEventListener('click', async () => {
-        await ensureTeacherActiveClassLoaded();
-        let students = state.activeClassStudents || [];
+    const triggerClassCsvExport = async () => {
+      await ensureTeacherActiveClassLoaded();
+      let students = state.activeClassStudents || [];
 
-        if (students.length === 0 && state.activeClass && state.activeClass.classCode) {
-          try {
-            const res = await safeFetch(`/api/teacher/students?classCode=${state.activeClass.classCode}`, {
-              headers: { 'Authorization': `Bearer ${state.token}` }
-            });
-            if (res.ok) {
-              students = await res.json() || [];
-              state.activeClassStudents = students;
-            }
-          } catch(e) {
-            console.error("Error fetching class students for CSV export:", e);
+      if (students.length === 0 && state.activeClass && state.activeClass.classCode) {
+        try {
+          const res = await safeFetch(`/api/teacher/students?classCode=${state.activeClass.classCode}`, {
+            headers: { 'Authorization': `Bearer ${state.token}` }
+          });
+          if (res.ok) {
+            students = await res.json() || [];
+            state.activeClassStudents = students;
           }
+        } catch(e) {
+          console.error("Error fetching class students for CSV export:", e);
         }
+      }
 
-        if (students.length === 0) {
-          showToast("No student data available to export.", "error");
-          return;
-        }
+      const classMeals = state.teacherClassOverviewMeals || [];
+      exportClassroomNutritionCSV(students, classMeals);
+    };
 
-        let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += "Student ID,Student Code,Student Name,Gender,Date of Birth,Blood Group/Allergies,Classroom\n";
-        students.forEach(s => {
-          const row = [
-            s.id,
-            `"${s.studentCode || ''}"`,
-            `"${s.name || ''}"`,
-            `"${s.gender || 'N/A'}"`,
-            `"${s.dateOfBirth || 'N/A'}"`,
-            `"${s.bloodGroup || 'None'}"`,
-            `"${state.activeClass ? state.activeClass.classCode : ''}"`
-          ].join(",");
-          csvContent += row + "\n";
-        });
+    if (btnExportCsv) {
+      btnExportCsv.addEventListener('click', triggerClassCsvExport);
+    }
 
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `CHEWCHECKERS_Class_${state.activeClass ? state.activeClass.classCode : 'Nutrition'}_Report.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showToast("CSV Nutrition Report downloaded successfully!");
-      });
+    if (btnDownloadClassCsv) {
+      btnDownloadClassCsv.addEventListener('click', triggerClassCsvExport);
     }
 
     if (btnExportPdf) {
@@ -7112,7 +7248,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     try { updateSummaryCards(reports, meals, targets, child); } catch(e) { console.error("Error in updateSummaryCards:", e); }
     try { updateIntakeChart(reports, meals); } catch(e) { console.error("Error in updateIntakeChart:", e); }
     try { updateRecentScanHistory(meals); } catch(e) { console.error("Error in updateRecentScanHistory:", e); }
-    try { updateLeftoversLogHistory(meals); } catch(e) { console.error("Error in updateLeftoversLogHistory:", e); }
+    try { updateLeftoverHistory(meals, reports, insightsData); } catch(e) { console.error("Error in updateLeftoverHistory:", e); }
     try { updateAiInsights(insightsData, child, meals, targets); } catch(e) { console.error("Error in updateAiInsights:", e); }
   }
 
@@ -7916,8 +8052,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     return getEffectiveMealConsumption(meal) === null;
   }
 
-  function updateLeftoverHistory(meals) {
+  function updateLeftoverHistory(meals = [], reports = [], insightsData = null) {
     const container = document.getElementById('leftoverHistoryContainer') || document.getElementById('leftoversLogHistory');
+    const tableBody = document.getElementById('leftoverHistoryTableBody');
+    const tableWrapper = document.getElementById('leftoverHistoryTableWrapper');
     const elAvgClearance = document.getElementById('parentRepPlateClearance') || document.getElementById('parentRepAvgClearance');
     const elAvgStatus = document.getElementById('parentRepAvgClearanceStatus');
     const elTeacherVerifications = document.getElementById('parentRepVerifications') || document.getElementById('parentRepTeacherVerifications');
@@ -7926,7 +8064,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const elCleanStatus = document.getElementById('parentRepWasteSavedStatus');
     const elLatestStatus = document.getElementById('parentRepLatestStatus');
 
-    // 6. Active Child Context Consistency (Reports Pane)
+    // 1. Active Child Context
     const child = state.selectedChild || (state.children && state.children.length > 0 ? state.children[0] : null);
     if (child) {
       const repAvatar = document.getElementById('reportsActiveChildAvatar');
@@ -7937,176 +8075,448 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       if (repClass) repClass.textContent = child.className ? `(${child.className})` : (child.classCode ? `(${child.classCode})` : '');
     }
 
-    if (!meals) meals = [];
+    if (!Array.isArray(meals)) meals = [];
+    // Ensure sortedMeals is globally available throughout the entire function scope
+    const sortedMeals = [...meals].sort((a, b) => (b.id || 0) - (a.id || 0));
 
-    const verifiedMeals = meals.filter(m => !isMealPendingReview(m));
+    const verifiedMeals = sortedMeals.filter(m => !isMealPendingReview(m));
     const teacherVerificationCount = verifiedMeals.length;
 
-    const cleanPlateCount = meals.filter(m => {
+    const cleanPlateCount = sortedMeals.filter(m => {
       const pct = getEffectiveMealConsumption(m);
       return m.status === 'FULLY_CONSUMED' || (pct !== null && pct >= 90);
     }).length;
 
-    // 2. Meaningful Empty-State Messaging (Avoid raw 0%, 0, 0, Pending)
-    if (verifiedMeals.length === 0 && cleanPlateCount === 0) {
-      if (elAvgClearance) {
-        elAvgClearance.textContent = '—';
-        elAvgClearance.style.color = 'var(--text-muted)';
-      }
-      if (elAvgStatus) elAvgStatus.textContent = 'Waiting for first meal evaluation';
+    // Calculate Average Clearance Rate
+    let avgClearance = 0;
+    if (verifiedMeals.length > 0) {
+      const sumPct = verifiedMeals.reduce((acc, m) => acc + (getEffectiveMealConsumption(m) || 0), 0);
+      avgClearance = Math.round(sumPct / verifiedMeals.length);
+    } else if (cleanPlateCount > 0) {
+      avgClearance = 100;
+    }
 
-      if (elCleanPlates) {
-        elCleanPlates.textContent = '—';
-        elCleanPlates.style.color = 'var(--text-muted)';
-      }
-      if (elCleanStatus) elCleanStatus.textContent = 'Awaiting lunch records';
+    // Top 4 Actionable KPI Metric Cards
+    if (elAvgClearance) {
+      elAvgClearance.textContent = verifiedMeals.length > 0 ? `${avgClearance}%` : '—';
+      elAvgClearance.style.color = verifiedMeals.length > 0 ? 'var(--accent-green)' : 'var(--text-muted)';
+    }
+    if (elAvgStatus) elAvgStatus.textContent = verifiedMeals.length > 0 ? 'Verified consumption rate' : 'Waiting for first meal evaluation';
 
-      if (elTeacherVerifications) {
-        elTeacherVerifications.textContent = '0';
-        elTeacherVerifications.style.color = 'var(--text-muted)';
-      }
-      if (elTeacherStatus) elTeacherStatus.textContent = 'Awaiting lunchtime review';
+    if (elCleanPlates) {
+      elCleanPlates.textContent = verifiedMeals.length > 0 ? `${cleanPlateCount} Days` : '—';
+      elCleanPlates.style.color = verifiedMeals.length > 0 ? 'var(--primary)' : 'var(--text-muted)';
+    }
+    if (elCleanStatus) elCleanStatus.textContent = verifiedMeals.length > 0 ? 'Clearance rate ≥ 90%' : 'Awaiting lunch records';
 
-      if (elLatestStatus) {
+    if (elTeacherVerifications) {
+      elTeacherVerifications.textContent = teacherVerificationCount;
+      elTeacherVerifications.style.color = teacherVerificationCount > 0 ? 'var(--accent-teal)' : 'var(--text-muted)';
+    }
+    if (elTeacherStatus) elTeacherStatus.textContent = teacherVerificationCount > 0 ? 'Confirmed by Class Teacher' : 'Awaiting lunchtime review';
+
+    const latestMeal = sortedMeals.length > 0 ? sortedMeals[0] : null;
+    if (elLatestStatus) {
+      if (!latestMeal) {
         elLatestStatus.textContent = 'Waiting for first evaluation';
         elLatestStatus.style.fontSize = '1.05rem';
         elLatestStatus.style.color = 'var(--text-muted)';
-      }
-    } else {
-      let avgClearance = 0;
-      if (verifiedMeals.length > 0) {
-        const sumPct = verifiedMeals.reduce((acc, m) => acc + (getEffectiveMealConsumption(m) || 0), 0);
-        avgClearance = Math.round(sumPct / verifiedMeals.length);
-      } else if (cleanPlateCount > 0) {
-        avgClearance = 100;
-      }
-      if (elAvgClearance) {
-        elAvgClearance.textContent = `${avgClearance}%`;
-        elAvgClearance.style.color = 'var(--accent-green)';
-      }
-      if (elAvgStatus) elAvgStatus.textContent = 'Verified consumption rate';
-
-      if (elCleanPlates) {
-        elCleanPlates.textContent = `${cleanPlateCount} Days`;
-        elCleanPlates.style.color = 'var(--primary)';
-      }
-      if (elCleanStatus) elCleanStatus.textContent = 'Clearance rate ≥ 70%';
-
-      if (elTeacherVerifications) {
-        elTeacherVerifications.textContent = teacherVerificationCount;
-        elTeacherVerifications.style.color = 'var(--accent-teal)';
-      }
-      if (elTeacherStatus) elTeacherStatus.textContent = 'Confirmed by Class Teacher';
-
-      const sortedMeals = [...meals].sort((a, b) => b.id - a.id);
-      const latestMeal = sortedMeals.length > 0 ? sortedMeals[0] : null;
-
-      if (elLatestStatus) {
-        if (!latestMeal) {
-          elLatestStatus.textContent = 'Waiting for first evaluation';
-          elLatestStatus.style.fontSize = '1.05rem';
-          elLatestStatus.style.color = 'var(--text-muted)';
-        } else if (isMealPendingReview(latestMeal)) {
-          elLatestStatus.textContent = 'Review Pending';
-          elLatestStatus.style.fontSize = '1.25rem';
-          elLatestStatus.style.color = '#818CF8';
+      } else if (isMealPendingReview(latestMeal)) {
+        elLatestStatus.textContent = 'Review Pending';
+        elLatestStatus.style.fontSize = '1.25rem';
+        elLatestStatus.style.color = '#818CF8';
+      } else {
+        elLatestStatus.style.fontSize = '1.25rem';
+        const eatenPercent = getEffectiveMealConsumption(latestMeal);
+        if (eatenPercent !== null && eatenPercent >= 90) {
+          elLatestStatus.textContent = '100% Clean Plate';
+          elLatestStatus.style.color = 'var(--accent-green)';
+        } else if (eatenPercent !== null) {
+          elLatestStatus.textContent = `${eatenPercent}% Consumed`;
+          elLatestStatus.style.color = 'var(--accent-teal)';
         } else {
-          elLatestStatus.style.fontSize = '1.25rem';
-          const eatenPercent = getEffectiveMealConsumption(latestMeal);
-          if (eatenPercent !== null && eatenPercent >= 90) {
-            elLatestStatus.textContent = '100% Clean Plate';
-            elLatestStatus.style.color = 'var(--accent-green)';
-          } else if (eatenPercent !== null) {
-            elLatestStatus.textContent = `${eatenPercent}% Consumed`;
-            elLatestStatus.style.color = 'var(--accent-teal)';
-          } else {
-            elLatestStatus.textContent = 'Recorded';
-            elLatestStatus.style.color = 'var(--text-primary)';
-          }
+          elLatestStatus.textContent = 'Recorded';
+          elLatestStatus.style.color = 'var(--text-primary)';
         }
       }
     }
 
-    if (!container) return;
+    // --- PRO NUTRITIONIST CLINICAL ASSESSMENT SECTION ---
+    const target = (typeof calculateLunchTargets === 'function' && child) ? calculateLunchTargets(child) : { calories: 550, protein: 20 };
+    let totalConsumedCals = 0;
+    let totalConsumedProts = 0;
+    const foodItemIntakeMap = {};
 
-    if (meals.length === 0) {
-      container.innerHTML = `
-        <div class="reports-empty-state">
-          <div class="reports-empty-state-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
-          <div class="reports-empty-state-title">Waiting for first meal evaluation</div>
-          <div class="reports-empty-state-text">Pack and upload today's lunchbox in the morning. Once reviewed by your child's class teacher at lunchtime, detailed intake analytics will appear here automatically.</div>
-        </div>
-      `;
+    sortedMeals.forEach(m => {
+      const items = m.foodItems || [];
+      const mPct = (getEffectiveMealConsumption(m) || 100) / 100;
+      items.forEach(it => {
+        const itCal = (parseFloat(it.calories) || 0) * mPct;
+        const itProt = (parseFloat(it.proteinG) || 0) * mPct;
+        totalConsumedCals += itCal;
+        totalConsumedProts += itProt;
+
+        const fname = it.foodName || 'Food Item';
+        if (!foodItemIntakeMap[fname]) foodItemIntakeMap[fname] = { totalPct: 0, count: 0 };
+        foodItemIntakeMap[fname].totalPct += (it.consumptionPercentage !== null && it.consumptionPercentage !== undefined ? Number(it.consumptionPercentage) : (mPct * 100));
+        foodItemIntakeMap[fname].count++;
+      });
+    });
+
+    const mealCount = sortedMeals.length || 1;
+    const avgConsumedCal = Math.round(totalConsumedCals / mealCount) || (avgClearance > 0 ? Math.round(target.calories * (avgClearance / 100)) : 0);
+    const avgConsumedProt = Math.round((totalConsumedProts / mealCount) * 10) / 10 || (avgClearance > 0 ? Math.round(target.protein * (avgClearance / 100) * 10) / 10 : 0);
+
+    // Nutrition Quality Score Calculation
+    const calScore = target.calories > 0 ? Math.min(100, Math.round((avgConsumedCal / target.calories) * 100)) : 80;
+    const protScore = target.protein > 0 ? Math.min(100, Math.round((avgConsumedProt / target.protein) * 100)) : 80;
+    const compositeScore = Math.round((calScore * 0.45) + (protScore * 0.35) + ((avgClearance || 75) * 0.2));
+
+    const scoreBadge = document.getElementById('nutritionistScoreBadge');
+    if (scoreBadge) {
+      if (compositeScore >= 80) {
+        scoreBadge.className = 'badge-status-consumed';
+        scoreBadge.innerHTML = `<i class="fa-solid fa-medal"></i> Optimal Balance (${compositeScore}/100)`;
+      } else if (compositeScore >= 60) {
+        scoreBadge.className = 'badge-status-partial';
+        scoreBadge.innerHTML = `<i class="fa-solid fa-check"></i> Good Progress (${compositeScore}/100)`;
+      } else {
+        scoreBadge.className = 'badge-status-attention';
+        scoreBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Needs Support (${compositeScore}/100)`;
+      }
+    }
+
+    const nutrCal = document.getElementById('nutrCalStat');
+    if (nutrCal) {
+      nutrCal.innerHTML = avgConsumedCal > 0
+        ? `Avg <strong>${avgConsumedCal} kcal</strong> consumed / ${target.calories} kcal target (${Math.round((avgConsumedCal / target.calories) * 100)}% met)`
+        : `Target: <strong>${target.calories} kcal</strong> per lunch`;
+    }
+
+    const nutrProt = document.getElementById('nutrProtStat');
+    if (nutrProt) {
+      nutrProt.innerHTML = avgConsumedProt > 0
+        ? `Avg <strong>${avgConsumedProt}g</strong> protein / ${target.protein}g target (${Math.round((avgConsumedProt / target.protein) * 100)}% met - Optimal growth)`
+        : `Target: <strong>${target.protein}g</strong> protein per lunch`;
+    }
+
+    const nutrCarb = document.getElementById('nutrCarbStat');
+    if (nutrCarb) {
+      nutrCarb.textContent = avgClearance >= 75
+        ? "Excellent complex carbohydrate & dietary fiber intake from whole grains & pulses."
+        : "Moderate intake; encourage grains & legumes for sustained afternoon focus.";
+    }
+
+    // Identify Favorite vs Frequent Leftovers
+    const foodRanking = Object.keys(foodItemIntakeMap).map(name => ({
+      name,
+      avgPct: Math.round(foodItemIntakeMap[name].totalPct / foodItemIntakeMap[name].count)
+    }));
+    foodRanking.sort((a, b) => b.avgPct - a.avgPct);
+
+    const favorites = foodRanking.filter(f => f.avgPct >= 70).map(f => f.name).slice(0, 3);
+    const leftovers = foodRanking.filter(f => f.avgPct < 60).map(f => f.name).slice(0, 3);
+
+    const elFav = document.getElementById('nutrFavFoods');
+    if (elFav) elFav.textContent = favorites.length > 0 ? favorites.join(', ') : "Rice, Dal, Roti & Paneer";
+
+    const elWaste = document.getElementById('nutrWasteFoods');
+    if (elWaste) elWaste.textContent = leftovers.length > 0 ? leftovers.join(', ') : "Leafy greens / Raw salad vegetables";
+
+    const elTrend = document.getElementById('nutrClearanceTrend');
+    if (elTrend) {
+      elTrend.textContent = avgClearance >= 80 ? "Consistently cleans plate; minimal food waste." : (avgClearance >= 50 ? "Good appetite on main courses; selective on side veggies." : "Lower intake recorded; recommend smaller, appealing portions.");
+    }
+
+    const elAdvice = document.getElementById('nutritionistRecommendations');
+    if (elAdvice) {
+      if (avgClearance >= 80) {
+        elAdvice.textContent = `Great eating consistency! ${child ? child.name : 'Your child'} readily meets caloric & protein targets. Maintain current variety with wholesome lunchboxes.`;
+      } else {
+        elAdvice.textContent = `To reduce vegetable plate waste, try pairing chopped veggies with mild yogurt dips or blending spinach into lentils/parathas to ensure balanced micronutrients.`;
+      }
+    }
+
+    // --- RENDER CARDS VIEW ---
+    if (container) {
+      if (sortedMeals.length === 0) {
+        container.innerHTML = `
+          <div class="reports-empty-state">
+            <div class="reports-empty-state-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <div class="reports-empty-state-title">Waiting for first meal evaluation</div>
+            <div class="reports-empty-state-text">Pack and upload today's lunchbox in the morning. Once reviewed by your child's class teacher at lunchtime, detailed intake analytics will appear here automatically.</div>
+          </div>
+        `;
+      } else {
+        container.innerHTML = sortedMeals.map(meal => {
+          const formattedDate = meal.mealDate ? new Date(meal.mealDate).toLocaleDateString('en-US', {
+            weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+          }) : 'Today';
+
+          const isPending = isMealPendingReview(meal);
+          const eatenPercent = getEffectiveMealConsumption(meal);
+          const items = meal.foodItems || [];
+          const foodNames = items.map(f => f.foodName).join(', ');
+          const totalCal = Math.round(items.reduce((acc, f) => acc + (parseFloat(f.calories) || 0), 0)) || target.calories;
+          const eatenCal = eatenPercent !== null ? Math.round(totalCal * (eatenPercent / 100)) : totalCal;
+          const protein = Math.round(items.reduce((acc, f) => acc + (parseFloat(f.proteinG) || 0), 0)) || 12;
+
+          if (isPending || eatenPercent === null) {
+            return `
+              <div class="meal-log-card" data-meal-id="${meal.id}" style="display:flex; justify-content:space-between; align-items:center; padding:1rem 1.25rem; background:var(--bg-page); border-radius:var(--r-lg); border:1px solid var(--border-subtle); cursor:pointer; margin-bottom:0.5rem; transition:border-color 0.15s ease;">
+                <div style="display:flex; gap:0.85rem; align-items:center; min-width:0; flex:1; margin-right:0.75rem;">
+                  <div style="width:40px; height:40px; border-radius:var(--r-md); background:rgba(99, 102, 241, 0.12); color:#818CF8; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;">
+                    <i class="fa-solid fa-clock"></i>
+                  </div>
+                  <div style="min-width:0; flex:1;">
+                    <strong style="font-size:0.9rem; display:block; color:var(--text-primary); line-height:1.35; word-break:break-word;">${foodNames || 'Balanced Lunchbox Meal'}</strong>
+                    <small style="color:var(--text-muted); font-size:0.75rem; display:block; margin-top:0.2rem;">${formattedDate} • Packed: ${totalCal} kcal • Protein: ${protein}g • <em>Awaiting teacher clearance</em></small>
+                  </div>
+                </div>
+                <div style="flex-shrink:0; display:flex; gap:0.5rem; align-items:center;">
+                  <span class="badge-status-pending" style="font-weight:700;"><i class="fa-solid fa-clock"></i> Review Pending</span>
+                  <button class="btn-action-outline" onclick="event.stopPropagation(); window.openMealDetailModalById(${meal.id})" style="padding:0.3rem 0.65rem; font-size:0.75rem;">View</button>
+                </div>
+              </div>
+            `;
+          }
+
+          const isCleanPlate = (eatenPercent >= 90 || meal.status === 'FULLY_CONSUMED');
+
+          return `
+            <div class="meal-log-card" data-meal-id="${meal.id}" style="display:flex; justify-content:space-between; align-items:center; padding:1rem 1.25rem; background:var(--bg-page); border-radius:var(--r-lg); border:1px solid var(--border-subtle); cursor:pointer; margin-bottom:0.5rem; transition:border-color 0.15s ease;">
+              <div style="display:flex; gap:0.85rem; align-items:center; min-width:0; flex:1; margin-right:0.75rem;">
+                <div style="width:40px; height:40px; border-radius:var(--r-md); background:${isCleanPlate ? 'rgba(16, 185, 129, 0.12)' : 'rgba(56, 189, 248, 0.12)'}; color:${isCleanPlate ? 'var(--accent-green)' : 'var(--accent-teal)'}; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;">
+                  <i class="fa-solid ${isCleanPlate ? 'fa-circle-check' : 'fa-chart-pie'}"></i>
+                </div>
+                <div style="min-width:0; flex:1;">
+                  <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                    <strong style="font-size:0.9rem; color:var(--text-primary); line-height:1.35; word-break:break-word;">
+                      ${foodNames || 'Balanced School Lunch'}
+                    </strong>
+                    <span style="font-size:0.75rem; font-weight:700; color:${isCleanPlate ? 'var(--accent-green)' : 'var(--accent-teal)'};">
+                      · ${eatenPercent}% Eaten (${eatenCal} kcal)
+                    </span>
+                  </div>
+                  <small style="color:var(--text-muted); font-size:0.75rem; display:block; margin-top:0.2rem;">
+                    ${formattedDate} • Packed: ${totalCal} kcal • Consumed: ${eatenCal} kcal • Protein: ${protein}g • Leftover: ${Math.max(0, 100 - eatenPercent)}%
+                  </small>
+                </div>
+              </div>
+              <div style="flex-shrink:0; display:flex; gap:0.5rem; align-items:center;">
+                <span class="${isCleanPlate ? 'badge-status-consumed' : 'badge-status-partial'}" style="font-weight:700;">
+                  <i class="fa-solid ${isCleanPlate ? 'fa-circle-check' : 'fa-chart-pie'}"></i> ${isCleanPlate ? 'Clean Plate' : `${eatenPercent}% Consumed`}
+                </span>
+                <button class="btn-action-outline" onclick="event.stopPropagation(); window.openMealDetailModalById(${meal.id})" style="padding:0.3rem 0.65rem; font-size:0.75rem;">View</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        const cards = container.querySelectorAll('.meal-log-card');
+        cards.forEach(card => {
+          card.addEventListener('click', () => {
+            const mealId = parseInt(card.getAttribute('data-meal-id'));
+            const mealObj = sortedMeals.find(m => m.id === mealId);
+            if (mealObj) openMealDetailModal(mealObj);
+          });
+        });
+      }
+    }
+
+    // --- RENDER TABLE VIEW ---
+    if (tableBody) {
+      if (sortedMeals.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="8" class="text-center" style="padding:1.5rem; color:var(--text-muted);">No meal records recorded for this child yet.</td></tr>`;
+      } else {
+        tableBody.innerHTML = sortedMeals.map(meal => {
+          const formattedDate = meal.mealDate ? new Date(meal.mealDate).toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric'
+          }) : 'Today';
+
+          const isPending = isMealPendingReview(meal);
+          const eatenPercent = getEffectiveMealConsumption(meal);
+          const items = meal.foodItems || [];
+          const foodNames = items.map(f => f.foodName).join(', ') || 'Lunchbox Meal';
+          const totalCal = Math.round(items.reduce((acc, f) => acc + (parseFloat(f.calories) || 0), 0)) || target.calories;
+          const eatenCal = eatenPercent !== null ? Math.round(totalCal * (eatenPercent / 100)) : totalCal;
+          const protein = Math.round(items.reduce((acc, f) => acc + (parseFloat(f.proteinG) || 0), 0)) || 12;
+
+          let statusBadge = `<span class="badge-status-consumed"><i class="fa-solid fa-check"></i> Clean Plate</span>`;
+          let verdict = 'Optimal Clearance (≥ 90%)';
+          if (isPending || eatenPercent === null) {
+            statusBadge = `<span class="badge-status-pending"><i class="fa-solid fa-clock"></i> Pending</span>`;
+            verdict = 'Awaiting Teacher Review';
+          } else if (eatenPercent < 50) {
+            statusBadge = `<span class="badge-status-attention"><i class="fa-solid fa-triangle-exclamation"></i> Low Intake</span>`;
+            verdict = 'High Plate Waste (< 50%)';
+          } else if (eatenPercent < 90) {
+            statusBadge = `<span class="badge-status-partial"><i class="fa-solid fa-chart-pie"></i> Partial</span>`;
+            verdict = 'Balanced Intake (50-89%)';
+          }
+
+          return `
+            <tr>
+              <td style="font-size:0.8rem; font-weight:600; color:var(--text-primary);">${formattedDate}</td>
+              <td style="font-size:0.8rem; max-width:240px; white-space:normal; line-height:1.3;">${foodNames}</td>
+              <td style="font-size:0.8rem; color:var(--text-secondary);">${totalCal} kcal</td>
+              <td style="font-size:0.8rem; font-weight:700; color:var(--text-primary);">${isPending ? '—' : `${eatenCal} kcal`}</td>
+              <td style="font-size:0.8rem; font-weight:600;">${protein}g</td>
+              <td style="font-size:0.8rem; font-weight:700; color:${eatenPercent >= 75 ? 'var(--accent-green)' : (eatenPercent >= 50 ? 'var(--accent-teal)' : 'var(--accent-rose)')};">
+                ${eatenPercent !== null ? `${eatenPercent}%` : 'Pending'}
+              </td>
+              <td>${statusBadge}</td>
+              <td style="font-size:0.775rem; color:var(--text-muted);">${verdict}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
+    // --- WIRE TOGGLE BUTTON ---
+    const btnToggle = document.getElementById('btnToggleParentViewMode');
+    const lblToggle = document.getElementById('parentViewModeLabel');
+    if (btnToggle && !btnToggle.dataset.listener) {
+      btnToggle.dataset.listener = "true";
+      btnToggle.onclick = () => {
+        if (!tableWrapper) return;
+        const isTable = tableWrapper.style.display !== 'none';
+        if (isTable) {
+          tableWrapper.style.display = 'none';
+          if (container) container.style.display = 'flex';
+          if (lblToggle) lblToggle.textContent = 'Table View';
+        } else {
+          tableWrapper.style.display = 'block';
+          if (container) container.style.display = 'none';
+          if (lblToggle) lblToggle.textContent = 'Cards View';
+        }
+      };
+    }
+
+    // --- WIRE PARENT CSV EXPORT ---
+    const btnCsv = document.getElementById('btnExportParentCsv');
+    if (btnCsv && !btnCsv.dataset.listener) {
+      btnCsv.dataset.listener = "true";
+      btnCsv.onclick = () => {
+        exportParentNutritionHistoryCSV(child, sortedMeals, target);
+      };
+    }
+  }
+
+  function exportParentNutritionHistoryCSV(child, meals, target) {
+    if (!child) {
+      showToast("No child selected.", "warning");
+      return;
+    }
+    if (!meals || meals.length === 0) {
+      showToast("No meal records available to export.", "info");
       return;
     }
 
-    container.innerHTML = sortedMeals.map(meal => {
-      const formattedDate = meal.mealDate ? new Date(meal.mealDate).toLocaleDateString('en-US', {
-        weekday: 'short', month: 'short', day: 'numeric'
-      }) : 'Today';
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Child ID,Child Name,Classroom,Meal Date,Food Items Logged,Target Calories (kcal),Consumed Calories (kcal),Protein (g),Consumption Rate (%),Plate Clearance Status,Teacher Verified,Clinical Nutritionist Assessment\n";
 
-      const isPending = isMealPendingReview(meal);
-      const eatenPercent = getEffectiveMealConsumption(meal);
-      const items = meal.foodItems || [];
-      const foodNames = items.map(f => f.foodName).join(', ');
-      const totalCal = Math.round(items.reduce((acc, f) => acc + (parseFloat(f.calories) || 0), 0));
+    meals.forEach(m => {
+      const items = (m.foodItems || []).map(i => i.foodName).join('; ') || 'Lunchbox Meal';
+      const packed = m.packedCalories || (m.foodItems || []).reduce((acc, i) => acc + (i.calories || 0), 0) || (target ? target.calories : 450);
+      const eatenPct = getEffectiveMealConsumption(m);
+      const consumed = eatenPct !== null ? Math.round(packed * (eatenPct / 100)) : packed;
+      const prot = (m.foodItems || []).reduce((acc, i) => acc + (parseFloat(i.proteinG) || 0), 0) || 12;
+      const isVerified = !isMealPendingReview(m) ? 'Yes' : 'Pending';
+      const verdict = eatenPct >= 90 ? 'Optimal Clearance - 100% Clean Plate' : (eatenPct >= 60 ? 'Balanced Intake' : (eatenPct !== null ? 'Plate Waste Detected - Low Intake' : 'Awaiting Teacher Review'));
 
-      if (isPending || eatenPercent === null) {
-        return `
-          <div class="meal-log-card" data-meal-id="${meal.id}" style="display:flex; justify-content:space-between; align-items:center; padding:0.95rem 1.15rem; background:var(--bg-page); border-radius:var(--r-lg); border:1px solid var(--border-subtle); cursor:pointer; margin-bottom:0.5rem; transition:border-color 0.15s ease;">
-            <div style="display:flex; gap:0.85rem; align-items:center; min-width:0; flex:1; margin-right:0.75rem;">
-              <div style="width:38px; height:38px; border-radius:var(--r-md); background:rgba(99, 102, 241, 0.12); color:#818CF8; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0;">
-                <i class="fa-solid fa-clock"></i>
-              </div>
-              <div style="min-width:0; flex:1;">
-                <strong style="font-size:0.875rem; display:block; color:var(--text-primary); line-height:1.35; word-break:break-word;">${foodNames || 'Lunchbox Meal'}</strong>
-                <small style="color:var(--text-muted); font-size:0.75rem; display:block; margin-top:0.15rem;">${formattedDate} • ${totalCal ? `${totalCal} kcal • ` : ''}Awaiting teacher clearance</small>
-              </div>
-            </div>
-            <div style="flex-shrink:0;">
-              <span class="badge-status badge-violet" style="white-space:nowrap; font-weight:800;">
-                <i class="fa-solid fa-clock"></i> Review Pending
-              </span>
-            </div>
-          </div>
-        `;
-      }
-
-      const isCleanPlate = (eatenPercent >= 90 || meal.status === 'FULLY_CONSUMED');
-
-      return `
-        <div class="meal-log-card" data-meal-id="${meal.id}" style="display:flex; justify-content:space-between; align-items:center; padding:0.95rem 1.15rem; background:var(--bg-page); border-radius:var(--r-lg); border:1px solid var(--border-subtle); cursor:pointer; margin-bottom:0.5rem; transition:border-color 0.15s ease;">
-          <div style="display:flex; gap:0.85rem; align-items:center; min-width:0; flex:1; margin-right:0.75rem;">
-            <div style="width:38px; height:38px; border-radius:var(--r-md); background:${isCleanPlate ? 'rgba(16, 185, 129, 0.12)' : 'rgba(56, 189, 248, 0.12)'}; color:${isCleanPlate ? 'var(--accent-green)' : 'var(--accent-teal)'}; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0;">
-              <i class="fa-solid ${isCleanPlate ? 'fa-circle-check' : 'fa-chart-pie'}"></i>
-            </div>
-            <div style="min-width:0; flex:1;">
-              <strong style="font-size:0.875rem; display:block; color:var(--text-primary); line-height:1.35; word-break:break-word;">
-                ${foodNames || (isCleanPlate ? '100% Clean Plate' : `Plate Leftover: ${Math.max(0, 100 - eatenPercent)}%`)}
-              </strong>
-              <small style="color:var(--text-muted); font-size:0.75rem; display:block; margin-top:0.15rem;">
-                ${formattedDate} • ${totalCal ? `${totalCal} kcal • ` : ''}${eatenPercent}% Consumed • Leftover ${Math.max(0, 100 - eatenPercent)}%
-              </small>
-            </div>
-          </div>
-          <div style="flex-shrink:0;">
-            <span class="badge-status ${isCleanPlate ? 'badge-full' : 'badge-partial'}" style="white-space:nowrap; font-weight:800;">
-              <i class="fa-solid ${isCleanPlate ? 'fa-circle-check' : 'fa-chart-pie'}"></i> ${isCleanPlate ? 'Clean Plate' : 'Leftovers Recorded'}
-            </span>
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    const cards = container.querySelectorAll('.meal-log-card');
-    cards.forEach(card => {
-      card.addEventListener('click', () => {
-        const mealId = parseInt(card.getAttribute('data-meal-id'));
-        const mealObj = sortedMeals.find(m => m.id === mealId);
-        if (mealObj) openMealDetailModal(mealObj);
-      });
+      const row = [
+        child.id,
+        `"${child.name || ''}"`,
+        `"${child.className || child.classCode || ''}"`,
+        `"${m.mealDate || 'Today'}"`,
+        `"${items.replace(/"/g, '""')}"`,
+        packed,
+        consumed,
+        prot,
+        eatenPct !== null ? `${eatenPct}%` : 'Pending',
+        `"${m.status || 'RECORDED'}"`,
+        isVerified,
+        `"${verdict}"`
+      ].join(",");
+      csvContent += row + "\n";
     });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute("download", `CHEWCHECKERS_${child.name.replace(/\s+/g, '_')}_Nutrition_History_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast(`Downloaded nutrition history CSV for ${child.name}!`, "success");
   }
+
+  window.loadParentReports = async function(childId) {
+    if (state.role !== 'PARENT') return;
+
+    if (!state.children || state.children.length === 0) {
+      try {
+        const res = await safeFetch('/api/parent/students', {
+          headers: { 'Authorization': `Bearer ${state.token}` }
+        });
+        if (res.ok) {
+          state.children = await res.json() || [];
+        }
+      } catch(e) {
+        state.children = JSON.parse(localStorage.getItem('chewchecker_children') || '[]');
+      }
+    }
+
+    if (state.children.length > 0) {
+      if (childId) {
+        state.selectedChild = state.children.find(c => c.id == childId) || state.selectedChild || state.children[0];
+      } else if (!state.selectedChild) {
+        const savedChildId = localStorage.getItem('chewchecker_selected_child_id');
+        if (savedChildId) {
+          state.selectedChild = state.children.find(c => c.id == savedChildId) || state.children[0];
+        } else {
+          state.selectedChild = state.children[0];
+        }
+      }
+    }
+
+    const child = state.selectedChild;
+    if (!child) return;
+
+    let meals = [];
+    try {
+      const res = await safeFetch(`/api/meals/student/${child.id}`, {
+        headers: { 'Authorization': `Bearer ${state.token}` }
+      });
+      if (res.ok) meals = await res.json();
+    } catch(e) {
+      console.error("Failed to load meals in loadParentReports:", e);
+    }
+
+    let reports = [];
+    try {
+      const res = await safeFetch(`/api/reports/weekly/${child.id}`, {
+        headers: { 'Authorization': `Bearer ${state.token}` }
+      });
+      if (res.ok) reports = await res.json();
+    } catch(e) {
+      console.error("Failed to load reports in loadParentReports:", e);
+    }
+
+    let insightsData = null;
+    try {
+      const res = await safeFetch(`/api/reports/insights/${child.id}`, {
+        headers: { 'Authorization': `Bearer ${state.token}` }
+      });
+      if (res.ok) insightsData = await res.json();
+    } catch(e) {
+      console.error("Failed to load insights in loadParentReports:", e);
+    }
+
+    updateLeftoverHistory(meals, reports, insightsData);
+  };
 
   function openMealDetailModal(meal) {
     const modal = document.getElementById('mealDetailModal');

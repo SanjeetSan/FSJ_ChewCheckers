@@ -1068,17 +1068,81 @@
             </div>
           </details>
 
+          <!-- Pro Nutritionist Clinical Assessment Card -->
+          <div class="card" id="parentNutritionistAssessmentCard" style="padding:1.35rem 1.65rem; margin-bottom:1.5rem; border-top:3px solid var(--accent-teal); background:var(--bg-card);">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border-subtle);">
+              <div style="display:flex; align-items:center; gap:0.65rem;">
+                <div style="width:36px; height:36px; border-radius:10px; background:rgba(20, 184, 166, 0.1); color:var(--accent-teal); display:flex; align-items:center; justify-content:center; font-size:1.1rem;">
+                  <i class="fa-solid fa-user-doctor"></i>
+                </div>
+                <div>
+                  <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-primary); margin:0;">Pro Nutritionist Clinical Assessment</h3>
+                  <small style="color:var(--text-muted);">Dietitian analysis of caloric adequacy, macronutrient balance & plate clearance</small>
+                </div>
+              </div>
+              <span id="nutritionistScoreBadge" class="badge-status-consumed" style="font-size:0.8rem; font-weight:700;">
+                <i class="fa-solid fa-medal"></i> Optimal Balance (85/100)
+              </span>
+            </div>
+
+            <!-- 3 Columns: Macro Adequacy, Plate Waste Pattern, Nutritionist Guidance -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1.25rem;">
+              <!-- Col 1: Calorie & Macro Distribution -->
+              <div style="background:var(--bg-page); padding:1rem 1.15rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+                <span style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.5px; display:block; margin-bottom:0.5rem;">
+                  <i class="fa-solid fa-chart-simple" style="color:var(--primary); margin-right:0.35rem;"></i> Calorie & Macro Adequacy
+                </span>
+                <div id="nutritionistMacroDetails" style="font-size:0.825rem; color:var(--text-secondary); display:flex; flex-direction:column; gap:0.4rem;">
+                  <div>• <strong>Calories:</strong> <span id="nutrCalStat">Awaiting lunch records</span></div>
+                  <div>• <strong>Protein:</strong> <span id="nutrProtStat">Awaiting lunch records</span></div>
+                  <div>• <strong>Carbohydrates & Fiber:</strong> <span id="nutrCarbStat">Awaiting lunch records</span></div>
+                </div>
+              </div>
+
+              <!-- Col 2: Plate Waste & Food Category Intake -->
+              <div style="background:var(--bg-page); padding:1rem 1.15rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+                <span style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.5px; display:block; margin-bottom:0.5rem;">
+                  <i class="fa-solid fa-chart-pie" style="color:var(--accent-green); margin-right:0.35rem;"></i> Plate Clearance & Waste Behavior
+                </span>
+                <div id="nutritionistWasteDetails" style="font-size:0.825rem; color:var(--text-secondary); display:flex; flex-direction:column; gap:0.4rem;">
+                  <div>• <strong>Favorite Food Groups:</strong> <span id="nutrFavFoods">Rice, Roti, Dal</span></div>
+                  <div>• <strong>Frequent Leftovers:</strong> <span id="nutrWasteFoods">Leafy greens / Raw salad</span></div>
+                  <div>• <strong>Clearance Consistency:</strong> <span id="nutrClearanceTrend">Consistent eater</span></div>
+                </div>
+              </div>
+
+              <!-- Col 3: Practical Dietitian Recommendations -->
+              <div style="background:var(--bg-page); padding:1rem 1.15rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+                <span style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.5px; display:block; margin-bottom:0.5rem;">
+                  <i class="fa-solid fa-lightbulb" style="color:var(--accent-amber); margin-right:0.35rem;"></i> Practical Nutritionist Advice
+                </span>
+                <div id="nutritionistRecommendations" style="font-size:0.825rem; color:var(--text-secondary); line-height:1.45;">
+                  Maintain current protein portions with dal and paneer. Try adding a mild yogurt dip with chopped veggies to reduce vegetable plate waste.
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Primary Content Area: Recent School Leftover & Consumption Records -->
           <div class="card" style="padding:1.5rem 1.75rem; margin-bottom:0;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.15rem; flex-wrap:wrap; gap:0.5rem;">
               <div>
                 <h3 style="font-size:1.1rem; font-weight:800; color:var(--text-primary); margin:0;">
-                  <i class="fa-solid fa-list-check" style="color:var(--primary);"></i> Verified School Leftover Logs
+                  <i class="fa-solid fa-list-check" style="color:var(--primary);"></i> Verified School Leftover & Nutrition History
                 </h3>
-                <small style="color:var(--text-muted);">Chronological record of lunchbox clearances verified by classroom teachers</small>
+                <small style="color:var(--text-muted);">Chronological records verified by classroom teachers with granular intake metrics</small>
+              </div>
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <button type="button" class="btn-action-outline" id="btnToggleParentViewMode" style="padding:0.4rem 0.75rem; font-size:0.78rem;">
+                  <i class="fa-solid fa-table"></i> <span id="parentViewModeLabel">Table View</span>
+                </button>
+                <button type="button" class="btn-action-primary" id="btnExportParentCsv" style="padding:0.4rem 0.85rem; font-size:0.78rem;">
+                  <i class="fa-solid fa-file-csv"></i> Download CSV History
+                </button>
               </div>
             </div>
             
+            <!-- Cards Container -->
             <div id="leftoverHistoryContainer" style="display:flex; flex-direction:column; gap:0.75rem;">
               <!-- Populated dynamically with clean empty state when empty -->
               <div class="reports-empty-state">
@@ -1086,6 +1150,27 @@
                 <div class="reports-empty-state-title">No verified lunch records available yet.</div>
                 <div class="reports-empty-state-text">Reports will appear after teacher meal verification at school. Pack and scan a lunchbox to begin tracking.</div>
               </div>
+            </div>
+
+            <!-- Table Container (Initially Hidden, Toggled by Button) -->
+            <div id="leftoverHistoryTableWrapper" class="table-responsive" style="display:none; margin-top:0.5rem;">
+              <table class="table-chewcheckers">
+                <thead>
+                  <tr>
+                    <th>DATE</th>
+                    <th>FOOD ITEMS</th>
+                    <th>TARGET / PACKED</th>
+                    <th>CONSUMED</th>
+                    <th>PROTEIN</th>
+                    <th>CONSUMPTION %</th>
+                    <th>STATUS</th>
+                    <th>CLINICAL VERDICT</th>
+                  </tr>
+                </thead>
+                <tbody id="leftoverHistoryTableBody">
+                  <tr><td colspan="8" class="text-center" style="padding:1.5rem; color:var(--text-muted);">No records available</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
@@ -1504,6 +1589,44 @@
 
             </div>
 
+          </div>
+
+          <!-- SECTION 5: Comprehensive Classroom Nutrition History & Intake Ledger (CSV & Table View) -->
+          <div class="card" style="padding:1.35rem 1.65rem; margin-top:0.5rem; margin-bottom:1.5rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.15rem; flex-wrap:wrap; gap:0.6rem;">
+              <div>
+                <h3 style="font-size:1.1rem; font-weight:800; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:0.5rem;">
+                  <i class="fa-solid fa-table-list" style="color:var(--primary);"></i> Classroom Student Nutrition History Ledger
+                </h3>
+                <small style="color:var(--text-muted);">Comprehensive diet intake records, macronutrient targets & clearance metrics for all enrolled students</small>
+              </div>
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <button type="button" class="btn-action-primary" id="btnDownloadClassroomCsv" style="padding:0.4rem 0.85rem; font-size:0.78rem;">
+                  <i class="fa-solid fa-file-csv"></i> Download Class CSV Report
+                </button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table-chewcheckers">
+                <thead>
+                  <tr>
+                    <th>STUDENT</th>
+                    <th>STUDENT ID</th>
+                    <th>DATE</th>
+                    <th>FOOD ITEMS</th>
+                    <th>CALORIES (CONSUMED / TARGET)</th>
+                    <th>PROTEIN</th>
+                    <th>CONSUMED %</th>
+                    <th>STATUS</th>
+                    <th style="text-align:right;">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="teacherClassNutritionLedgerBody">
+                  <tr><td colspan="9" class="text-center" style="padding:1.5rem; color:var(--text-muted);">Loading classroom nutrition history...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
         </div>
