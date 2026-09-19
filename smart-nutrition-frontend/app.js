@@ -6846,67 +6846,89 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       return;
     }
 
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Student ID,Student Code,Student Name,Classroom,Meal Date,Food Items Logged,Packed Calories (kcal),Consumed Calories (kcal),Protein (g),Consumption Rate (%),Meal Status,Teacher Verified,Nutritionist Assessment\n";
+    const formatCsvCell = (val) => {
+      if (val === null || val === undefined) return '""';
+      const clean = String(val).replace(/[\r\n\t]+/g, ' ').replace(/"/g, '""').trim();
+      return `"${clean}"`;
+    };
 
+    const headers = [
+      "Meal Date",
+      "Student ID",
+      "Student Name",
+      "Classroom",
+      "Food Items Logged",
+      "Packed Calories (kcal)",
+      "Consumed Calories (kcal)",
+      "Protein (g)",
+      "Consumption (%)",
+      "Meal Status"
+    ];
+
+    let rows = [];
     if (classMeals && classMeals.length > 0) {
-      classMeals.forEach(m => {
+      rows = classMeals.map(m => {
         const s = students.find(x => x.id === m.studentId) || { name: m.studentName || 'Student', studentCode: 'STU-' + m.studentId };
-        const items = (m.foodItems || []).map(i => i.foodName).join('; ') || 'Lunchbox Meal';
-        const packed = m.packedCalories || (m.foodItems || []).reduce((acc, i) => acc + (i.calories || 0), 0) || 450;
+        const mealDateStr = m.mealDate ? formatDateDDMMYYYY(m.mealDate) : 'Today';
+        const items = (m.foodItems || []).map(i => i.foodName).filter(Boolean).join(' + ') || 'Lunchbox Meal';
+        const packed = m.packedCalories || (m.foodItems || []).reduce((acc, i) => acc + (parseFloat(i.calories) || 0), 0) || 450;
         const pct = m.overallConsumptionPercentage !== null && m.overallConsumptionPercentage !== undefined ? Number(m.overallConsumptionPercentage) : 100;
-        const consumed = m.totalConsumedCalories || Math.round(packed * (pct / 100));
-        const prot = m.totalConsumedProteinG || (m.foodItems || []).reduce((acc, i) => acc + (i.proteinG || 0), 0) || 12;
-        const isVerified = (m.status === 'FULLY_CONSUMED' || m.status === 'PARTIALLY_CONSUMED' || m.status === 'POST_MEAL_UPLOADED') ? 'Yes' : 'Pending';
-        const verdict = pct >= 90 ? 'Optimal Intake - Clean Plate' : (pct >= 60 ? 'Balanced Consumption' : 'Plate Waste Detected - Low Intake');
+        
+        let consumed = Math.round(packed * (pct / 100));
+        if (pct === 0) consumed = 0;
+        else if (pct === 100) consumed = packed;
+        else if (m.totalConsumedCalories !== null && m.totalConsumedCalories !== undefined) {
+          const val = Number(m.totalConsumedCalories);
+          if (val > 0 && val <= packed) consumed = val;
+        }
 
-        const row = [
-          m.studentId,
-          `"${s.studentCode || ''}"`,
-          `"${s.name || ''}"`,
-          `"${state.activeClass ? state.activeClass.classCode : 'CLS-6070'}"`,
-          `"${m.mealDate || 'Today'}"`,
-          `"${items.replace(/"/g, '""')}"`,
-          packed,
+        const prot = m.totalConsumedProteinG || Math.round((m.foodItems || []).reduce((acc, i) => acc + (parseFloat(i.proteinG || i.protein) || 0), 0)) || 12;
+        const statusDesc = (m.status === 'FULLY_CONSUMED' || pct >= 90) ? 'Clean Plate (Optimal)' : (pct >= 50 ? 'Partial Intake' : (pct === 0 ? 'Not Consumed (0%)' : 'Low Intake'));
+
+        return [
+          formatCsvCell(mealDateStr),
+          formatCsvCell(s.studentCode || `STU-${m.studentId}`),
+          formatCsvCell(s.name || 'Student'),
+          formatCsvCell(state.activeClass ? state.activeClass.classCode : 'Grade 5'),
+          formatCsvCell(items),
+          Math.round(packed),
           consumed,
           prot,
-          `${pct}%`,
-          `"${m.status || 'RECORDED'}"`,
-          isVerified,
-          `"${verdict}"`
+          formatCsvCell(`${pct}%`),
+          formatCsvCell(statusDesc)
         ].join(",");
-        csvContent += row + "\n";
       });
     } else {
-      students.forEach(s => {
-        const row = [
-          s.id,
-          `"${s.studentCode || ''}"`,
-          `"${s.name || ''}"`,
-          `"${state.activeClass ? state.activeClass.classCode : 'CLS-6070'}"`,
-          `"${new Date().toISOString().split('T')[0]}"`,
-          `"No meal recorded"`,
-          0,
-          0,
-          0,
-          "0%",
-          `"NOT_PACKED"`,
-          "No",
-          `"Awaiting lunchbox upload"`
-        ].join(",");
-        csvContent += row + "\n";
-      });
+      rows = students.map(s => [
+        formatCsvCell(formatDateDDMMYYYY(new Date())),
+        formatCsvCell(s.studentCode || `STU-${s.id}`),
+        formatCsvCell(s.name || 'Student'),
+        formatCsvCell(state.activeClass ? state.activeClass.classCode : 'Grade 5'),
+        formatCsvCell("No meal logged"),
+        0,
+        0,
+        0,
+        formatCsvCell("0%"),
+        formatCsvCell("Awaiting Lunchbox")
+      ].join(","));
     }
 
-    const encodedUri = encodeURI(csvContent);
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const blobUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.href = blobUrl;
     const dateStr = new Date().toISOString().split('T')[0];
-    link.setAttribute("download", `CHEWCHECKERS_Class_${state.activeClass ? state.activeClass.classCode : 'Nutrition'}_Nutrition_Report_${dateStr}.csv`);
+    const classCode = (state.activeClass ? state.activeClass.classCode : 'Class').replace(/[^a-zA-Z0-9_-]/g, '_');
+    link.download = `ChewCheckers_${classCode}_Nutrition_Report_${dateStr}.csv`;
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
-    showToast("Classroom Nutrition CSV Report downloaded successfully!");
+    setTimeout(() => {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    }, 150);
+
+    showToast("Classroom Nutrition CSV Report downloaded successfully!", "success");
   }
 
   function renderTeacherReportChart(report, filterType) {
@@ -8807,9 +8829,9 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           const eatenPercent = getEffectiveMealConsumption(meal);
           const items = meal.foodItems || [];
           const foodNames = items.map(f => f.foodName).join(', ') || 'Lunchbox Meal';
-          const totalCal = Math.round(items.reduce((acc, f) => acc + (parseFloat(f.calories) || 0), 0)) || target.calories;
-          const eatenCal = eatenPercent !== null ? Math.round(totalCal * (eatenPercent / 100)) : totalCal;
-          const protein = Math.round(items.reduce((acc, f) => acc + (parseFloat(f.proteinG) || 0), 0)) || 12;
+          const totalCal = Math.round(items.reduce((acc, f) => acc + (parseFloat(f.calories) || 0), 0)) || targetCal;
+          const eatenCal = eatenPercent !== null ? (eatenPercent === 0 ? 0 : Math.round(totalCal * (eatenPercent / 100))) : totalCal;
+          const protein = Math.round(items.reduce((acc, f) => acc + (parseFloat(f.proteinG || f.protein) || 0), 0)) || 12;
 
           let statusBadge = `<span class="badge-status-consumed"><i class="fa-solid fa-check"></i> Clean Plate</span>`;
           let verdict = 'Optimal Clearance (≥ 90%)';
@@ -8864,17 +8886,17 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
     // --- WIRE PARENT CSV EXPORT ---
     const btnCsv = document.getElementById('btnExportParentCsv');
-    if (btnCsv && !btnCsv.dataset.listener) {
-      btnCsv.dataset.listener = "true";
-      btnCsv.onclick = () => {
-        exportParentNutritionHistoryCSV(child, sortedMeals, target);
+    if (btnCsv) {
+      btnCsv.onclick = (e) => {
+        if (e) e.preventDefault();
+        exportParentNutritionHistoryCSV(child, sortedMeals, targetCal);
       };
     }
   }
 
-  function exportParentNutritionHistoryCSV(child, meals, target) {
+  function exportParentNutritionHistoryCSV(child, meals, fallbackCal = 500) {
     if (!child) {
-      showToast("No child selected.", "warning");
+      showToast("No child selected to export.", "warning");
       return;
     }
     if (!meals || meals.length === 0) {
@@ -8882,44 +8904,72 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       return;
     }
 
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Child ID,Child Name,Classroom,Meal Date,Food Items Logged,Target Calories (kcal),Consumed Calories (kcal),Protein (g),Consumption Rate (%),Plate Clearance Status,Teacher Verified,Clinical Nutritionist Assessment\n";
+    // Helper to safely format CSV fields preventing column overflow/collision
+    const formatCsvCell = (val) => {
+      if (val === null || val === undefined) return '""';
+      const clean = String(val).replace(/[\r\n\t]+/g, ' ').replace(/"/g, '""').trim();
+      return `"${clean}"`;
+    };
 
-    meals.forEach(m => {
-      const items = (m.foodItems || []).map(i => i.foodName).join('; ') || 'Lunchbox Meal';
-      const packed = m.packedCalories || (m.foodItems || []).reduce((acc, i) => acc + (i.calories || 0), 0) || (target ? target.calories : 450);
+    // Clean, essential columns only
+    const headers = [
+      "Meal Date",
+      "Child Name",
+      "Classroom",
+      "Food Items Packed",
+      "Packed Calories (kcal)",
+      "Consumed Calories (kcal)",
+      "Protein (g)",
+      "Consumption (%)",
+      "Meal Status"
+    ];
+
+    const rows = meals.map(m => {
+      const mealDateStr = m.mealDate ? formatDateDDMMYYYY(m.mealDate) : 'Today';
+      const items = (m.foodItems || []).map(i => i.foodName).filter(Boolean).join(' + ') || 'Packed Lunchbox Meal';
+      const packed = m.packedCalories || (m.foodItems || []).reduce((acc, i) => acc + (parseFloat(i.calories) || 0), 0) || fallbackCal;
       const eatenPct = getEffectiveMealConsumption(m);
-      const consumed = eatenPct !== null ? Math.round(packed * (eatenPct / 100)) : packed;
-      const prot = (m.foodItems || []).reduce((acc, i) => acc + (parseFloat(i.proteinG) || 0), 0) || 12;
-      const isVerified = !isMealPendingReview(m) ? 'Yes' : 'Pending';
-      const verdict = eatenPct >= 90 ? 'Optimal Clearance - 100% Clean Plate' : (eatenPct >= 60 ? 'Balanced Intake' : (eatenPct !== null ? 'Plate Waste Detected - Low Intake' : 'Awaiting Teacher Review'));
+      const isPending = isMealPendingReview(m);
+      
+      let consumed = 0;
+      if (!isPending && eatenPct !== null) {
+        consumed = eatenPct === 0 ? 0 : Math.round(packed * (eatenPct / 100));
+      }
+      
+      const prot = Math.round((m.foodItems || []).reduce((acc, i) => acc + (parseFloat(i.proteinG || i.protein) || 0), 0)) || 12;
+      const intakeStr = isPending ? 'Pending Review' : `${eatenPct !== null ? eatenPct : 0}%`;
+      const statusDesc = isPending ? 'Awaiting Review' : (eatenPct >= 90 ? 'Clean Plate (Optimal)' : (eatenPct >= 50 ? 'Partial Intake' : (eatenPct === 0 ? 'Not Consumed (0%)' : 'Low Intake')));
 
-      const row = [
-        child.id,
-        `"${child.name || ''}"`,
-        `"${child.className || child.classCode || ''}"`,
-        `"${m.mealDate || 'Today'}"`,
-        `"${items.replace(/"/g, '""')}"`,
-        packed,
-        consumed,
+      return [
+        formatCsvCell(mealDateStr),
+        formatCsvCell(child.name || 'Child'),
+        formatCsvCell(child.className || child.classCode || 'Grade 5'),
+        formatCsvCell(items),
+        Math.round(packed),
+        isPending ? 'Pending' : consumed,
         prot,
-        eatenPct !== null ? `${eatenPct}%` : 'Pending',
-        `"${m.status || 'RECORDED'}"`,
-        isVerified,
-        `"${verdict}"`
+        formatCsvCell(intakeStr),
+        formatCsvCell(statusDesc)
       ].join(",");
-      csvContent += row + "\n";
     });
 
-    const encodedUri = encodeURI(csvContent);
+    // UTF-8 BOM ensures seamless opening in Microsoft Excel and Numbers without encoding glitches
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const blobUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.href = blobUrl;
     const dateStr = new Date().toISOString().split('T')[0];
-    link.setAttribute("download", `CHEWCHECKERS_${child.name.replace(/\s+/g, '_')}_Nutrition_History_${dateStr}.csv`);
+    const safeChildName = (child.name || 'Child').trim().replace(/[^a-zA-Z0-9_-]/g, '_');
+    link.download = `ChewCheckers_${safeChildName}_Nutrition_History_${dateStr}.csv`;
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
-    showToast(`Downloaded nutrition history CSV for ${child.name}!`, "success");
+    setTimeout(() => {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    }, 150);
+
+    showToast(`Exported clean nutrition history CSV for ${child.name}!`, "success");
   }
 
   window.loadParentReports = async function(childId) {
@@ -9684,11 +9734,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
                   <span class="child-allergy-badge" style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; font-weight:600; color:#ef4444; background:rgba(239, 68, 68, 0.08); border:1px solid rgba(239, 68, 68, 0.25); padding:2px 8px; border-radius:999px;">
                     <i class="fa-solid fa-triangle-exclamation"></i> Allergies: ${studentAllergies}
                   </span>
-                ` : `
-                  <span class="child-allergy-badge" style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; font-weight:500; color:var(--text-muted); background:var(--bg-page); border:1px solid var(--border-subtle); padding:2px 8px; border-radius:999px;">
-                    <i class="fa-solid fa-shield-check" style="color:var(--accent-green);"></i> No Known Allergies
-                  </span>
-                `}
+                ` : ''}
                 ${isActive ? `
                   <span class="child-active-badge">
                     <i class="fa-solid fa-check"></i> Active Child
@@ -9699,9 +9745,6 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
             <!-- Top-Right Actions -->
             <div class="child-card-actions">
-              <button class="btn-child-action btn-child-reports" data-id="${student.id}" title="View Nutrition & Lunch Reports">
-                <i class="fa-solid fa-chart-pie"></i> Reports
-              </button>
               ${!isActive ? `
                 <button class="btn-child-action btn-child-activate btn-make-active-child" data-id="${student.id}">
                   <i class="fa-solid fa-check"></i> Set Active
@@ -9758,21 +9801,6 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         </div>
       `;
     }).join('');
-
-    // Wire Reports shortcut buttons
-    container.querySelectorAll('.btn-child-reports').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const id = parseInt(btn.getAttribute('data-id'));
-        const found = students.find(s => s.id == id);
-        if (found) {
-          childrenModuleData.selectedStudentId = id;
-          state.selectedChild = found;
-          localStorage.setItem('chewchecker_selected_child_id', id);
-          switchPane('pane-parent-reports');
-        }
-      });
-    });
 
     // Wire "Set as Active" on child cards
     container.querySelectorAll('.btn-make-active-child').forEach(btn => {
