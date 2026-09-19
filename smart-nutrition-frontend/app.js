@@ -1601,7 +1601,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const teacherBadge = document.getElementById('teacherMessageBadge');
         if (parentBadge) parentBadge.classList.add('hidden');
         if (teacherBadge) teacherBadge.classList.add('hidden');
-        initMessagingPage();
+        initMessagingPage().then(() => {
+          scrollDirectChatToBottom(false);
+        });
       } else if (validPane === 'ai-assistant') {
         updateAiChildContextBadge();
         updateUserProfileUI();
@@ -1776,6 +1778,7 @@ document.addEventListener('DOMContentLoaded', () => {
           autoResizeChatInput(directChatInput);
           showToast(` Announcement broadcast sent to ${sentCount} parent account(s)!`);
           await loadChatHistory();
+          scrollDirectChatToBottom(true);
           return;
         }
 
@@ -1795,6 +1798,7 @@ document.addEventListener('DOMContentLoaded', () => {
             directChatInput.value = '';
             autoResizeChatInput(directChatInput);
             await loadChatHistory();
+            scrollDirectChatToBottom(true);
           } else {
             showToast("Failed to send message.", "error");
           }
@@ -2019,9 +2023,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     await loadChatHistory();
+    scrollDirectChatToBottom(false);
     } catch(err) {
       console.error("Error in initMessagingPage:", err);
     }
+  }
+
+  function scrollDirectChatToBottom(smooth = false) {
+    const scrollArea = document.getElementById('directChatScrollArea');
+    const thread = document.getElementById('directChatThread');
+    if (!scrollArea && !thread) return;
+
+    const performScroll = () => {
+      if (scrollArea) {
+        if (smooth) {
+          scrollArea.scrollTo({ top: scrollArea.scrollHeight, behavior: 'smooth' });
+        } else {
+          scrollArea.scrollTop = scrollArea.scrollHeight;
+        }
+      }
+      if (thread) {
+        thread.scrollTop = thread.scrollHeight;
+      }
+    };
+
+    performScroll();
+    requestAnimationFrame(performScroll);
+    setTimeout(performScroll, 50);
+    setTimeout(performScroll, 150);
+    setTimeout(performScroll, 350);
   }
 
   async function loadChatHistory() {
@@ -2061,7 +2091,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         `;
       }).join('');
-      thread.scrollTop = thread.scrollHeight;
+      scrollDirectChatToBottom(false);
       return;
     }
 
@@ -2157,7 +2187,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         thread.innerHTML = htmlContent;
-        thread.scrollTop = thread.scrollHeight;
+        scrollDirectChatToBottom(false);
       }
     } catch(e) {
       console.error("Failed to load chat history:", e);
@@ -2211,7 +2241,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (parentBadge) parentBadge.classList.add('hidden');
       if (teacherBadge) teacherBadge.classList.add('hidden');
       if (state.activeChatContact) {
+        const scrollArea = document.getElementById('directChatScrollArea');
+        const isNearBottom = scrollArea ? (scrollArea.scrollHeight - scrollArea.scrollTop - scrollArea.clientHeight < 150) : true;
         await loadChatHistory();
+        if (isNearBottom) {
+          scrollDirectChatToBottom(false);
+        }
         // Update last seen to latest message in thread
         const thread = document.getElementById('directChatThread');
         const lastMsgRow = thread ? thread.querySelector('.msg-row:last-child') : null;
