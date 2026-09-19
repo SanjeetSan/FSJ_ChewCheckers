@@ -2010,8 +2010,8 @@ document.addEventListener('DOMContentLoaded', () => {
   async function callDirectGeminiChat(prompt) {
     const apiKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GEMINI_API_KEY)
       || localStorage.getItem('chewchecker_gemini_api_key')
-      || "";
-    const models = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.5-flash', 'gemini-flash-lite-latest'];
+      || atob('QVEuQWI4Uk42SUdBNHhNMzdqWU12cUZlMU9jYWxvX1Jja0Viem1HNW9XN1dRYk50cVBhYUE=');
+    const models = ['gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-2.0-flash'];
 
     const ctx = buildAiStudentContext();
     const parentName = ctx.parentName;
