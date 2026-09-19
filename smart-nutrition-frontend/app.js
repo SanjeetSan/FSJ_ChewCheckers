@@ -3549,14 +3549,14 @@ INTELLIGENCE & PERSONALIZATION RULES:
 
   async function processImageFile(file) {
     if (!file) return;
-    showToast("Analyzing food image with Gemini Vision AI...", "info");
+    showToast("Analyzing the food...", "info");
     const dropzone = document.getElementById('dropzone');
     const quickBar = document.getElementById('scannerQuickActionBar');
 
     if (quickBar && !quickBar.classList.contains('hidden')) {
       quickBar.innerHTML = `
         <span style="font-size:0.875rem; font-weight:700; color:var(--primary); display:flex; align-items:center; gap:0.5rem;">
-          <i class="fa-solid fa-spinner fa-spin"></i> Analyzing new photo with Gemini Vision AI...
+          <i class="fa-solid fa-spinner fa-spin"></i> Analyzing the food...
         </span>
         <button type="button" class="btn-action-outline" disabled style="opacity:0.5; padding:0.4rem 0.9rem; font-size:0.8rem; font-weight:700;">
           Processing...
@@ -3564,7 +3564,7 @@ INTELLIGENCE & PERSONALIZATION RULES:
       `;
     } else if (dropzone) {
       dropzone.dataset.originalHtml = dropzone.innerHTML;
-      dropzone.innerHTML = `<div style="text-align:center; padding:1.5rem;"><i class="fa-solid fa-spinner fa-spin" style="font-size:2rem; color:var(--primary);"></i><p style="margin-top:0.75rem; font-weight:600; color:var(--primary);">Analyzing food & container with Gemini Vision AI...</p></div>`;
+      dropzone.innerHTML = `<div style="text-align:center; padding:1.5rem;"><i class="fa-solid fa-spinner fa-spin" style="font-size:2rem; color:var(--primary);"></i><p style="margin-top:0.75rem; font-weight:600; color:var(--primary);">Analyzing the food...</p></div>`;
       dropzone.style.pointerEvents = 'none';
     }
 
