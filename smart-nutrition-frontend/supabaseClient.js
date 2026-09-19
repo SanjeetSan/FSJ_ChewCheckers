@@ -412,7 +412,10 @@ export async function supabaseUpdateChild(childId, childData) {
       .single();
 
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      allergies: childData.allergies !== undefined ? childData.allergies : ''
+    };
   } catch (err) {
     console.error('Supabase update child error:', err);
     throw err;

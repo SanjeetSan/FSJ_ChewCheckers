@@ -72,6 +72,31 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('chewchecker_users_db', JSON.stringify(users));
   };
 
+  // Student Food Allergies Persistence Helper
+  function getStoredStudentAllergies(studentId) {
+    if (!studentId) return '';
+    try {
+      const raw = localStorage.getItem('chewchecker_student_allergies');
+      if (!raw) return '';
+      const map = JSON.parse(raw);
+      return map[studentId] || '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function setStoredStudentAllergies(studentId, allergiesText) {
+    if (!studentId) return;
+    try {
+      const raw = localStorage.getItem('chewchecker_student_allergies');
+      const map = raw ? JSON.parse(raw) : {};
+      map[studentId] = (allergiesText || '').trim();
+      localStorage.setItem('chewchecker_student_allergies', JSON.stringify(map));
+    } catch (e) {
+      console.error("Error storing student allergies:", e);
+    }
+  }
+
   // Button Loading State Helper
   function setButtonLoading(btn, isLoading, loadingText = "Loading...") {
     if (!btn) return;
@@ -2722,6 +2747,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         const gender = document.getElementById('childGenderSelect').value;
         const height = parseFloat(document.getElementById('childHeightInput').value);
         const weight = parseFloat(document.getElementById('childWeightInput').value);
+        const allergies = (document.getElementById('childAllergiesInput')?.value || '').trim();
         const classCode = document.getElementById('childSchoolInput').value.trim().toUpperCase();
 
         const dob = new Date();
@@ -2737,7 +2763,8 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           heightCm: height,
           bloodGroup: "O+",
           classCode: classCode,
-          relationship: "MOTHER"
+          relationship: "MOTHER",
+          allergies: allergies
         };
 
         setButtonLoading(submitBtn, true, 'Saving...');
@@ -2753,6 +2780,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           });
           if (res.ok) {
             const newChild = await res.json();
+            if (allergies) {
+              setStoredStudentAllergies(newChild.id, allergies);
+              newChild.allergies = allergies;
+            }
             showToast(`Added ${name}'s profile!`);
             addChildModal.classList.remove('open');
             addChildForm.reset();
@@ -5036,6 +5067,8 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     // Check classroom allergy alerts
     const standardBloodTypes = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
     const studentsWithAllergies = students.filter(s => {
+      const al = s.allergies || getStoredStudentAllergies(s.id);
+      if (al && al.trim() && al.toLowerCase() !== 'none' && al.toLowerCase() !== 'no known allergens') return true;
       const bg = s.bloodGroup ? s.bloodGroup.trim() : '';
       return bg && !standardBloodTypes.includes(bg.toUpperCase()) && bg.toLowerCase() !== 'none' && bg.toLowerCase() !== 'n/a';
     });
@@ -5045,7 +5078,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     if (allergyBanner && allergyText) {
       if (studentsWithAllergies.length > 0) {
         allergyBanner.style.display = 'flex';
-        const allergyListStr = studentsWithAllergies.map(s => `${s.name} (${s.bloodGroup})`).join(', ');
+        const allergyListStr = studentsWithAllergies.map(s => {
+          const al = s.allergies || getStoredStudentAllergies(s.id);
+          return `${s.name}${al ? ` (${al})` : ` (${s.bloodGroup})`}`;
+        }).join(', ');
         allergyText.innerHTML = `<strong>Severe Dietary / Food Allergy Alert (${studentsWithAllergies.length}):</strong> ${allergyListStr}`;
       } else {
         allergyBanner.style.display = 'none';
@@ -5892,6 +5928,8 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         // --- COMPACT ALLERGY BANNER ---
         const standardBloodTypes = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
         const allergyStudents = students.filter(s => {
+          const al = s.allergies || getStoredStudentAllergies(s.id);
+          if (al && al.trim() && al.toLowerCase() !== 'none' && al.toLowerCase() !== 'no known allergens') return true;
           const bg = s.bloodGroup ? s.bloodGroup.trim() : '';
           return bg && !standardBloodTypes.includes(bg.toUpperCase()) && bg.toLowerCase() !== 'none' && bg.toLowerCase() !== 'n/a';
         });
@@ -5907,7 +5945,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
               <div style="background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.2); border-radius:var(--r-md); padding:0.65rem 1rem; font-size:0.825rem; color:var(--accent-amber); font-weight:600; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
                 <div style="display:flex; align-items:center; gap:0.5rem;">
                   <i class="fa-solid fa-shield-cat"></i>
-                  <span><strong>Classroom Allergy Alert:</strong> ${allergyStudents.map(s => `${s.name} (${s.bloodGroup})`).join(', ')}</span>
+                  <span><strong>Classroom Allergy Alert:</strong> ${allergyStudents.map(s => {
+                    const al = s.allergies || getStoredStudentAllergies(s.id);
+                    return `${s.name}${al ? ` (${al})` : ` (${s.bloodGroup})`}`;
+                  }).join(', ')}</span>
                 </div>
                 <span class="badge-status badge-partial" style="font-size:0.7rem;">Verify Lunchboxes</span>
               </div>
@@ -8613,8 +8654,9 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       const metricsLine = metricsParts.length > 0 ? metricsParts.join(' • ') : 'No physical metrics recorded';
 
       // Nutrition & Dietary Context
-      const dietaryText = student.dietaryPreference || student.allergies || (student.id % 2 === 1 ? 'Vegetarian' : 'No Known Allergens');
-      const isVeg = dietaryText.toLowerCase().includes('veg');
+      const studentAllergies = student.allergies || getStoredStudentAllergies(student.id) || '';
+      student.allergies = studentAllergies;
+      const hasAllergies = studentAllergies && studentAllergies.trim() && studentAllergies.toLowerCase() !== 'none' && studentAllergies.toLowerCase() !== 'no known allergens';
       const targetCal = student.targetCalories || (student.weightKg ? Math.round(student.weightKg * 42) : 1800);
       const targetProt = student.targetProtein || (student.weightKg ? Math.round(student.weightKg * 1.1) : 45);
       const resolvedCode = student.studentCode || (student.id ? (String(student.id).startsWith('STU') ? student.id : `STU-${student.id}`) : (student.studentId ? `STU-${student.studentId}` : '--'));
@@ -8633,6 +8675,15 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
                 <span class="child-id-badge" title="Student ID: ${resolvedCode}">
                   <i class="fa-solid fa-id-card"></i> ${resolvedCode}
                 </span>
+                ${hasAllergies ? `
+                  <span class="child-allergy-badge" style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; font-weight:600; color:#ef4444; background:rgba(239, 68, 68, 0.08); border:1px solid rgba(239, 68, 68, 0.25); padding:2px 8px; border-radius:999px;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Allergies: ${studentAllergies}
+                  </span>
+                ` : `
+                  <span class="child-allergy-badge" style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; font-weight:500; color:var(--text-muted); background:var(--bg-page); border:1px solid var(--border-subtle); padding:2px 8px; border-radius:999px;">
+                    <i class="fa-solid fa-shield-check" style="color:var(--accent-green);"></i> No Known Allergies
+                  </span>
+                `}
                 ${isActive ? `
                   <span class="child-active-badge">
                     <i class="fa-solid fa-check"></i> Active Child
@@ -9208,6 +9259,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         const heightCm = parseFloat(document.getElementById('editChildHeight').value);
         const bloodGroup = document.getElementById('editChildBloodGroup').value.trim();
         const classCode = document.getElementById('editChildClassCode').value.trim().toUpperCase();
+        const allergies = (document.getElementById('editChildAllergies')?.value || '').trim();
 
         if (!name) {
           showToast("Child name is required", "error");
@@ -9221,8 +9273,11 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           weightKg: isNaN(weightKg) ? null : weightKg,
           heightCm: isNaN(heightCm) ? null : heightCm,
           bloodGroup: bloodGroup,
-          classCode: classCode
+          classCode: classCode,
+          allergies: allergies
         };
+
+        setStoredStudentAllergies(studentId, allergies);
 
         showToast("Updating child profile...", "info");
         try {
@@ -9237,19 +9292,20 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
           if (res.ok) {
             const updatedStudent = await res.json();
+            updatedStudent.allergies = allergies;
             showToast(`Profile for ${updatedStudent.name} updated successfully!`);
             
             // Update student in state cache
             if (state.children) {
               const idx = state.children.findIndex(c => c.id == studentId);
-              if (idx !== -1) state.children[idx] = updatedStudent;
+              if (idx !== -1) state.children[idx] = { ...state.children[idx], ...updatedStudent, allergies: allergies };
             }
             if (state.linkedStudents) {
               const idx = state.linkedStudents.findIndex(c => c.id == studentId);
-              if (idx !== -1) state.linkedStudents[idx] = updatedStudent;
+              if (idx !== -1) state.linkedStudents[idx] = { ...state.linkedStudents[idx], ...updatedStudent, allergies: allergies };
             }
             if (state.selectedChild && state.selectedChild.id == studentId) {
-              state.selectedChild = updatedStudent;
+              state.selectedChild = { ...state.selectedChild, ...updatedStudent, allergies: allergies };
             }
 
             editChildModal.classList.remove('open');
@@ -9360,6 +9416,11 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     document.getElementById('editChildHeight').value = student.heightCm || '';
     document.getElementById('editChildBloodGroup').value = student.bloodGroup || 'O+';
     document.getElementById('editChildClassCode').value = student.studentClass ? (student.studentClass.classCode || '') : (student.classCode || '');
+
+    const allergiesInput = document.getElementById('editChildAllergies');
+    if (allergiesInput) {
+      allergiesInput.value = student.allergies || getStoredStudentAllergies(student.id) || '';
+    }
 
     modal.classList.add('open');
   }
