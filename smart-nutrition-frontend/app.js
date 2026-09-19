@@ -2038,26 +2038,33 @@ document.addEventListener('DOMContentLoaded', () => {
       minute: '2-digit'
     });
 
-    const systemInstructions = `You are ChewCheckers Nutrition Assistant — a knowledgeable, highly intelligent AI pediatric nutritionist embedded in the ChewCheckers portal.
+    const systemInstructions = `You are ChewCheckers Nutrition Assistant — a pediatric nutritionist advising busy parents who scan rather than read.
 
-APPLICATION & USER CONTEXT:
-- Current Real-World Date: ${currentDateStr} (Time: ${currentTimeStr})
-- Parent/User: ${parentName} (${userRole}, email: ${parentEmail})
-- Child/Student: ${studentName} (${grade} at ${school})
-- Daily Calorie Target: ${targetCal} kcal / Lunch
-- Daily Protein Target: ${targetProt}g / Lunch
-- Latest Evaluated Nutrition Score: ${score}
-- Recent Score History: ${scoreHist}
-- Lunchbox Configuration: ${lbType} (${ctx.lunchboxCapacity})
+CONTEXT:
+- Child: ${studentName} (${grade} at ${school})
+- Lunch Targets: ${targetProt}g protein, ${targetCal} kcal
+- Score: ${score}
+- Lunchbox: ${lbType} (${ctx.lunchboxCapacity})
+- Current Real Date/Time: ${currentDateStr} (${currentTimeStr})
 
-INTELLIGENCE & PERSONALIZATION RULES:
-1. Current Date & Time Grounding: Today is strictly ${currentDateStr} (${currentTimeStr}). When asked about today's date, day, month, year, or current time, you MUST answer with this exact real-world date and day. Never invent, guess, or output outdated historical dates (like 2024 or 2025).
-2. Child-Aware Target Calibration: Always contextualize macro recommendations relative to ${studentName}'s specific targets (${targetCal} kcal, ${targetProt}g protein). Example format: "For ${studentName}'s ${targetProt}g protein lunch target, Paneer Tikka would provide approximately 75% of the required protein."
-3. Nutrition Score Awareness: If the latest score is evaluated (${score}), reference the child's nutritional progress or gaps when suggesting meals. If it is "Pending Evaluation", state recommendations based on standard RDA baselines.
-4. Strict Pantry-Grounded Recipes: If the parent provides ingredients (e.g. "I only have potatoes, peas, and curd"), use ONLY those ingredients. Do not invent chicken, paneer, eggs, lentils, or nuts unless explicitly supplied by the parent.
-5. If ingredient information is missing when a parent requests a recipe from home items, ask a concise clarifying question first.
-6. Answer any user query accurately and naturally. Keep responses concise, structured, and scannable (50-100 words by default, expanding with clear bullet points when full recipes are requested).
-7. Strictly ZERO emojis anywhere.`;
+MANDATORY RULES FOR 30-SECOND SCANNABILITY:
+1. Summary First: Start directly with at most 1 short sentence (or jump straight to recommendations). No lengthy introductions, greetings, or disclaimers.
+2. Direct Recommendations: Present 2–3 actionable options formatted cleanly:
+   • **[Meal / Item Name]**: [1 short sentence description or prep note].
+     Protein: [X]g | Calories: [Y] kcal
+3. No Repetitive Boilerplate:
+   - NEVER repeat phrases like "Target Calibration", "Provides approximately", "relative to target", or percentage calculations for every item.
+   - Do not repeat explanations across recommendations.
+4. Ultra-Concise:
+   - Limit each recommendation to 1–2 short lines.
+   - No paragraph longer than 2 lines. Avoid large text blocks.
+   - Omit nutrition theory or biology lectures unless the parent explicitly asks for an explanation.
+5. Quick Tip (Optional):
+   - At the end, optionally add 1 short takeaway line:
+     **Quick Tip**: [1 short sentence prep shortcut, packing advice, or booster].
+6. Pantry Grounding: If the parent provides ingredients, use ONLY those ingredients.
+7. Date Accuracy: When asked about today's date or time, answer strictly with ${currentDateStr}.
+8. Strictly ZERO emojis anywhere.`;
 
     const contents = [];
     const history = state.aiChatHistory || [];
@@ -2196,15 +2203,23 @@ INTELLIGENCE & PERSONALIZATION RULES:
     text = text.replace(/```markdown/gi, '').replace(/```json/gi, '').replace(/```/g, '');
     text = text.replace(/\.\*+$/gm, '.').replace(/\*+$/gm, '');
 
+    // Strip repetitive boilerplate phrases if they appear
+    text = text.replace(/Target Calibration\s*:?/gi, '');
+    text = text.replace(/provides approximately/gi, 'Provides:');
+    text = text.replace(/\s*\(\s*\d+%\s+of\s+[^)]+\)/gi, '');
+
     const rawLines = text.split(/\r?\n/);
     const htmlParts = [];
     let currentParagraph = [];
+    let isFirstP = true;
 
     function flushParagraph() {
       if (currentParagraph.length > 0) {
         const pText = currentParagraph.join(' ').trim();
         if (pText) {
-          htmlParts.push(`<p class="ai-conv-p">${formatInline(pText)}</p>`);
+          const cls = isFirstP ? 'ai-conv-summary' : 'ai-conv-p';
+          htmlParts.push(`<p class="${cls}">${formatInline(pText)}</p>`);
+          isFirstP = false;
         }
         currentParagraph = [];
       }
@@ -2212,17 +2227,23 @@ INTELLIGENCE & PERSONALIZATION RULES:
 
     function formatInline(str) {
       if (!str) return '';
-      // Convert bold markdown
       str = str.replace(/\*\*(.*?)\*\*/g, '<strong class="ai-conv-strong">$1</strong>');
       str = str.replace(/__(.*?)__/g, '<strong class="ai-conv-strong">$1</strong>');
-      // Normalize whole-sentence italics to normal text (prevents awkward slanted recipe paragraphs)
       str = str.replace(/\*([^*\n]+)\*/g, '$1');
       str = str.replace(/\*\*/g, '');
-      // Clean up common AI nutrition patterns to natural text: e.g. "Yields ~ 20g protein" -> "Protein: ~20g"
       str = str.replace(/yields?\s*(~?\s*\d+(?:\.\d+)?\s*g)\s*(?:of\s+)?protein\b/gi, 'Protein: $1');
-      // Strip intrusive automated percentage target tags e.g. "(83% of Sai's lunch target)"
-      str = str.replace(/\s*\(\s*\d+%\s+of\s+[^)]+\)/gi, '');
       return str;
+    }
+
+    function formatMetaRow(metaStr) {
+      const cleaned = metaStr.replace(/^[\|\•\-\s]+/, '').trim();
+      const parts = cleaned.split(/\s*[|•,]\s*/);
+      const badges = parts.map(p => {
+        const trimmed = p.trim();
+        if (!trimmed) return '';
+        return `<span class="ai-meta-tag">${formatInline(trimmed)}</span>`;
+      }).filter(Boolean);
+      return `<div class="ai-scan-meta">${badges.join('<span class="ai-meta-sep">•</span>')}</div>`;
     }
 
     for (let i = 0; i < rawLines.length; i++) {
@@ -2232,7 +2253,35 @@ INTELLIGENCE & PERSONALIZATION RULES:
         continue;
       }
 
-      // 1. Headings (#, ##, ###)
+      // Quick Tip callout detection
+      const tipMatch = line.match(/^(\*|\-|\•)?\s*\*\*(?:Quick\s+)?Tip\*\*:\s*(.*)$/i) ||
+                       line.match(/^(?:Quick\s+)?Tip:\s*(.*)$/i);
+      if (tipMatch) {
+        flushParagraph();
+        const tipText = (tipMatch[2] || tipMatch[1]).replace(/\*+$/, '').trim();
+        htmlParts.push(`
+          <div class="ai-quick-tip">
+            <i class="fa-regular fa-lightbulb ai-tip-icon"></i>
+            <div><strong class="ai-conv-strong">Quick Tip:</strong> ${formatInline(tipText)}</div>
+          </div>
+        `);
+        continue;
+      }
+
+      // Standalone Metadata line (e.g. Protein: 18g | Calories: 350 kcal)
+      const metaOnlyMatch = line.match(/^(?:Protein|Calories|Carbs|Fat|Fiber)\s*:\s*.+$/i);
+      if (metaOnlyMatch && htmlParts.length > 0) {
+        flushParagraph();
+        const lastPart = htmlParts[htmlParts.length - 1].trim();
+        if (lastPart.includes('class="ai-scan-rec"') && lastPart.endsWith('</div>')) {
+          htmlParts[htmlParts.length - 1] = lastPart.slice(0, -6) + formatMetaRow(line) + '</div>';
+        } else {
+          htmlParts.push(formatMetaRow(line));
+        }
+        continue;
+      }
+
+      // Headings (#, ##, ###)
       const hMatch = line.match(/^(#{1,6})\s+(.*)$/);
       if (hMatch) {
         flushParagraph();
@@ -2240,38 +2289,53 @@ INTELLIGENCE & PERSONALIZATION RULES:
         continue;
       }
 
-      // 2. Recommendation or key action item with bold title (e.g. * **Title**: Desc or 1. **Title**: Desc or **Title**: Desc)
+      // Recommendation item: bullet or number with bold title
       const bulletTitleMatch = line.match(/^(\d+\.|\*|\-|\•)?\s*\*\*([^*:]+)\*\*:\s*(.*)$/);
       if (bulletTitleMatch) {
         flushParagraph();
         const title = bulletTitleMatch[2].trim();
         let body = bulletTitleMatch[3].replace(/\*+$/, '').trim();
+
+        // Check if body has embedded metadata at the end, e.g. "Delicious roll. Protein: 18g | Calories: 350 kcal"
+        let metaPart = '';
+        const inlineMetaMatch = body.match(/(?:,\s*|\.\s*|\s+)(Protein\s*:\s*~?\s*\d+[^.]*)$/i);
+        if (inlineMetaMatch) {
+          metaPart = inlineMetaMatch[1];
+          body = body.substring(0, inlineMetaMatch.index).trim();
+        }
+
         htmlParts.push(`
-          <div class="ai-conv-bullet">
-            <span class="ai-conv-bullet-dot">•</span>
-            <div class="ai-conv-bullet-content">
-              <strong class="ai-conv-strong">${title}</strong>: ${formatInline(body)}
+          <div class="ai-scan-rec">
+            <div class="ai-scan-header">
+              <span class="ai-conv-bullet-dot">•</span>
+              <strong class="ai-conv-strong">${title}</strong>
             </div>
+            ${body ? `<div class="ai-scan-desc">${formatInline(body)}</div>` : ''}
+            ${metaPart ? formatMetaRow(metaPart) : ''}
           </div>
         `);
         continue;
       }
 
-      // 3. Standard bullet points (* or - or •)
+      // Standard bullet points
       const standardBulletMatch = line.match(/^[\*\-•]\s+(.*)$/);
       if (standardBulletMatch) {
         flushParagraph();
         const bText = standardBulletMatch[1].replace(/\*+$/, '').trim();
-        htmlParts.push(`
-          <div class="ai-conv-bullet">
-            <span class="ai-conv-bullet-dot">•</span>
-            <div class="ai-conv-bullet-content">${formatInline(bText)}</div>
-          </div>
-        `);
+        if (bText.match(/^(?:Protein|Calories)\s*:\s*.+$/i)) {
+          htmlParts.push(formatMetaRow(bText));
+        } else {
+          htmlParts.push(`
+            <div class="ai-conv-bullet">
+              <span class="ai-conv-bullet-dot">•</span>
+              <div class="ai-conv-bullet-content">${formatInline(bText)}</div>
+            </div>
+          `);
+        }
         continue;
       }
 
-      // 4. Numbered list items (e.g. 1. Title or 1. Description)
+      // Numbered list items
       const numberedMatch = line.match(/^(\d+)\.\s+(.*)$/);
       if (numberedMatch) {
         flushParagraph();
@@ -2285,7 +2349,7 @@ INTELLIGENCE & PERSONALIZATION RULES:
         continue;
       }
 
-      // 5. Normal conversational prose
+      // Normal conversational prose
       currentParagraph.push(line);
     }
 

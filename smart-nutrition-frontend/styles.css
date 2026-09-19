@@ -1896,9 +1896,17 @@ body.is-messaging-active .topbar-header {
 }
 
 /* AI Assistant Conversational Presentation */
+.ai-conv-summary {
+  margin: 0 0 0.85rem 0;
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: #F8FAFC;
+  line-height: 1.55;
+}
+
 .ai-conv-p {
-  margin: 0 0 0.95rem 0;
-  line-height: 1.68;
+  margin: 0 0 0.85rem 0;
+  line-height: 1.62;
   color: #F1F5F9;
 }
 
@@ -1906,12 +1914,80 @@ body.is-messaging-active .topbar-header {
   margin-bottom: 0;
 }
 
+/* Scannable Recommendation Blocks for Busy Parents */
+.ai-scan-rec {
+  margin-bottom: 0.85rem;
+}
+
+.ai-scan-rec:last-child {
+  margin-bottom: 0;
+}
+
+.ai-scan-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  font-size: 0.94rem;
+  line-height: 1.5;
+}
+
+.ai-scan-desc {
+  margin: 0.18rem 0 0.28rem 1.35rem;
+  color: #CBD5E1;
+  font-size: 0.885rem;
+  line-height: 1.52;
+}
+
+.ai-scan-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-left: 1.35rem;
+  margin-top: 0.2rem;
+  font-size: 0.825rem;
+}
+
+.ai-meta-tag {
+  color: #A5B4FC;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.ai-meta-sep {
+  color: #475569;
+  font-size: 0.75rem;
+  user-select: none;
+}
+
+/* Quick Tip Callout Box */
+.ai-quick-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-top: 0.95rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(99, 102, 241, 0.09);
+  border-left: 3.5px solid #818CF8;
+  border-radius: 4px 8px 8px 4px;
+  font-size: 0.875rem;
+  color: #E2E8F0;
+  line-height: 1.5;
+}
+
+.ai-tip-icon {
+  color: #FBBF24;
+  margin-top: 0.18rem;
+  flex-shrink: 0;
+  font-size: 0.95rem;
+}
+
 .ai-conv-bullet {
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
-  margin-bottom: 0.85rem;
-  line-height: 1.65;
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
   color: #E2E8F0;
 }
 
