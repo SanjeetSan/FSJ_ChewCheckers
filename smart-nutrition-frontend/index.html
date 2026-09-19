@@ -2496,64 +2496,73 @@
 
   <!-- MODAL 8: TEACHER LOG LEFTOVERS -->
   <div class="modal-backdrop" id="teacherLeftoverModal">
-    <div class="modal-container" style="max-width:460px;">
-      <div class="modal-title-row">
-        <h3 style="font-size:1.15rem;"><i class="fa-solid fa-clipboard-check" style="color:var(--primary)"></i> Verify Lunchbox Clearance</h3>
+    <div class="modal-container" style="max-width:440px;">
+      <div class="modal-title-row" style="margin-bottom:0.85rem;">
+        <h3 style="font-size:1.15rem; display:flex; align-items:center; gap:0.5rem;">
+          <span style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:var(--r-sm); background:rgba(99,102,241,0.12); color:var(--primary); font-size:0.9rem;">
+            <i class="fa-solid fa-clipboard-check"></i>
+          </span>
+          Verify Lunchbox Clearance
+        </h3>
         <button class="modal-close-btn" id="btnCloseTeacherLeftoverModal">&times;</button>
       </div>
 
-      <form id="teacherLeftoverForm" style="display:flex; flex-direction:column; gap:1.25rem;">
+      <form id="teacherLeftoverForm" style="display:flex; flex-direction:column; gap:1rem;">
         <input type="hidden" id="teacherLeftoverStudentId">
         <input type="hidden" id="teacherLeftoverMealId">
 
-        <div style="background:var(--bg-page); padding:1rem; border-radius:var(--r-md); border:1px solid var(--border-subtle); display:flex; gap:0.75rem; align-items:center;">
-          <div style="width:42px; height:42px; border-radius:50%; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.1rem; flex-shrink:0;">
-            <i class="fa-solid fa-utensils"></i>
+        <!-- Student Identity Row -->
+        <div style="background:var(--bg-page); padding:0.65rem 0.85rem; border-radius:var(--r-md); border:1px solid var(--border-subtle); display:flex; gap:0.65rem; align-items:center;">
+          <div style="width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, var(--primary), #818CF8); color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; flex-shrink:0;">
+            <span id="teacherLeftoverStudentInitial">S</span>
           </div>
-          <div>
-            <strong id="teacherLeftoverStudentName" style="font-size:0.95rem; display:block;">Student Name</strong>
-            <span id="teacherLeftoverMealDate" style="font-size:0.8rem; color:var(--text-secondary);">Today's Meal</span>
+          <div style="flex:1; min-width:0;">
+            <strong id="teacherLeftoverStudentName" style="font-size:0.9rem; display:block; color:var(--text-primary);">Student Name</strong>
+            <span id="teacherLeftoverMealDate" style="font-size:0.75rem; color:var(--text-muted);">Today's Lunchbox Audit</span>
           </div>
+          <span class="badge-status-partial" style="font-size:0.7rem; font-weight:700;">Plate Clearance</span>
         </div>
 
-        <!-- Leftover Detection Guidance Notice -->
-        <div style="background:rgba(239, 68, 68, 0.06); border:1px solid rgba(239, 68, 68, 0.2); border-radius:var(--r-md); padding:0.75rem 0.9rem; display:flex; align-items:center; gap:0.6rem;">
-          <i class="fa-solid fa-camera" style="color:var(--accent-rose); font-size:1rem; flex-shrink:0;"></i>
-          <span style="font-size:0.785rem; color:var(--text-secondary); line-height:1.35;">
-            <strong>Leftovers Present (&lt; 100% Consumed):</strong> Upload a photo of the lunchbox leftovers. Gemini AI will detect leftover items and calculate exact nutrient intake.
-          </span>
-        </div>
-
-        <!-- POST-MEAL PHOTO UPLOAD DROPZONE -->
-        <div class="form-group">
-          <label class="form-label" style="font-weight:700; display:flex; justify-content:space-between; align-items:center;">
-            <span><i class="fa-solid fa-camera" style="color:var(--primary); margin-right:0.3rem;"></i> Post-Meal Leftover Photo *</span>
-            <span style="font-size:0.75rem; color:var(--accent-rose); font-weight:700;">Required for &lt; 100% intake</span>
+        <!-- POST-MEAL PHOTO UPLOAD DROPZONE (No hidden required bug) -->
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label" style="font-weight:700; display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+            <span><i class="fa-solid fa-camera" style="color:var(--primary); margin-right:0.3rem;"></i> Leftover Plate Photo</span>
+            <span style="font-size:0.725rem; color:var(--text-muted); font-weight:500;">Optional for manual estimate</span>
           </label>
-          <div class="leftover-upload-dropzone" id="teacherLeftoverDropzone" style="border:2px dashed var(--border-subtle); border-radius:var(--r-md); padding:1.25rem 1rem; text-align:center; background:var(--bg-page); cursor:pointer; transition:all 0.15s ease;">
-            <input type="file" id="teacherLeftoverPostImageInput" accept="image/*" style="display:none;" required>
+          <div class="leftover-upload-dropzone" id="teacherLeftoverDropzone" style="border:2px dashed var(--border-subtle); border-radius:var(--r-md); padding:0.95rem 0.75rem; text-align:center; background:var(--bg-page); cursor:pointer; transition:all 0.15s ease;">
+            <input type="file" id="teacherLeftoverPostImageInput" accept="image/*" style="display:none;">
             <div id="teacherLeftoverDropzoneContent">
-              <i class="fa-solid fa-cloud-arrow-up" style="font-size:2rem; color:var(--primary); margin-bottom:0.5rem; display:block;"></i>
-              <strong style="font-size:0.875rem; color:var(--text-primary); display:block;">Click to snap or upload post-meal photo</strong>
-              <small style="color:var(--text-muted); font-size:0.75rem; display:block; margin-top:0.25rem;">AI will detect remaining leftovers and calculate nutrition intake</small>
+              <i class="fa-solid fa-cloud-arrow-up" style="font-size:1.6rem; color:var(--primary); margin-bottom:0.3rem; display:block;"></i>
+              <strong style="font-size:0.825rem; color:var(--text-primary); display:block;">Click or drag leftover photo</strong>
+              <small style="color:var(--text-muted); font-size:0.725rem; display:block; margin-top:0.15rem;">Gemini AI will scan leftover foods and calculate exact intake</small>
             </div>
             <div id="teacherLeftoverPreviewWrap" style="display:none; position:relative;">
-              <img id="teacherLeftoverPreviewImg" src="" alt="Leftover Preview" style="max-height:160px; border-radius:var(--r-md); margin:0 auto; object-fit:cover; display:block; border:1px solid var(--border-subtle);">
-              <button type="button" id="btnRemoveLeftoverImg" class="btn-action-outline" style="margin-top:0.5rem; padding:0.25rem 0.65rem; font-size:0.75rem;">Change Photo</button>
+              <img id="teacherLeftoverPreviewImg" src="" alt="Leftover Preview" style="max-height:130px; border-radius:var(--r-md); margin:0 auto; object-fit:cover; display:block; border:1px solid var(--border-subtle);">
+              <button type="button" id="btnRemoveLeftoverImg" class="btn-action-outline" style="margin-top:0.45rem; padding:0.25rem 0.65rem; font-size:0.725rem;">Change Photo</button>
             </div>
           </div>
         </div>
 
-        <div class="form-group">
-          <label class="form-label" style="display:flex; justify-content:space-between; font-weight:700;">
-            <span>Estimated Consumption %</span>
-            <span id="teacherLeftoverPercentLabel" style="color:var(--primary); font-size:1rem;">75% Eaten</span>
+        <!-- ESTIMATED CONSUMPTION RATE -->
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label" style="display:flex; justify-content:space-between; align-items:center; font-weight:700; margin-bottom:0.35rem;">
+            <span>Estimated Consumption Rate</span>
+            <span id="teacherLeftoverPercentLabel" style="color:var(--primary); font-size:0.95rem; font-weight:800;">75% Eaten</span>
           </label>
-          <input type="range" id="teacherLeftoverRange" min="0" max="95" value="75" style="width:100%; accent-color:var(--primary);">
+          <input type="range" id="teacherLeftoverRange" min="0" max="100" value="75" style="width:100%; accent-color:var(--primary);">
+          
+          <!-- Quick presets pills -->
+          <div style="display:flex; justify-content:space-between; gap:0.35rem; margin-top:0.45rem;">
+            <button type="button" class="btn-quick-pct-chip" data-pct="0" style="flex:1; padding:0.25rem 0.2rem; font-size:0.725rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle); background:var(--bg-page); color:var(--text-secondary); cursor:pointer; font-weight:600;">0% Left</button>
+            <button type="button" class="btn-quick-pct-chip" data-pct="25" style="flex:1; padding:0.25rem 0.2rem; font-size:0.725rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle); background:var(--bg-page); color:var(--text-secondary); cursor:pointer; font-weight:600;">25%</button>
+            <button type="button" class="btn-quick-pct-chip" data-pct="50" style="flex:1; padding:0.25rem 0.2rem; font-size:0.725rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle); background:var(--bg-page); color:var(--text-secondary); cursor:pointer; font-weight:600;">50%</button>
+            <button type="button" class="btn-quick-pct-chip" data-pct="75" style="flex:1; padding:0.25rem 0.2rem; font-size:0.725rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle); background:rgba(99,102,241,0.12); color:var(--primary); border-color:var(--primary); cursor:pointer; font-weight:600;">75%</button>
+            <button type="button" class="btn-quick-pct-chip" data-pct="100" style="flex:1; padding:0.25rem 0.2rem; font-size:0.725rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle); background:var(--bg-page); color:var(--text-secondary); cursor:pointer; font-weight:600;">100%</button>
+          </div>
         </div>
 
-        <button type="submit" class="btn-action-primary" id="btnSubmitTeacherLeftover" style="padding:0.75rem; width:100%;">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> Analyze Leftovers & Detect Intake
+        <button type="submit" class="btn-action-primary" id="btnSubmitTeacherLeftover" style="padding:0.7rem; width:100%; font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.4rem; margin-top:0.25rem;">
+          <i class="fa-solid fa-check"></i> Save 75% Clearance Record
         </button>
       </form>
     </div>

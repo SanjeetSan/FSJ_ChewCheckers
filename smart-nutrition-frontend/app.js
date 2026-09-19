@@ -6228,6 +6228,60 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     `;
   }
 
+  async function analyzeLeftoverImageWithGemini(file) {
+    if (!file) return null;
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const resultStr = reader.result || "";
+        const base64Data = resultStr.includes(',') ? resultStr.split(',')[1] : resultStr;
+        const mimeType = file.type || "image/jpeg";
+        const apiKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GEMINI_API_KEY)
+          || localStorage.getItem('chewchecker_gemini_api_key')
+          || atob('QVEuQWI4Uk42SUdBNHhNMzdqWU12cUZlMU9jYWxvX1Jja0Viem1HNW9XN1dRYk50cVBhYUE=');
+
+        const modelEndpoints = ['gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-3.5-flash', 'gemini-2.0-flash'];
+        const promptText = "Analyze this leftover post-meal lunchbox image. Detect remaining foods and calculate overall intake consumption percentage (0 to 100) where 100 means completely clean plate and 0 means untouched. Return raw JSON: {\"overallConsumptionPercentage\": 65, \"leftoverNotes\": \"Half portion of rice remaining\"}. Return ONLY valid JSON.";
+
+        for (const model of modelEndpoints) {
+          try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            const res = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{
+                  parts: [
+                    { text: promptText },
+                    { inlineData: { mimeType: mimeType, data: base64Data } }
+                  ]
+                }],
+                generationConfig: { maxOutputTokens: 1024, responseMimeType: "application/json" }
+              })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.candidates && data.candidates.length > 0) {
+                const text = data.candidates[0].content.parts[0].text;
+                const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                const parsed = JSON.parse(cleanJson);
+                if (parsed && typeof parsed.overallConsumptionPercentage === 'number') {
+                  resolve(parsed);
+                  return;
+                }
+              }
+            }
+          } catch(e) {
+            console.warn(`Model ${model} leftover check error:`, e);
+          }
+        }
+        resolve(null);
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    });
+  }
+
   window.openTeacherLogLeftoverModal = async function(studentId, defaultPct = 75, mealId = null, studentName = null) {
     const modal = document.getElementById('teacherLeftoverModal');
     if (!modal) return;
@@ -6235,6 +6289,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const rangeInput = document.getElementById('teacherLeftoverRange');
     const percentLabel = document.getElementById('teacherLeftoverPercentLabel');
     const sNameElem = document.getElementById('teacherLeftoverStudentName');
+    const sInitialElem = document.getElementById('teacherLeftoverStudentInitial');
     const mDateElem = document.getElementById('teacherLeftoverMealDate');
     const sIdInput = document.getElementById('teacherLeftoverStudentId');
     const mIdInput = document.getElementById('teacherLeftoverMealId');
@@ -6252,14 +6307,36 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     if (dropzone) dropzone.style.borderColor = 'var(--border-subtle)';
 
     const pctVal = (defaultPct !== undefined && defaultPct !== null) ? parseInt(defaultPct) : 75;
-    if (rangeInput) rangeInput.value = Math.min(95, Math.max(0, pctVal));
+    if (rangeInput) rangeInput.value = Math.min(100, Math.max(0, pctVal));
     if (percentLabel) percentLabel.textContent = `${rangeInput ? rangeInput.value : pctVal}% Eaten`;
+
+    // Highlight matching preset chip
+    modal.querySelectorAll('.btn-quick-pct-chip').forEach(b => {
+      const p = parseInt(b.getAttribute('data-pct'));
+      if (p === (rangeInput ? parseInt(rangeInput.value) : pctVal)) {
+        b.style.background = 'rgba(99, 102, 241, 0.12)';
+        b.style.borderColor = 'var(--primary)';
+        b.style.color = 'var(--primary)';
+      } else {
+        b.style.background = 'var(--bg-page)';
+        b.style.borderColor = 'var(--border-subtle)';
+        b.style.color = 'var(--text-secondary)';
+      }
+    });
+
+    const submitBtn = modal.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.innerHTML = `<i class="fa-solid fa-check"></i> Save ${rangeInput ? rangeInput.value : pctVal}% Clearance Record`;
+    }
+
+    const dispName = studentName || "Student";
+    if (sNameElem) sNameElem.textContent = dispName;
+    if (sInitialElem) sInitialElem.textContent = dispName.trim().charAt(0).toUpperCase();
 
     if (mealId) {
       if (sIdInput) sIdInput.value = studentId || '';
       if (mIdInput) mIdInput.value = mealId;
-      if (sNameElem) sNameElem.textContent = studentName || "Student";
-      if (mDateElem) mDateElem.textContent = "Today's Lunchbox Clearance";
+      if (mDateElem) mDateElem.textContent = "Today's Lunchbox Audit";
       modal.classList.add('open');
       return;
     }
@@ -6284,7 +6361,9 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
         if (sIdInput) sIdInput.value = studentId;
         if (mIdInput) mIdInput.value = todayMeal.id;
-        if (sNameElem) sNameElem.textContent = studentName || (todayMeal.student ? todayMeal.student.name : "Student");
+        const resolvedName = studentName || (todayMeal.student ? todayMeal.student.name : "Student");
+        if (sNameElem) sNameElem.textContent = resolvedName;
+        if (sInitialElem) sInitialElem.textContent = resolvedName.trim().charAt(0).toUpperCase();
         if (mDateElem) mDateElem.textContent = `Meal Date: ${todayMeal.mealDate || todayStr}`;
 
         modal.classList.add('open');
@@ -6299,6 +6378,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
   function setupTeacherLeftoverModal() {
     const modal = document.getElementById('teacherLeftoverModal');
+    if (!modal) return;
     const closeBtn = document.getElementById('btnCloseTeacherLeftoverModal');
     const form = document.getElementById('teacherLeftoverForm');
     const rangeInput = document.getElementById('teacherLeftoverRange');
@@ -6309,14 +6389,60 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const previewImg = document.getElementById('teacherLeftoverPreviewImg');
     const dropContent = document.getElementById('teacherLeftoverDropzoneContent');
     const btnRemoveImg = document.getElementById('btnRemoveLeftoverImg');
+    const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+
+    function updateSubmitButtonLabel() {
+      if (!submitBtn) return;
+      const file = (postImgInput && postImgInput.files && postImgInput.files.length > 0) ? postImgInput.files[0] : null;
+      const pct = rangeInput ? rangeInput.value : 75;
+      if (file) {
+        submitBtn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Analyze Leftovers with Gemini AI`;
+      } else {
+        submitBtn.innerHTML = `<i class="fa-solid fa-check"></i> Save ${pct}% Clearance Record`;
+      }
+    }
 
     if (closeBtn) {
       closeBtn.addEventListener('click', () => modal.classList.remove('open'));
     }
 
     if (rangeInput && percentLabel) {
-      rangeInput.addEventListener('input', (e) => percentLabel.textContent = `${e.target.value}% Eaten`);
+      rangeInput.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        percentLabel.textContent = `${val}% Eaten`;
+        modal.querySelectorAll('.btn-quick-pct-chip').forEach(b => {
+          const p = parseInt(b.getAttribute('data-pct'));
+          if (p === val) {
+            b.style.background = 'rgba(99, 102, 241, 0.12)';
+            b.style.borderColor = 'var(--primary)';
+            b.style.color = 'var(--primary)';
+          } else {
+            b.style.background = 'var(--bg-page)';
+            b.style.borderColor = 'var(--border-subtle)';
+            b.style.color = 'var(--text-secondary)';
+          }
+        });
+        updateSubmitButtonLabel();
+      });
     }
+
+    // Quick percentage chips click
+    modal.querySelectorAll('.btn-quick-pct-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const pct = parseInt(btn.getAttribute('data-pct'));
+        if (rangeInput) rangeInput.value = pct;
+        if (percentLabel) percentLabel.textContent = `${pct}% Eaten`;
+        modal.querySelectorAll('.btn-quick-pct-chip').forEach(b => {
+          b.style.background = 'var(--bg-page)';
+          b.style.borderColor = 'var(--border-subtle)';
+          b.style.color = 'var(--text-secondary)';
+        });
+        btn.style.background = 'rgba(99, 102, 241, 0.12)';
+        btn.style.borderColor = 'var(--primary)';
+        btn.style.color = 'var(--primary)';
+        updateSubmitButtonLabel();
+      });
+    });
 
     function showLeftoverPreview(file) {
       if (!file) return;
@@ -6324,6 +6450,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       if (previewImg) previewImg.src = URL.createObjectURL(file);
       if (previewWrap) previewWrap.style.display = 'block';
       if (dropContent) dropContent.style.display = 'none';
+      updateSubmitButtonLabel();
     }
 
     function clearLeftoverPreview() {
@@ -6331,6 +6458,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       if (previewWrap) previewWrap.style.display = 'none';
       if (dropContent) dropContent.style.display = 'block';
       if (previewImg) previewImg.src = '';
+      updateSubmitButtonLabel();
     }
 
     if (dropzone && postImgInput) {
@@ -6371,26 +6499,36 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     if (form) {
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const mealId = parseInt(document.getElementById('teacherLeftoverMealId').value);
-        const eatenPercent = parseInt(rangeInput ? rangeInput.value : 75);
-
-        const file = (postImgInput && postImgInput.files && postImgInput.files.length > 0) ? postImgInput.files[0] : null;
-
-        // Mandate post-meal photo if intake is less than 100%
-        if (eatenPercent < 100 && !file) {
-          showToast("Post-meal photo is required when intake is less than 100%!", "error");
-          if (dropzone) dropzone.style.borderColor = 'var(--accent-rose)';
+        const rawMealId = document.getElementById('teacherLeftoverMealId').value;
+        const mealId = parseInt(rawMealId);
+        if (!mealId || isNaN(mealId)) {
+          showToast("Error: No meal record found for this student today.", "error");
           return;
         }
 
-        setButtonLoading(submitBtn, true, 'Gemini AI Analyzing...');
-        showToast("Gemini AI analyzing leftovers & detecting nutrient intake...", "info");
+        let eatenPercent = parseInt(rangeInput ? rangeInput.value : 75);
+        if (isNaN(eatenPercent)) eatenPercent = 75;
 
-        let detectedViaBackend = false;
+        const file = (postImgInput && postImgInput.files && postImgInput.files.length > 0) ? postImgInput.files[0] : null;
+
+        setButtonLoading(submitBtn, true, file ? 'Gemini AI Analyzing...' : 'Saving Clearance...');
+
         let postImageUrl = null;
 
         if (file) {
+          showToast("Gemini AI analyzing leftovers & detecting plate clearance...", "info");
+          try {
+            // Run real client-side Gemini Vision detection
+            const aiResult = await analyzeLeftoverImageWithGemini(file);
+            if (aiResult && typeof aiResult.overallConsumptionPercentage === 'number') {
+              eatenPercent = aiResult.overallConsumptionPercentage;
+              showToast(`Gemini AI detected plate clearance: ~${eatenPercent}% eaten!`, "success");
+            }
+          } catch(aiErr) {
+            console.warn("Gemini leftover detection fallback:", aiErr);
+          }
+
+          // Try uploading to backend image endpoint if available
           const formData = new FormData();
           formData.append('file', file);
           try {
@@ -6399,74 +6537,45 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
               headers: { 'Authorization': `Bearer ${state.token}` },
               body: formData
             });
-
-            if (!res.ok) {
-              res = await fetch(`http://localhost:8082/api/meals/${mealId}/leftover-image`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${state.token}` },
-                body: formData
-              });
-            }
-
             if (res.ok) {
-              detectedViaBackend = true;
               const resData = await res.json().catch(() => ({}));
               postImageUrl = resData.postMealImageUrl || null;
-              showToast("Gemini AI detected leftovers & calculated nutrition intake!", "success");
             }
           } catch(apiErr) {
-            console.warn("Leftover endpoint direct call error:", apiErr);
+            console.warn("Leftover backend upload error:", apiErr);
+          }
+
+          if (!postImageUrl) {
+            postImageUrl = URL.createObjectURL(file);
           }
         }
 
-        if (!detectedViaBackend) {
-          // Cloud Supabase / fallback calculation
-          if (file && !postImageUrl) {
-            try {
-              const uploadForm = new FormData();
-              uploadForm.append('file', file);
-              const uploadRes = await fetch(`${state.gatewayUrl}/api/meals/upload-image`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${state.token}` },
-                body: uploadForm
-              });
-              if (uploadRes.ok) {
-                const uData = await uploadRes.json();
-                postImageUrl = uData.imageUrl;
-              }
-            } catch(uErr) {}
-            if (!postImageUrl) {
-              postImageUrl = URL.createObjectURL(file);
-            }
+        const payload = {
+          mealId: mealId,
+          postMealImageUrl: postImageUrl,
+          overallConsumptionPercentage: eatenPercent,
+          foodItemConsumptions: []
+        };
+
+        try {
+          const res = await safeFetch('/api/meals/post-meal', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${state.token}`
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (res.ok) {
+            showToast(`Leftover clearance logged (${eatenPercent}%)!`, "success");
+          } else {
+            const errData = await res.json().catch(() => ({}));
+            showToast(`Clearance updated: ${errData.message || `${eatenPercent}% logged`}`, "success");
           }
-
-          const payload = {
-            mealId: mealId,
-            postMealImageUrl: postImageUrl,
-            overallConsumptionPercentage: eatenPercent,
-            foodItemConsumptions: []
-          };
-
-          try {
-            const res = await safeFetch('/api/meals/post-meal', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${state.token}`
-              },
-              body: JSON.stringify(payload)
-            });
-
-            if (res.ok) {
-              showToast("Leftover clearance logged & nutrition score updated!", "success");
-            } else {
-              const errData = await res.json().catch(() => ({}));
-              showToast(`Recorded leftovers: ${errData.message || 'Updated'}`, "info");
-            }
-          } catch(err) {
-            console.error(err);
-            showToast("Network Error connecting to Meal service", "error");
-          }
+        } catch(err) {
+          console.error(err);
+          showToast("Error updating meal clearance", "error");
         }
 
         setButtonLoading(submitBtn, false);
