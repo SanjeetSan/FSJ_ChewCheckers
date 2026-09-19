@@ -1548,17 +1548,53 @@
 
           </div>
 
-          <!-- SECTION 5: Classroom Nutrition History Table -->
+          <!-- SECTION 4: Classroom Nutrition History Table -->
           <div class="card" style="padding:1.25rem 1.5rem; margin-top:0.5rem; margin-bottom:1.5rem;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.15rem; flex-wrap:wrap; gap:0.6rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.15rem; flex-wrap:wrap; gap:0.85rem;">
               <div>
                 <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:0.5rem;">
-                  <i class="fa-solid fa-table-list" style="color:var(--primary);"></i> Classroom Nutrition History
+                  <i class="fa-solid fa-table-list" style="color:var(--primary)"></i> Classroom Nutrition History
                 </h3>
-                <small style="color:var(--text-muted); font-size:0.78rem;">Student intake records, nutrient targets, and plate completion metrics</small>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin:0.25rem 0 0 0;">Student intake records, nutrient targets, and plate completion metrics</p>
               </div>
-              <div style="display:flex; gap:0.5rem; align-items:center;">
-                <button type="button" class="btn-action-primary" id="btnDownloadClassroomCsv" style="padding:0.4rem 0.85rem; font-size:0.78rem;">
+
+              <!-- Controls Toolbar: Search, Sort, Filter & CSV -->
+              <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+                
+                <!-- Quick Search Input -->
+                <div style="position:relative; min-width:180px; max-width:240px;">
+                  <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:0.75rem; pointer-events:none;"></i>
+                  <input type="text" id="teacherReportsSearchInput" class="form-input" placeholder="Search student or food..." style="padding-left:30px; padding-top:0.4rem; padding-bottom:0.4rem; font-size:0.8rem; height:36px; border-radius:var(--r-md);">
+                </div>
+
+                <!-- Sort Dropdown -->
+                <div style="display:flex; align-items:center; gap:0.35rem; background:var(--bg-page); border:1px solid var(--border-subtle); border-radius:var(--r-md); padding:0 0.5rem;">
+                  <i class="fa-solid fa-arrow-down-short-wide" style="color:var(--primary); font-size:0.8rem;"></i>
+                  <select id="teacherReportsSortSelect" style="font-size:0.8rem; border:none; background:transparent; color:var(--text-primary); padding:0.4rem 0.25rem; font-weight:600; outline:none; cursor:pointer;">
+                    <option value="date-desc">Date (Newest First)</option>
+                    <option value="date-asc">Date (Oldest First)</option>
+                    <option value="intake-asc">Intake % (Lowest First)</option>
+                    <option value="intake-desc">Intake % (Highest First)</option>
+                    <option value="calories-desc">Calories (High to Low)</option>
+                    <option value="calories-asc">Calories (Low to High)</option>
+                    <option value="protein-desc">Protein (High to Low)</option>
+                    <option value="protein-asc">Protein (Low to High)</option>
+                    <option value="name-asc">Student (A – Z)</option>
+                    <option value="name-desc">Student (Z – A)</option>
+                  </select>
+                </div>
+
+                <!-- Status Filter Dropdown -->
+                <select id="teacherReportsStatusFilter" class="form-input" style="font-size:0.8rem; padding:0.4rem 0.65rem; height:36px; min-width:130px; font-weight:600; border-radius:var(--r-md);">
+                  <option value="all">All Statuses</option>
+                  <option value="clean">Clean Plate</option>
+                  <option value="partial">Partial Intake</option>
+                  <option value="low">Low Intake (&lt; 50%)</option>
+                  <option value="pending">Review Pending</option>
+                </select>
+
+                <!-- Download CSV -->
+                <button class="btn-action-primary" id="btnExportTeacherReportsCSV" style="font-size:0.8rem; padding:0.45rem 0.85rem; height:36px; display:flex; align-items:center; gap:0.4rem; white-space:nowrap; border-radius:var(--r-md);">
                   <i class="fa-solid fa-file-csv"></i> Download CSV
                 </button>
               </div>
@@ -1568,14 +1604,28 @@
               <table class="table-chewcheckers">
                 <thead>
                   <tr>
-                    <th style="white-space:nowrap;">Student</th>
-                    <th style="white-space:nowrap;">Student Code</th>
-                    <th style="white-space:nowrap;">Date</th>
+                    <th class="sortable-th" data-sort="name" style="white-space:nowrap; cursor:pointer;" title="Click to sort by Student">
+                      Student <i class="fa-solid fa-sort sort-icon"></i>
+                    </th>
+                    <th class="sortable-th" data-sort="code" style="white-space:nowrap; cursor:pointer;" title="Click to sort by Student Code">
+                      Student Code <i class="fa-solid fa-sort sort-icon"></i>
+                    </th>
+                    <th class="sortable-th active-sort" data-sort="date" style="white-space:nowrap; cursor:pointer;" title="Click to sort by Date">
+                      Date <i class="fa-solid fa-sort-down sort-icon"></i>
+                    </th>
                     <th>Food Items</th>
-                    <th style="white-space:nowrap;">Calories (Eaten / Goal)</th>
-                    <th style="white-space:nowrap;">Protein</th>
-                    <th style="white-space:nowrap;">Intake %</th>
-                    <th style="white-space:nowrap;">Status</th>
+                    <th class="sortable-th" data-sort="calories" style="white-space:nowrap; cursor:pointer;" title="Click to sort by Calories">
+                      Calories (Eaten / Goal) <i class="fa-solid fa-sort sort-icon"></i>
+                    </th>
+                    <th class="sortable-th" data-sort="protein" style="white-space:nowrap; cursor:pointer;" title="Click to sort by Protein">
+                      Protein <i class="fa-solid fa-sort sort-icon"></i>
+                    </th>
+                    <th class="sortable-th" data-sort="intake" style="white-space:nowrap; cursor:pointer;" title="Click to sort by Intake %">
+                      Intake % <i class="fa-solid fa-sort sort-icon"></i>
+                    </th>
+                    <th class="sortable-th" data-sort="status" style="white-space:nowrap; cursor:pointer;" title="Click to sort by Status">
+                      Status <i class="fa-solid fa-sort sort-icon"></i>
+                    </th>
                     <th style="text-align:right; white-space:nowrap;">Actions</th>
                   </tr>
                 </thead>
@@ -2136,48 +2186,91 @@
 
   <!-- MODAL 7: MEAL DETAIL VIEW -->
   <div class="modal-backdrop" id="mealDetailModal">
-    <div class="modal-container" style="max-width:560px;">
+    <div class="modal-container" style="max-width:580px;">
       <div class="modal-title-row">
-        <h3 style="font-size:1.15rem;" id="mealDetailTitle"><i class="fa-solid fa-utensils" style="color:var(--primary)"></i> School Lunch Details</h3>
+        <h3 style="font-size:1.15rem;" id="mealDetailTitle"><i class="fa-solid fa-utensils" style="color:var(--primary)"></i> Lunch Log Details</h3>
         <button class="modal-close-btn" id="btnCloseMealDetailModal">&times;</button>
       </div>
 
-      <div style="background:var(--bg-page); padding:1rem; border-radius:var(--r-md); margin-bottom:1.25rem; border:1px solid var(--border-subtle);">
-        <h4 style="margin:0 0 0.5rem 0; font-size:0.95rem;">Detected Food Items</h4>
-        <div id="detailFoodsList" style="font-size:0.875rem; color:var(--text-secondary); line-height:1.4;">
+      <!-- Student & Meal Status Banner -->
+      <div id="detailStudentMetaRow" style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-page); border:1px solid var(--border-subtle); border-radius:var(--r-md); padding:0.75rem 1rem; margin-bottom:1.15rem;">
+        <div style="display:flex; align-items:center; gap:0.65rem;">
+          <div id="detailStudentAvatar" style="width:36px; height:36px; border-radius:50%; background:rgba(99,102,241,0.12); color:var(--primary); font-weight:800; font-size:0.9rem; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            S
+          </div>
+          <div>
+            <strong id="detailStudentName" style="font-size:0.95rem; color:var(--text-primary); display:block;">Student Name</strong>
+            <span id="detailStudentCode" style="font-size:0.75rem; color:var(--text-muted); font-family:monospace;">STU-XXXX</span>
+          </div>
+        </div>
+        <div id="detailMealStatusBadge">
+          <span class="badge-status-consumed"><i class="fa-solid fa-check"></i> Clean Plate</span>
+        </div>
+      </div>
+
+      <!-- Lunchbox Photos Preview (Pre & Post Meal) -->
+      <div id="detailPhotosContainer" style="display:none; margin-bottom:1.15rem;">
+        <h4 style="margin:0 0 0.5rem 0; font-size:0.9rem; color:var(--text-primary); display:flex; align-items:center; gap:0.4rem;">
+          <i class="fa-solid fa-camera" style="color:var(--primary);"></i> Lunchbox Photos
+        </h4>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+          <div id="detailPreMealPhotoCard" style="background:var(--bg-page); border:1px solid var(--border-subtle); border-radius:var(--r-md); overflow:hidden; text-align:center;">
+            <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); padding:0.35rem 0.5rem; background:rgba(0,0,0,0.03); border-bottom:1px solid var(--border-subtle); text-transform:uppercase; letter-spacing:0.04em;">Packed (Pre-Meal)</div>
+            <div id="detailPreMealPhotoWrap" style="height:130px; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.02); overflow:hidden;">
+              <span style="font-size:0.75rem; color:var(--text-muted);">No photo</span>
+            </div>
+          </div>
+          <div id="detailPostMealPhotoCard" style="background:var(--bg-page); border:1px solid var(--border-subtle); border-radius:var(--r-md); overflow:hidden; text-align:center;">
+            <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); padding:0.35rem 0.5rem; background:rgba(0,0,0,0.03); border-bottom:1px solid var(--border-subtle); text-transform:uppercase; letter-spacing:0.04em;">Leftovers (Post-Meal)</div>
+            <div id="detailPostMealPhotoWrap" style="height:130px; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.02); overflow:hidden;">
+              <span style="font-size:0.75rem; color:var(--text-muted);">No photo</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-page); padding:1rem; border-radius:var(--r-md); margin-bottom:1.15rem; border:1px solid var(--border-subtle);">
+        <h4 style="margin:0 0 0.5rem 0; font-size:0.925rem; color:var(--text-primary);"><i class="fa-solid fa-plate-wheat" style="color:var(--primary); margin-right:0.35rem;"></i> Detected Food Items</h4>
+        <div id="detailFoodsList" style="font-size:0.85rem; color:var(--text-secondary); line-height:1.4;">
           <!-- Populated dynamically -->
         </div>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
-        <div style="background:var(--bg-page); padding:0.75rem; border-radius:var(--r-md); text-align:center;">
-          <span style="font-size:0.75rem; color:var(--text-muted)">Estimated Weight</span>
-          <strong id="detailEstWeight" style="display:block; font-size:1.1rem; margin-top:0.25rem;">--</strong>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.85rem; margin-bottom:1.15rem;">
+        <div style="background:var(--bg-page); padding:0.75rem 1rem; border-radius:var(--r-md); border:1px solid var(--border-subtle); text-align:center;">
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.03em;">Estimated Weight</span>
+          <strong id="detailEstWeight" style="display:block; font-size:1.1rem; margin-top:0.25rem; color:var(--text-primary);">--</strong>
         </div>
-        <div style="background:var(--bg-page); padding:0.75rem; border-radius:var(--r-md); text-align:center;">
-          <span style="font-size:0.75rem; color:var(--text-muted)">Quantity Consumed</span>
+        <div style="background:var(--bg-page); padding:0.75rem 1rem; border-radius:var(--r-md); border:1px solid var(--border-subtle); text-align:center;">
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.03em;">Intake Achieved</span>
           <strong id="detailConsumedQty" style="display:block; font-size:1.1rem; margin-top:0.25rem; color:var(--accent-green);">--</strong>
         </div>
       </div>
+
       <div style="background:var(--bg-page); padding:1rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
-        <h4 style="margin:0 0 0.75rem 0; font-size:0.95rem;">Nutrient Consumption Breakdown</h4>
+        <h4 style="margin:0 0 0.75rem 0; font-size:0.925rem; color:var(--text-primary);"><i class="fa-solid fa-chart-simple" style="color:var(--primary); margin-right:0.35rem;"></i> Nutrient Consumption Breakdown</h4>
         <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.5rem; text-align:center;">
-          <div>
-            <span style="font-size:0.7rem; color:var(--text-muted)">Calories</span>
-            <strong id="detailConsumedCal" style="display:block; font-size:1rem; margin-top:0.15rem;">-- kcal</strong>
+          <div style="background:var(--bg-card); padding:0.6rem 0.4rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+            <span style="font-size:0.7rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Calories</span>
+            <strong id="detailConsumedCal" style="display:block; font-size:0.95rem; margin-top:0.2rem; color:var(--text-primary);">-- kcal</strong>
           </div>
-          <div>
-            <span style="font-size:0.7rem; color:var(--text-muted)">Protein</span>
-            <strong id="detailConsumedProt" style="display:block; font-size:1rem; margin-top:0.15rem; color:var(--accent-green)">-- g</strong>
+          <div style="background:var(--bg-card); padding:0.6rem 0.4rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+            <span style="font-size:0.7rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Protein</span>
+            <strong id="detailConsumedProt" style="display:block; font-size:0.95rem; margin-top:0.2rem; color:var(--accent-green)">-- g</strong>
           </div>
-          <div>
-            <span style="font-size:0.7rem; color:var(--text-muted)">Carbs</span>
-            <strong id="detailConsumedCarbs" style="display:block; font-size:1rem; margin-top:0.15rem;">-- g</strong>
+          <div style="background:var(--bg-card); padding:0.6rem 0.4rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+            <span style="font-size:0.7rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Carbs</span>
+            <strong id="detailConsumedCarbs" style="display:block; font-size:0.95rem; margin-top:0.2rem; color:var(--accent-blue)">-- g</strong>
           </div>
-          <div>
-            <span style="font-size:0.7rem; color:var(--text-muted)">Fibre</span>
-            <strong id="detailConsumedFib" style="display:block; font-size:1rem; margin-top:0.15rem; color:var(--accent-amber)">-- g</strong>
+          <div style="background:var(--bg-card); padding:0.6rem 0.4rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+            <span style="font-size:0.7rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Fibre</span>
+            <strong id="detailConsumedFib" style="display:block; font-size:0.95rem; margin-top:0.2rem; color:var(--accent-amber)">-- g</strong>
           </div>
         </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; margin-top:1.25rem;">
+        <button type="button" class="btn-action-primary" id="btnCloseMealDetailFooter" style="padding:0.45rem 1.4rem; font-size:0.85rem; border-radius:var(--r-md);">Close</button>
       </div>
     </div>
   </div>

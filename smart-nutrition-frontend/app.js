@@ -3018,11 +3018,15 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
     // Wire Meal Detail Modal Close Globally
     const btnCloseDetail = document.getElementById('btnCloseMealDetailModal');
+    const btnCloseDetailFooter = document.getElementById('btnCloseMealDetailFooter');
     const detailModal = document.getElementById('mealDetailModal');
-    if (btnCloseDetail && detailModal) {
-      btnCloseDetail.addEventListener('click', () => {
-        detailModal.classList.remove('open');
-      });
+    if (detailModal) {
+      if (btnCloseDetail) {
+        btnCloseDetail.addEventListener('click', () => detailModal.classList.remove('open'));
+      }
+      if (btnCloseDetailFooter) {
+        btnCloseDetailFooter.addEventListener('click', () => detailModal.classList.remove('open'));
+      }
     }
 
     // Wire Student Profile Close Actions Globally
@@ -4752,9 +4756,41 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     `;
   }
 
-  window.openMealDetailModalById = function(mealId) {
-    const meal = (state.currentMeals || []).find(m => m.id == mealId);
+  window.openMealDetailModalById = async function(mealId) {
+    if (!mealId) return;
+    let meal = (state.teacherReportsMeals || []).find(m => m.id == mealId);
+    if (!meal && state.currentMeals) {
+      meal = state.currentMeals.find(m => m.id == mealId);
+    }
+    if (!meal && state.teacherClassOverviewMeals) {
+      meal = state.teacherClassOverviewMeals.find(m => m.id == mealId);
+    }
+    if (!meal && state.parentRecentMeals) {
+      meal = state.parentRecentMeals.find(m => m.id == mealId);
+    }
+
+    if (!meal) {
+      try {
+        const res = await safeFetch(`/api/meals/${mealId}`, {
+          headers: { 'Authorization': `Bearer ${state.token}` }
+        });
+        if (res.ok) {
+          meal = await res.json();
+        }
+      } catch (err) {
+        console.warn("Could not fetch meal by id from server:", err);
+      }
+    }
+
     if (meal && typeof openMealDetailModal === 'function') {
+      if (!meal.studentName || !meal.studentCode) {
+        const studentPool = state.teacherReportsStudents || state.activeClassStudents || state.students || [];
+        const found = studentPool.find(s => s.id === meal.studentId);
+        if (found) {
+          meal.studentName = meal.studentName || found.name;
+          meal.studentCode = meal.studentCode || found.studentCode;
+        }
+      }
       openMealDetailModal(meal);
     } else {
       showToast("Meal details not available.", "info");
@@ -6514,7 +6550,83 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     }
   }
 
+  function setupTeacherReportsTableEventsOnce() {
+    if (state._teacherReportsEventsBound) return;
+    state._teacherReportsEventsBound = true;
+
+    const sortSelect = document.getElementById('teacherReportsSortSelect');
+    const filterSelect = document.getElementById('teacherReportsStatusFilter');
+    const searchInput = document.getElementById('teacherReportsSearchInput');
+
+    if (sortSelect) {
+      sortSelect.addEventListener('change', (e) => {
+        state.teacherReportsSort = e.target.value;
+        renderTeacherClassNutritionLedger(state.teacherReportsStudents, state.teacherReportsMeals);
+      });
+    }
+
+    if (filterSelect) {
+      filterSelect.addEventListener('change', (e) => {
+        state.teacherReportsFilter = e.target.value;
+        renderTeacherClassNutritionLedger(state.teacherReportsStudents, state.teacherReportsMeals);
+      });
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        state.teacherReportsSearch = e.target.value.trim().toLowerCase();
+        renderTeacherClassNutritionLedger(state.teacherReportsStudents, state.teacherReportsMeals);
+      });
+    }
+
+    // Interactive Sortable Column Headers
+    document.querySelectorAll('.table-chewcheckers th.sortable-th').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.getAttribute('data-sort');
+        if (!col) return;
+
+        let currentSort = state.teacherReportsSort || 'date-desc';
+        let [currentCol, currentDir] = currentSort.split('-');
+
+        let newDir = 'desc';
+        if (currentCol === col) {
+          newDir = currentDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          if (col === 'name' || col === 'code') newDir = 'asc';
+          else newDir = 'desc';
+        }
+
+        state.teacherReportsSort = `${col}-${newDir}`;
+        if (sortSelect) {
+          const matchingOpt = Array.from(sortSelect.options).find(o => o.value === state.teacherReportsSort);
+          if (matchingOpt) {
+            sortSelect.value = state.teacherReportsSort;
+          }
+        }
+        renderTeacherClassNutritionLedger(state.teacherReportsStudents, state.teacherReportsMeals);
+      });
+    });
+
+    const exportBtn = document.getElementById('btnExportTeacherReportsCSV');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => {
+        exportClassroomNutritionCSV(state.teacherReportsStudents, state.teacherReportsMeals);
+      });
+    }
+    const exportBtnOld = document.getElementById('btnDownloadClassroomCsv');
+    if (exportBtnOld) {
+      exportBtnOld.addEventListener('click', () => {
+        exportClassroomNutritionCSV(state.teacherReportsStudents, state.teacherReportsMeals);
+      });
+    }
+  }
+
   function renderTeacherClassNutritionLedger(students, classMeals) {
+    state.teacherReportsStudents = students || [];
+    state.teacherReportsMeals = classMeals || [];
+
+    setupTeacherReportsTableEventsOnce();
+
     const tbody = document.getElementById('teacherClassNutritionLedgerBody');
     if (!tbody) return;
 
@@ -6528,14 +6640,129 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       return;
     }
 
-    const rows = classMeals.map(meal => {
+    const sortVal = state.teacherReportsSort || 'date-desc';
+    const filterVal = state.teacherReportsFilter || 'all';
+    const searchVal = (state.teacherReportsSearch || '').toLowerCase();
+
+    // Sync form controls with state
+    const sortSelect = document.getElementById('teacherReportsSortSelect');
+    if (sortSelect && sortSelect.value !== sortVal) {
+      const match = Array.from(sortSelect.options).find(o => o.value === sortVal);
+      if (match) sortSelect.value = sortVal;
+    }
+    const filterSelect = document.getElementById('teacherReportsStatusFilter');
+    if (filterSelect && filterSelect.value !== filterVal) filterSelect.value = filterVal;
+    const searchInput = document.getElementById('teacherReportsSearchInput');
+    if (searchInput && searchInput.value !== (state.teacherReportsSearch || '')) searchInput.value = state.teacherReportsSearch || '';
+
+    // Update th active-sort and icons
+    const [activeCol, activeDir] = sortVal.split('-');
+    document.querySelectorAll('.table-chewcheckers th.sortable-th').forEach(th => {
+      const col = th.getAttribute('data-sort');
+      const icon = th.querySelector('.sort-icon');
+      if (col === activeCol) {
+        th.classList.add('active-sort');
+        if (icon) {
+          icon.className = activeDir === 'asc' ? 'fa-solid fa-sort-up sort-icon' : 'fa-solid fa-sort-down sort-icon';
+        }
+      } else {
+        th.classList.remove('active-sort');
+        if (icon) icon.className = 'fa-solid fa-sort sort-icon';
+      }
+    });
+
+    // Compute enriched meal list
+    let list = classMeals.map(meal => {
       const student = students.find(s => s.id === meal.studentId) || { name: meal.studentName || 'Student', studentCode: 'STU-' + meal.studentId };
       const items = meal.foodItems || [];
       const packedCal = meal.packedCalories || items.reduce((acc, f) => acc + (f.calories || 0), 0) || 450;
-      const consumedCal = meal.totalConsumedCalories || Math.round(packedCal * ((meal.overallConsumptionPercentage || 100) / 100));
+      const consumedCal = meal.totalConsumedCalories !== null && meal.totalConsumedCalories !== undefined
+        ? Number(meal.totalConsumedCalories)
+        : Math.round(packedCal * ((meal.overallConsumptionPercentage || 100) / 100));
       const rawProtein = meal.totalConsumedProteinG || items.reduce((acc, f) => acc + (f.proteinG || 0), 0) || 14;
-      const proteinFormatted = (parseFloat(rawProtein) || 0).toFixed(1).replace(/\.0$/, '');
       const pct = meal.overallConsumptionPercentage !== null && meal.overallConsumptionPercentage !== undefined ? Number(meal.overallConsumptionPercentage) : 100;
+      const mealDateTs = meal.mealDate ? new Date(meal.mealDate).getTime() : 0;
+      const foodNames = items.map(f => f.foodName).join(', ');
+
+      return {
+        ...meal,
+        student,
+        items,
+        packedCal,
+        consumedCal,
+        rawProtein: parseFloat(rawProtein) || 0,
+        pct,
+        mealDateTs,
+        foodNames
+      };
+    });
+
+    // Apply Search Filter
+    if (searchVal) {
+      list = list.filter(m => {
+        const sName = (m.student.name || '').toLowerCase();
+        const sCode = (m.student.studentCode || '').toLowerCase();
+        const fNames = (m.foodNames || '').toLowerCase();
+        return sName.includes(searchVal) || sCode.includes(searchVal) || fNames.includes(searchVal);
+      });
+    }
+
+    // Apply Status Filter
+    if (filterVal !== 'all') {
+      list = list.filter(m => {
+        if (filterVal === 'pending') return m.status === 'PRE_MEAL_UPLOADED' || m.status === 'PENDING_LEFTOVER_ANALYSIS';
+        if (filterVal === 'low') return m.pct < 50 && m.status !== 'PRE_MEAL_UPLOADED';
+        if (filterVal === 'partial') return m.pct >= 50 && m.pct < 100 && m.status !== 'PRE_MEAL_UPLOADED';
+        if (filterVal === 'clean') return m.pct >= 100 && m.status !== 'PRE_MEAL_UPLOADED';
+        return true;
+      });
+    }
+
+    // Apply Sorting
+    list.sort((a, b) => {
+      switch (sortVal) {
+        case 'date-asc':
+          return a.mealDateTs - b.mealDateTs;
+        case 'date-desc':
+          return b.mealDateTs - a.mealDateTs;
+        case 'name-asc':
+          return (a.student.name || '').localeCompare(b.student.name || '');
+        case 'name-desc':
+          return (b.student.name || '').localeCompare(a.student.name || '');
+        case 'code-asc':
+          return (a.student.studentCode || '').localeCompare(b.student.studentCode || '');
+        case 'code-desc':
+          return (b.student.studentCode || '').localeCompare(a.student.studentCode || '');
+        case 'intake-asc':
+          return a.pct - b.pct;
+        case 'intake-desc':
+          return b.pct - a.pct;
+        case 'calories-asc':
+          return a.consumedCal - b.consumedCal;
+        case 'calories-desc':
+          return b.consumedCal - a.consumedCal;
+        case 'protein-asc':
+          return a.rawProtein - b.rawProtein;
+        case 'protein-desc':
+          return b.rawProtein - a.rawProtein;
+        case 'status-asc':
+          return (a.status || '').localeCompare(b.status || '');
+        case 'status-desc':
+          return (b.status || '').localeCompare(a.status || '');
+        default:
+          return b.mealDateTs - a.mealDateTs;
+      }
+    });
+
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding:1.5rem; color:var(--text-muted); font-size:0.85rem;"><i class="fa-solid fa-filter" style="margin-right:0.35rem;"></i> No meal records matching your search/filter criteria.</td></tr>`;
+      return;
+    }
+
+    const rows = list.map(meal => {
+      const student = meal.student;
+      const items = meal.items;
+      const proteinFormatted = meal.rawProtein.toFixed(1).replace(/\.0$/, '');
       const formattedDate = meal.mealDate ? formatDateDDMMYYYY(meal.mealDate) : 'Today';
 
       // Clean food items formatting with +N more chip
@@ -6560,15 +6787,15 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       let statusBadge = `<span class="badge-status-consumed" style="white-space:nowrap;"><i class="fa-solid fa-check"></i> Clean Plate</span>`;
       if (meal.status === 'PRE_MEAL_UPLOADED' || meal.status === 'PENDING_LEFTOVER_ANALYSIS') {
         statusBadge = `<span class="badge-status-pending" style="white-space:nowrap;"><i class="fa-solid fa-clock"></i> Review Pending</span>`;
-      } else if (pct < 50) {
+      } else if (meal.pct < 50) {
         statusBadge = `<span class="badge-status-attention" style="white-space:nowrap;"><i class="fa-solid fa-triangle-exclamation"></i> Low Intake</span>`;
-      } else if (pct < 100) {
+      } else if (meal.pct < 100) {
         statusBadge = `<span class="badge-status-partial" style="white-space:nowrap;"><i class="fa-solid fa-chart-pie"></i> Partial</span>`;
       }
 
       return `
         <tr>
-          <td class="nowrap">
+          <td class="nowrap sticky-col">
             <div style="display:flex; align-items:center; gap:0.5rem;">
               <div style="width:28px; height:28px; border-radius:50%; background:rgba(99,102,241,0.1); color:var(--primary); font-weight:700; font-size:0.75rem; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                 ${(student.name || 'S').charAt(0).toUpperCase()}
@@ -6579,16 +6806,18 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           <td class="nowrap"><code style="font-size:0.75rem; color:var(--text-muted);">${student.studentCode || 'N/A'}</code></td>
           <td class="nowrap" style="font-size:0.8rem; color:var(--text-secondary);">${formattedDate}</td>
           <td>${foodHTML}</td>
-          <td class="nowrap" style="font-size:0.8rem;"><strong>${consumedCal}</strong> <span style="color:var(--text-muted); font-size:0.75rem;">/ ${packedCal} kcal</span></td>
+          <td class="nowrap" style="font-size:0.8rem;"><strong>${meal.consumedCal}</strong> <span style="color:var(--text-muted); font-size:0.75rem;">/ ${meal.packedCal} kcal</span></td>
           <td class="nowrap" style="font-size:0.8rem; font-weight:600; color:var(--text-primary);">${proteinFormatted}g</td>
           <td class="nowrap">
-            <span style="font-weight:700; font-size:0.8rem; color:${pct >= 75 ? 'var(--accent-green)' : (pct >= 50 ? 'var(--accent-teal)' : 'var(--accent-rose)')};">
-              ${pct}%
+            <span style="font-weight:700; font-size:0.8rem; color:${meal.pct >= 75 ? 'var(--accent-green)' : (meal.pct >= 50 ? 'var(--accent-teal)' : 'var(--accent-rose)')};">
+              ${meal.pct}%
             </span>
           </td>
           <td class="nowrap">${statusBadge}</td>
           <td class="nowrap" style="text-align:right;">
-            <button class="btn-action-outline" onclick="window.openMealDetailModalById(${meal.id})" style="padding:0.25rem 0.65rem; font-size:0.75rem; font-weight:600; white-space:nowrap;">Details</button>
+            <button class="btn-action-outline" onclick="window.openMealDetailModalById(${meal.id})" style="padding:0.25rem 0.65rem; font-size:0.75rem; font-weight:600; white-space:nowrap;">
+              <i class="fa-solid fa-circle-info"></i> Details
+            </button>
           </td>
         </tr>
       `;
@@ -8737,34 +8966,106 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const modal = document.getElementById('mealDetailModal');
     if (!modal) return;
 
-    document.getElementById('mealDetailTitle').innerHTML = `<i class="fa-solid fa-utensils" style="color:var(--primary)"></i> Lunch Log Details — ${new Date(meal.mealDate).toLocaleDateString()}`;
+    const sName = meal.studentName || (meal.student && meal.student.name) || (state.selectedChild && state.selectedChild.name) || 'Student';
+    const sCode = meal.studentCode || (meal.student && meal.student.studentCode) || (state.selectedChild && state.selectedChild.studentCode) || 'Enrolled';
+    const mealDateStr = meal.mealDate ? formatDateDDMMYYYY(meal.mealDate) : 'Today';
 
-    const foodsList = document.getElementById('detailFoodsList');
-    if (foodsList && meal.foodItems) {
-      foodsList.innerHTML = meal.foodItems.map(f => `
-        <div style="display:flex; justify-content:space-between; margin-bottom:0.35rem; padding-bottom:0.35rem; border-bottom:1px dashed var(--border-subtle);">
-          <span>• <strong>${f.foodName}</strong> (${f.quantity || '1 serving'})</span>
-          <span>${f.consumptionPercentage !== null && f.consumptionPercentage !== undefined ? f.consumptionPercentage : 100}% eaten</span>
-        </div>
-      `).join('');
+    const titleEl = document.getElementById('mealDetailTitle');
+    if (titleEl) {
+      titleEl.innerHTML = `<i class="fa-solid fa-utensils" style="color:var(--primary)"></i> Lunch Log Details — ${mealDateStr}`;
     }
 
+    // Populate Student Meta Row
+    const nameEl = document.getElementById('detailStudentName');
+    if (nameEl) nameEl.textContent = sName;
+    const codeEl = document.getElementById('detailStudentCode');
+    if (codeEl) codeEl.textContent = sCode;
+    const avatarEl = document.getElementById('detailStudentAvatar');
+    if (avatarEl) avatarEl.textContent = (sName || 'S').charAt(0).toUpperCase();
+
     const items = meal.foodItems || [];
-    const totalWeight = items.length * 150; 
-    const elWeight = document.getElementById('detailEstWeight');
-    if (elWeight) elWeight.textContent = `${totalWeight}g`;
-    
     const totalEatenPercent = items.length > 0
       ? Math.round(items.reduce((acc, f) => acc + (parseFloat(f.consumptionPercentage) || 0), 0) / items.length)
-      : (meal.overallConsumptionPercentage !== null ? Number(meal.overallConsumptionPercentage) : 100);
-    
+      : (meal.overallConsumptionPercentage !== null && meal.overallConsumptionPercentage !== undefined ? Math.round(Number(meal.overallConsumptionPercentage)) : 100);
+
+    // Populate Status Badge
+    const statusBadgeEl = document.getElementById('detailMealStatusBadge');
+    if (statusBadgeEl) {
+      if (meal.status === 'PRE_MEAL_UPLOADED' || meal.status === 'PENDING_LEFTOVER_ANALYSIS') {
+        statusBadgeEl.innerHTML = `<span class="badge-status-pending"><i class="fa-solid fa-clock"></i> Review Pending</span>`;
+      } else if (totalEatenPercent < 50) {
+        statusBadgeEl.innerHTML = `<span class="badge-status-attention"><i class="fa-solid fa-triangle-exclamation"></i> Low Intake (${totalEatenPercent}%)</span>`;
+      } else if (totalEatenPercent < 100) {
+        statusBadgeEl.innerHTML = `<span class="badge-status-partial"><i class="fa-solid fa-chart-pie"></i> Partial (${totalEatenPercent}%)</span>`;
+      } else {
+        statusBadgeEl.innerHTML = `<span class="badge-status-consumed"><i class="fa-solid fa-check"></i> Clean Plate (100%)</span>`;
+      }
+    }
+
+    // Populate Photos Preview if available
+    const photosContainer = document.getElementById('detailPhotosContainer');
+    const preWrap = document.getElementById('detailPreMealPhotoWrap');
+    const postWrap = document.getElementById('detailPostMealPhotoWrap');
+    const prePhoto = meal.preMealPhotoUrl || meal.photoUrl || (meal.photos && meal.photos.preMeal);
+    const postPhoto = meal.postMealPhotoUrl || (meal.photos && meal.photos.postMeal);
+
+    if (photosContainer) {
+      if (prePhoto || postPhoto) {
+        photosContainer.style.display = 'block';
+        if (preWrap) {
+          preWrap.innerHTML = prePhoto
+            ? `<img src="${prePhoto}" alt="Packed Lunchbox" style="width:100%; height:100%; object-fit:cover; cursor:pointer;" onclick="window.open('${prePhoto}', '_blank')">`
+            : `<span style="font-size:0.75rem; color:var(--text-muted); padding:0.5rem;">No photo uploaded</span>`;
+        }
+        if (postWrap) {
+          postWrap.innerHTML = postPhoto
+            ? `<img src="${postPhoto}" alt="Leftovers Photo" style="width:100%; height:100%; object-fit:cover; cursor:pointer;" onclick="window.open('${postPhoto}', '_blank')">`
+            : `<span style="font-size:0.75rem; color:var(--text-muted); padding:0.5rem;">${totalEatenPercent === 100 ? 'Clean plate (No leftovers)' : 'Not captured'}</span>`;
+        }
+      } else {
+        photosContainer.style.display = 'none';
+      }
+    }
+
+    // Populate Food Items
+    const foodsList = document.getElementById('detailFoodsList');
+    if (foodsList) {
+      if (items.length > 0) {
+        foodsList.innerHTML = items.map(f => {
+          const fCal = f.calories ? `${f.calories} kcal` : '';
+          const fProt = f.proteinG ? `• ${f.proteinG}g prot` : '';
+          const fPct = f.consumptionPercentage !== null && f.consumptionPercentage !== undefined ? Number(f.consumptionPercentage) : 100;
+          const badgeStyle = fPct >= 75
+            ? 'background:rgba(16,185,129,0.1); color:var(--accent-green);'
+            : (fPct >= 50 ? 'background:rgba(59,130,246,0.1); color:var(--accent-blue);' : 'background:rgba(239,68,68,0.1); color:var(--accent-rose);');
+          return `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem; padding-bottom:0.45rem; border-bottom:1px dashed var(--border-subtle);">
+              <div>
+                <strong style="color:var(--text-primary); font-size:0.875rem;">${f.foodName}</strong>
+                <span style="font-size:0.75rem; color:var(--text-muted); margin-left:0.35rem;">(${f.quantity || '1 serving'} ${fCal} ${fProt})</span>
+              </div>
+              <span style="font-size:0.72rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:999px; ${badgeStyle}">
+                ${fPct}% eaten
+              </span>
+            </div>
+          `;
+        }).join('');
+      } else {
+        foodsList.innerHTML = `<div style="color:var(--text-muted); font-size:0.85rem; padding:0.35rem 0;">Standard Healthy Lunchbox</div>`;
+      }
+    }
+
+    const totalWeight = items.length > 0 ? items.length * 150 : 350;
+    const elWeight = document.getElementById('detailEstWeight');
+    if (elWeight) elWeight.textContent = `${totalWeight}g`;
+
     const elEaten = document.getElementById('detailConsumedQty');
     if (elEaten) elEaten.textContent = `${totalEatenPercent}%`;
 
-    const totalCal = items.reduce((acc, f) => acc + (parseFloat(f.calories) || 0), 0);
-    const totalProt = items.reduce((acc, f) => acc + (parseFloat(f.proteinG) || 0), 0);
-    const totalCarb = items.reduce((acc, f) => acc + (parseFloat(f.carbsG) || 0), 0);
-    const totalFib = items.reduce((acc, f) => acc + (parseFloat(f.fiberG) || 0), 0);
+    const totalCal = items.reduce((acc, f) => acc + (parseFloat(f.calories) || 0), 0) || (meal.packedCalories || 450);
+    const totalProt = items.reduce((acc, f) => acc + (parseFloat(f.proteinG) || 0), 0) || 14;
+    const totalCarb = items.reduce((acc, f) => acc + (parseFloat(f.carbsG) || 0), 0) || 45;
+    const totalFib = items.reduce((acc, f) => acc + (parseFloat(f.fiberG) || 0), 0) || 5;
 
     const consumedRatio = totalEatenPercent / 100;
     const elConsCal = document.getElementById('detailConsumedCal');
@@ -8772,10 +9073,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const elConsCarbs = document.getElementById('detailConsumedCarbs');
     const elConsFib = document.getElementById('detailConsumedFib');
 
-    if (elConsCal) elConsCal.textContent = `${Math.round(totalCal * consumedRatio)} kcal`;
-    if (elConsProt) elConsProt.textContent = `${(totalProt * consumedRatio).toFixed(1)} g`;
-    if (elConsCarbs) elConsCarbs.textContent = `${(totalCarb * consumedRatio).toFixed(1)} g`;
-    if (elConsFib) elConsFib.textContent = `${(totalFib * consumedRatio).toFixed(1)} g`;
+    if (elConsCal) elConsCal.textContent = `${meal.totalConsumedCalories || Math.round(totalCal * consumedRatio)} kcal`;
+    if (elConsProt) elConsProt.textContent = `${(meal.totalConsumedProteinG || (totalProt * consumedRatio)).toFixed(1).replace(/\.0$/, '')} g`;
+    if (elConsCarbs) elConsCarbs.textContent = `${(totalCarb * consumedRatio).toFixed(1).replace(/\.0$/, '')} g`;
+    if (elConsFib) elConsFib.textContent = `${(totalFib * consumedRatio).toFixed(1).replace(/\.0$/, '')} g`;
 
     modal.classList.add('open');
   }

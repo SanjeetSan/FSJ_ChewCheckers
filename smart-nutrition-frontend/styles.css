@@ -7282,6 +7282,30 @@ body.dark-theme .preset-ghost-icon {
   background: transparent;
 }
 
+.table-chewcheckers th.sortable-th {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.table-chewcheckers th.sortable-th:hover {
+  color: var(--primary);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.table-chewcheckers th.sortable-th .sort-icon {
+  margin-left: 0.35rem;
+  font-size: 0.72rem;
+  opacity: 0.4;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.table-chewcheckers th.sortable-th:hover .sort-icon,
+.table-chewcheckers th.sortable-th.active-sort .sort-icon {
+  opacity: 1;
+  color: var(--primary);
+}
+
 .table-chewcheckers td {
   padding: 0.75rem 0.95rem;
   border-bottom: 1px solid var(--border-subtle);
@@ -7293,6 +7317,18 @@ body.dark-theme .preset-ghost-icon {
 
 .table-chewcheckers tbody tr:hover td {
   background: rgba(99, 102, 241, 0.025);
+}
+
+.table-chewcheckers .sticky-col {
+  position: sticky;
+  left: 0;
+  background: var(--bg-card);
+  z-index: 2;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.04);
+}
+
+.table-chewcheckers tbody tr:hover td.sticky-col {
+  background: var(--bg-card);
 }
 
 .table-chewcheckers .nowrap {
