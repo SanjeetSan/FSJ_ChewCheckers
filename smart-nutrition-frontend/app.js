@@ -2,6 +2,23 @@
    CHEWCHECKERS — PRODUCTION ENGINE
    ========================================================================== */
 
+import { 
+  supabase, 
+  supabaseLogin, 
+  supabaseRegister, 
+  supabaseUpdateProfile,
+  supabaseGetParentChildren,
+  supabaseGetPresetsForStudent,
+  supabaseSavePreset,
+  supabaseGetMealsForStudent,
+  supabaseSaveMeal,
+  supabaseGetTeacherClasses,
+  supabaseGetUsers,
+  supabaseGetHolidays,
+  supabaseGetMessages,
+  supabaseSendMessage
+} from './supabaseClient.js';
+
 document.addEventListener('DOMContentLoaded', () => {
 
   // Strict Email Domain Validation (Ensures proper domain e.g. name@gmail.com, user@school.com)
@@ -739,7 +756,37 @@ document.addEventListener('DOMContentLoaded', () => {
     let loginData = null;
     let errorMessage = null;
 
-    // 1. Live Backend Login via Gateway or Auth Service
+    // 0. Primary Cloud Authentication: Supabase
+    try {
+      const sbAuth = await supabaseLogin(email, password);
+      if (sbAuth.success) {
+        state.token = sbAuth.token;
+        state.user = sbAuth.user;
+        state.role = state.user.role;
+        state.activePane = state.role === 'ADMIN' ? 'admin-users' : (state.role === 'TEACHER' ? 'teacher-roster' : 'parent-overview');
+
+        localStorage.setItem('chewchecker_access_token', state.token);
+        localStorage.setItem('chewchecker_user_data', JSON.stringify(state.user));
+        localStorage.setItem('chewchecker_current_role', state.role);
+        localStorage.setItem('chewchecker_active_pane', state.activePane);
+
+        if (authRememberMe && authRememberMe.checked) {
+          localStorage.setItem('chewchecker_remember_email', email);
+        } else {
+          localStorage.removeItem('chewchecker_remember_email');
+        }
+
+        showToast(`Welcome back, ${state.user.name}!`);
+        showAppScreen();
+        return;
+      } else if (sbAuth.message && sbAuth.message !== 'Invalid email or user not found' && sbAuth.message !== 'Login connection failed') {
+        errorMessage = sbAuth.message;
+      }
+    } catch (e) {
+      console.warn("Supabase auth attempted, falling back to gateway/endpoints...", e);
+    }
+
+    // 1. Live Backend Login via Gateway or Auth Service fallback
     const endpoints = [];
     if (state.gatewayUrl) {
       endpoints.push(`${state.gatewayUrl}/api/auth/login`);
@@ -812,6 +859,31 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function executeDirectRegistration(name, email, password, role) {
+    // 0. Primary Cloud Registration: Supabase
+    try {
+      const sbReg = await supabaseRegister(name, email, password, role);
+      if (sbReg.success) {
+        state.token = sbReg.token;
+        state.user = sbReg.user;
+        state.role = state.user.role;
+        state.activePane = state.role === 'ADMIN' ? 'admin-users' : (state.role === 'TEACHER' ? 'teacher-roster' : 'parent-overview');
+
+        localStorage.setItem('chewchecker_access_token', state.token);
+        localStorage.setItem('chewchecker_user_data', JSON.stringify(state.user));
+        localStorage.setItem('chewchecker_current_role', state.role);
+        localStorage.setItem('chewchecker_active_pane', state.activePane);
+
+        showToast(`Account created successfully! Welcome, ${state.user.name}!`, "success");
+        showAppScreen();
+        return;
+      } else if (sbReg.message && sbReg.message !== 'Registration failed') {
+        showToast(sbReg.message, "error");
+        return;
+      }
+    } catch (e) {
+      console.warn("Supabase registration attempted, falling back...", e);
+    }
+
     const regPayload = {
       name: name || email.split('@')[0],
       email: email,
@@ -3028,6 +3100,45 @@ INTELLIGENCE & PERSONALIZATION RULES:
   }
 
   async function safeFetch(path, options = {}) {
+    // 0. Cloud Database Interceptor: Supabase
+    try {
+      if (path === '/api/parent/students' || path.startsWith('/api/parent/students')) {
+        const pId = state.user?.id || 4;
+        const children = await supabaseGetParentChildren(pId);
+        if (children && children.length > 0) {
+          return new Response(JSON.stringify(children), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+      } else if (path.startsWith('/api/parent/presets/student/')) {
+        const studentId = path.split('/').pop();
+        const presets = await supabaseGetPresetsForStudent(studentId);
+        return new Response(JSON.stringify(presets), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path === '/api/parent/presets' && options.method === 'POST') {
+        const presetData = typeof options.body === 'string' ? JSON.parse(options.body) : (options.body || {});
+        const created = await supabaseSavePreset(presetData);
+        return new Response(JSON.stringify(created), { status: 201, headers: { 'Content-Type': 'application/json' } });
+      } else if (path.startsWith('/api/meals/student/')) {
+        const studentId = path.split('/').pop();
+        const meals = await supabaseGetMealsForStudent(studentId);
+        return new Response(JSON.stringify(meals), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path === '/api/admin/users') {
+        const users = await supabaseGetUsers();
+        if (users && users.length > 0) {
+          return new Response(JSON.stringify(users), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+      } else if (path === '/api/admin/holidays') {
+        const holidays = await supabaseGetHolidays();
+        return new Response(JSON.stringify(holidays), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path === '/api/teacher/classes') {
+        const tId = state.user?.id || 2;
+        const classes = await supabaseGetTeacherClasses(tId);
+        if (classes && classes.length > 0) {
+          return new Response(JSON.stringify(classes), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+      }
+    } catch (sbErr) {
+      console.warn("Supabase query attempt:", sbErr);
+    }
+
     const finalHeaders = {
       ...(options.headers || {}),
       'Bypass-Tunnel-Reminder': 'true'
