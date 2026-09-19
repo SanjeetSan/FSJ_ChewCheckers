@@ -11575,10 +11575,14 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     }
 
     function renderActivePreset(preset) {
+      if (customDimensions) {
+        customDimensions.textContent = '';
+        customDimensions.style.display = 'none';
+      }
+
       if (!preset) {
         // AI Auto-detect mode
         if (customName) customName.textContent = 'AI Auto-Detection';
-        if (customDimensions) customDimensions.textContent = 'Auto-calibrated from photo scale';
         if (customAvatar) {
           customAvatar.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i>`;
           customAvatar.style.background = `linear-gradient(135deg, #059669 0%, #10B981 100%)`;
@@ -11587,8 +11591,6 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       }
 
       if (customName) customName.textContent = preset.presetName || 'Lunchbox';
-      const vol = preset.volumeCm3 || Math.round(preset.lengthCm * preset.widthCm * preset.heightCm);
-      if (customDimensions) customDimensions.textContent = `${preset.lengthCm} × ${preset.widthCm} × ${preset.heightCm} cm (~${vol} ml)`;
       if (customAvatar) {
         customAvatar.innerHTML = `<i class="fa-solid fa-box"></i>`;
         customAvatar.style.background = `linear-gradient(135deg, #4F46E5 0%, #6366F1 100%)`;
@@ -11605,7 +11607,6 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           </div>
           <div class="custom-child-info">
             <span class="custom-child-name">✨ AI Auto-Detection</span>
-            <small class="custom-child-class">Auto-calibrated from photo scale</small>
           </div>
           <i class="fa-solid fa-check custom-child-check"></i>
         </div>
@@ -11613,7 +11614,6 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
       if (presets && presets.length > 0) {
         menuHtml += presets.map(p => {
-          const vol = p.volumeCm3 || Math.round(p.lengthCm * p.widthCm * p.heightCm);
           return `
             <div class="custom-child-option ${activePreset && p.id === activePreset.id ? 'selected' : ''}" data-preset-id="${p.id}">
               <div class="custom-child-avatar" style="width:28px; height:28px; font-size:0.75rem; background:linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);">
@@ -11621,7 +11621,6 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
               </div>
               <div class="custom-child-info">
                 <span class="custom-child-name">${p.presetName}</span>
-                <small class="custom-child-class">${p.lengthCm} × ${p.widthCm} × ${p.heightCm} cm • ~${vol} ml</small>
               </div>
               <i class="fa-solid fa-check custom-child-check"></i>
             </div>
@@ -11692,7 +11691,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     if (!presetId || presetId === 'AI_AUTO') {
       if (presetSelect) presetSelect.value = "";
       if (customName) customName.textContent = 'AI Auto-Detection';
-      if (customDimensions) customDimensions.textContent = 'Auto-calibrated from photo scale';
+      if (customDimensions) {
+        customDimensions.textContent = '';
+        customDimensions.style.display = 'none';
+      }
       if (customAvatar) {
         customAvatar.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i>`;
         customAvatar.style.background = `linear-gradient(135deg, #059669 0%, #10B981 100%)`;
@@ -11709,8 +11711,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     if (matched) {
       if (presetSelect) presetSelect.value = String(matched.id);
       if (customName) customName.textContent = matched.presetName || 'Lunchbox';
-      const vol = matched.volumeCm3 || Math.round(matched.lengthCm * matched.widthCm * matched.heightCm);
-      if (customDimensions) customDimensions.textContent = `${matched.lengthCm} × ${matched.widthCm} × ${matched.heightCm} cm (~${vol} ml)`;
+      if (customDimensions) {
+        customDimensions.textContent = '';
+        customDimensions.style.display = 'none';
+      }
       if (customAvatar) {
         customAvatar.innerHTML = `<i class="fa-solid fa-box"></i>`;
         customAvatar.style.background = `linear-gradient(135deg, #4F46E5 0%, #6366F1 100%)`;

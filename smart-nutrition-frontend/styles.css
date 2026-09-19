@@ -7152,6 +7152,10 @@ body.dark-theme .preset-ghost-icon {
   margin-bottom: 1.15rem;
 }
 
+#scannerCustomPresetDimensions {
+  display: none !important;
+}
+
 @media (max-width: 540px) {
   .meal-detail-timing-card {
     grid-template-columns: 1fr;
