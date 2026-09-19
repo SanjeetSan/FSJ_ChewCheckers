@@ -8,8 +8,14 @@ import {
   supabaseRegister, 
   supabaseUpdateProfile,
   supabaseGetParentChildren,
+  supabaseAddChild,
+  supabaseUpdateChild,
+  supabaseDeleteChild,
+  supabaseLinkClassCode,
   supabaseGetPresetsForStudent,
   supabaseSavePreset,
+  supabaseDeletePreset,
+  supabaseSetDefaultPreset,
   supabaseGetMealsForStudent,
   supabaseSaveMeal,
   supabaseGetTeacherClasses,
@@ -3103,37 +3109,63 @@ INTELLIGENCE & PERSONALIZATION RULES:
     // 0. Cloud Database Interceptor: Supabase
     try {
       if (path === '/api/parent/students' || path.startsWith('/api/parent/students')) {
-        const pId = state.user?.id || 4;
+        const pId = state.user?.id || (state.user?.email === 'pradeep@gmail.com' ? 83 : 4);
         const children = await supabaseGetParentChildren(pId);
-        if (children && children.length > 0) {
-          return new Response(JSON.stringify(children), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify(children || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path === '/api/parent/student' && options.method === 'POST') {
+        const pId = state.user?.id || (state.user?.email === 'pradeep@gmail.com' ? 83 : 4);
+        const body = typeof options.body === 'string' ? JSON.parse(options.body) : (options.body || {});
+        const newChild = await supabaseAddChild(pId, body);
+        return new Response(JSON.stringify(newChild), { status: 201, headers: { 'Content-Type': 'application/json' } });
+      } else if (path.startsWith('/api/parent/student/') && options.method === 'DELETE') {
+        const pId = state.user?.id || (state.user?.email === 'pradeep@gmail.com' ? 83 : 4);
+        const childId = path.split('/')[4];
+        await supabaseDeleteChild(childId, pId);
+        return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path.startsWith('/api/parent/student/') && options.method === 'PUT') {
+        const childId = path.split('/')[4];
+        if (path.includes('/class')) {
+          const urlObj = new URL('http://dummy.com' + path);
+          const classCode = urlObj.searchParams.get('classCode') || '';
+          const updated = await supabaseLinkClassCode(childId, classCode);
+          return new Response(JSON.stringify(updated), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        } else {
+          const body = typeof options.body === 'string' ? JSON.parse(options.body) : (options.body || {});
+          const updated = await supabaseUpdateChild(childId, body);
+          return new Response(JSON.stringify(updated), { status: 200, headers: { 'Content-Type': 'application/json' } });
         }
-      } else if (path.startsWith('/api/parent/presets/student/')) {
-        const studentId = path.split('/').pop();
-        const presets = await supabaseGetPresetsForStudent(studentId);
-        return new Response(JSON.stringify(presets), { status: 200, headers: { 'Content-Type': 'application/json' } });
-      } else if (path === '/api/parent/presets' && options.method === 'POST') {
+      } else if (path.includes('/lunchbox-presets') && path.includes('/set-default') && options.method === 'PUT') {
+        const parts = path.split('/');
+        const studentId = parts[4];
+        const presetId = parts[6];
+        const updated = await supabaseSetDefaultPreset(presetId, studentId);
+        return new Response(JSON.stringify(updated), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path.includes('/lunchbox-presets') && options.method === 'DELETE') {
+        const presetId = path.split('/').pop();
+        await supabaseDeletePreset(presetId);
+        return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if ((path.includes('/lunchbox-presets') || path === '/api/parent/presets') && options.method === 'POST') {
         const presetData = typeof options.body === 'string' ? JSON.parse(options.body) : (options.body || {});
         const created = await supabaseSavePreset(presetData);
         return new Response(JSON.stringify(created), { status: 201, headers: { 'Content-Type': 'application/json' } });
+      } else if (path.includes('/lunchbox-presets') || path.startsWith('/api/parent/presets/student/')) {
+        const studentId = path.split('/').filter(p => !isNaN(p) && p !== '').pop() || (state.selectedChild?.id || 34);
+        const presets = await supabaseGetPresetsForStudent(studentId);
+        return new Response(JSON.stringify(presets || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if (path.startsWith('/api/meals/student/')) {
         const studentId = path.split('/').pop();
         const meals = await supabaseGetMealsForStudent(studentId);
-        return new Response(JSON.stringify(meals), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify(meals || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if (path === '/api/admin/users') {
         const users = await supabaseGetUsers();
-        if (users && users.length > 0) {
-          return new Response(JSON.stringify(users), { status: 200, headers: { 'Content-Type': 'application/json' } });
-        }
+        return new Response(JSON.stringify(users || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if (path === '/api/admin/holidays') {
         const holidays = await supabaseGetHolidays();
-        return new Response(JSON.stringify(holidays), { status: 200, headers: { 'Content-Type': 'application/json' } });
-      } else if (path === '/api/teacher/classes') {
+        return new Response(JSON.stringify(holidays || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path === '/api/teacher/classes' || path.startsWith('/api/teacher/classes')) {
         const tId = state.user?.id || 2;
         const classes = await supabaseGetTeacherClasses(tId);
-        if (classes && classes.length > 0) {
-          return new Response(JSON.stringify(classes), { status: 200, headers: { 'Content-Type': 'application/json' } });
-        }
+        return new Response(JSON.stringify(classes || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
     } catch (sbErr) {
       console.warn("Supabase query attempt:", sbErr);

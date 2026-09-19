@@ -192,10 +192,9 @@ export async function supabaseGetParentChildren(parentId) {
           lunch_fiber,
           class:classes (
             id,
-            name,
-            grade,
+            class_name,
             section,
-            join_code
+            class_code
           ),
           school:schools (
             id,
@@ -211,6 +210,7 @@ export async function supabaseGetParentChildren(parentId) {
       const s = row.student || {};
       const c = s.class || {};
       const sc = s.school || {};
+      const classNameFormatted = c.class_name ? `${c.class_name} - ${c.section || 'A'}` : 'Grade 5 - B';
       return {
         id: s.id,
         studentId: s.id,
@@ -222,17 +222,26 @@ export async function supabaseGetParentChildren(parentId) {
         heightCm: s.height_cm,
         weightKg: s.weight_kg,
         rollNumber: s.roll_number,
-        className: c.name ? `${c.grade} - ${c.section} (${c.name})` : (c.grade || 'Grade 1'),
+        className: classNameFormatted,
+        classCode: c.class_code || 'CLS-3214',
         classId: c.id,
-        schoolName: sc.name || 'Primary School',
+        studentClass: {
+          id: c.id,
+          className: c.class_name,
+          classCode: c.class_code || 'CLS-3214',
+          section: c.section,
+          teacherName: 'Ms. Jothi'
+        },
+        teacherName: 'Ms. Jothi',
+        schoolName: sc.name || 'Greenwood International School',
         schoolId: sc.id,
-        relationship: row.relationship,
-        lunchboxLength: s.box_length,
-        lunchboxWidth: s.box_width,
-        lunchboxDepth: s.box_depth,
-        lunchboxCapacity: s.box_volume,
-        lunchboxShape: s.box_shape,
-        lunchboxCompartments: s.box_compartments,
+        relationship: row.relationship || 'Parent',
+        lunchboxLength: s.box_length || 20,
+        lunchboxWidth: s.box_width || 15,
+        lunchboxDepth: s.box_depth || 5,
+        lunchboxCapacity: s.box_volume || 750,
+        lunchboxShape: s.box_shape || 'RECTANGULAR',
+        lunchboxCompartments: s.box_compartments || 3,
         dailyTarget: {
           calories: s.daily_calories || 1500,
           protein: s.daily_protein || 45,
@@ -256,6 +265,221 @@ export async function supabaseGetParentChildren(parentId) {
 }
 
 /**
+ * Add Child for Parent
+ */
+export async function supabaseAddChild(parentId, childData) {
+  try {
+    let classId = 3; // default Grade 5 B
+    let schoolId = 1;
+    if (childData.classCode) {
+      const { data: cls } = await supabase
+        .from('classes')
+        .select('id, school_id')
+        .eq('class_code', childData.classCode.trim().toUpperCase())
+        .maybeSingle();
+      if (cls) {
+        classId = cls.id;
+        if (cls.school_id) schoolId = cls.school_id;
+      }
+    }
+
+    const studentCode = 'STU-' + Math.floor(100000 + Math.random() * 900000);
+    const weight = parseFloat(childData.weightKg) || 30;
+    const calories = Math.round(weight * 48);
+    const protein = Math.round(weight * 1.1);
+    const carbs = Math.round((calories * 0.55) / 4);
+    const fat = Math.round((calories * 0.25) / 9);
+    const fiber = Math.round(calories / 90);
+
+    const lunchCal = Math.round(calories * 0.35);
+    const lunchProt = Math.round(protein * 0.35);
+    const lunchCarbs = Math.round(carbs * 0.35);
+    const lunchFat = Math.round(fat * 0.35);
+    const lunchFiber = Math.round(fiber * 0.35);
+
+    const studentPayload = {
+      name: (childData.name || 'Student').trim(),
+      student_code: studentCode,
+      gender: childData.gender || 'Male',
+      date_of_birth: childData.dateOfBirth || '2015-05-10',
+      blood_group: childData.bloodGroup || 'O+',
+      height_cm: parseFloat(childData.heightCm) || 135,
+      weight_kg: weight,
+      roll_number: childData.rollNumber || null,
+      school_id: schoolId,
+      class_id: classId,
+      box_length: 20,
+      box_width: 15,
+      box_depth: 5,
+      box_volume: 750,
+      box_shape: 'RECTANGULAR',
+      box_compartments: 3,
+      daily_calories: calories,
+      daily_protein: protein,
+      daily_carbs: carbs,
+      daily_fat: fat,
+      daily_fiber: fiber,
+      lunch_calories: lunchCal,
+      lunch_protein: lunchProt,
+      lunch_carbs: lunchCarbs,
+      lunch_fat: lunchFat,
+      lunch_fiber: lunchFiber,
+      is_active: true
+    };
+
+    const { data: newStudent, error: sErr } = await supabase
+      .from('students')
+      .insert([studentPayload])
+      .select()
+      .single();
+
+    if (sErr) throw sErr;
+
+    await supabase.from('parent_student').insert([{
+      parent_id: parentId,
+      student_id: newStudent.id,
+      relationship: childData.relationship || 'MOTHER',
+      is_primary: true
+    }]);
+
+    return {
+      id: newStudent.id,
+      studentId: newStudent.id,
+      name: newStudent.name,
+      studentCode: newStudent.student_code,
+      gender: newStudent.gender,
+      dateOfBirth: newStudent.date_of_birth,
+      bloodGroup: newStudent.blood_group,
+      heightCm: newStudent.height_cm,
+      weightKg: newStudent.weight_kg,
+      rollNumber: newStudent.roll_number,
+      className: childData.classCode || 'Grade 5 - B',
+      classCode: childData.classCode || 'CLS-3214',
+      classId: newStudent.class_id,
+      studentClass: {
+        id: classId,
+        className: 'Grade 5',
+        classCode: childData.classCode || 'CLS-3214',
+        section: 'B',
+        teacherName: 'Ms. Jothi'
+      },
+      teacherName: 'Ms. Jothi',
+      relationship: childData.relationship || 'MOTHER',
+      dailyTarget: {
+        calories: newStudent.daily_calories,
+        protein: newStudent.daily_protein,
+        carbs: newStudent.daily_carbs,
+        fat: newStudent.daily_fat,
+        fiber: newStudent.daily_fiber
+      },
+      lunchTarget: {
+        calories: newStudent.lunch_calories,
+        protein: newStudent.lunch_protein,
+        carbs: newStudent.lunch_carbs,
+        fat: newStudent.lunch_fat,
+        fiber: newStudent.lunch_fiber
+      }
+    };
+  } catch (err) {
+    console.error('Supabase add child error:', err);
+    throw err;
+  }
+}
+
+/**
+ * Update Child Profile
+ */
+export async function supabaseUpdateChild(childId, childData) {
+  try {
+    const updateObj = {};
+    if (childData.name) updateObj.name = childData.name.trim();
+    if (childData.gender) updateObj.gender = childData.gender;
+    if (childData.dateOfBirth) updateObj.date_of_birth = childData.dateOfBirth;
+    if (childData.bloodGroup) updateObj.blood_group = childData.bloodGroup;
+    if (childData.heightCm) updateObj.height_cm = parseFloat(childData.heightCm);
+    if (childData.weightKg) updateObj.weight_kg = parseFloat(childData.weightKg);
+    if (childData.rollNumber) updateObj.roll_number = childData.rollNumber;
+    if (childData.boxLength) updateObj.box_length = parseFloat(childData.boxLength);
+    if (childData.boxWidth) updateObj.box_width = parseFloat(childData.boxWidth);
+    if (childData.boxDepth) updateObj.box_depth = parseFloat(childData.boxDepth);
+    if (childData.boxVolume) updateObj.box_volume = parseFloat(childData.boxVolume);
+
+    const { data, error } = await supabase
+      .from('students')
+      .update(updateObj)
+      .eq('id', childId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (err) {
+    console.error('Supabase update child error:', err);
+    throw err;
+  }
+}
+
+/**
+ * Delete / Unlink Child
+ */
+export async function supabaseDeleteChild(childId, parentId) {
+  try {
+    const { error } = await supabase
+      .from('parent_student')
+      .delete()
+      .eq('parent_id', parentId)
+      .eq('student_id', childId);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (err) {
+    console.error('Supabase delete child error:', err);
+    throw err;
+  }
+}
+
+/**
+ * Link Child to Class by Class Code
+ */
+export async function supabaseLinkClassCode(studentId, classCode) {
+  try {
+    const { data: cls, error: clsErr } = await supabase
+      .from('classes')
+      .select('id, class_name, section, class_code')
+      .eq('class_code', classCode.trim().toUpperCase())
+      .maybeSingle();
+
+    if (clsErr || !cls) {
+      throw new Error('Invalid classroom code');
+    }
+
+    const { data: updatedStudent, error } = await supabase
+      .from('students')
+      .update({ class_id: cls.id })
+      .eq('id', studentId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return {
+      ...updatedStudent,
+      className: `${cls.class_name} - ${cls.section}`,
+      classCode: cls.class_code,
+      studentClass: {
+        id: cls.id,
+        className: cls.class_name,
+        classCode: cls.class_code,
+        section: cls.section,
+        teacherName: 'Ms. Jothi'
+      }
+    };
+  } catch (err) {
+    console.error('Supabase link class error:', err);
+    throw err;
+  }
+}
+
+/**
  * Fetch Lunchbox Presets for Student
  */
 export async function supabaseGetPresetsForStudent(studentId) {
@@ -264,23 +488,22 @@ export async function supabaseGetPresetsForStudent(studentId) {
       .from('lunchbox_presets')
       .select('*')
       .eq('student_id', studentId)
-      .order('created_at', { ascending: false });
+      .order('is_default', { ascending: false });
 
     if (error) throw error;
     return (data || []).map(p => ({
       id: p.id,
       presetName: p.preset_name,
-      brand: p.brand,
       studentId: p.student_id,
-      userId: p.user_id,
       lengthCm: p.length_cm,
       widthCm: p.width_cm,
-      depthCm: p.depth_cm,
-      capacityMl: p.capacity_ml,
-      compartments: p.compartments,
-      shape: p.shape,
-      material: p.material,
-      isDefault: p.is_default
+      heightCm: p.height_cm,
+      depthCm: p.height_cm,
+      notes: p.notes,
+      isDefault: p.is_default,
+      brand: p.notes || 'Custom Box',
+      capacityMl: Math.round(p.length_cm * p.width_cm * p.height_cm * 0.85),
+      compartments: 3
     }));
   } catch (err) {
     console.error('Supabase fetch presets error:', err);
@@ -293,19 +516,22 @@ export async function supabaseGetPresetsForStudent(studentId) {
  */
 export async function supabaseSavePreset(preset) {
   try {
+    const isDefault = Boolean(preset.isDefault);
+    if (isDefault) {
+      await supabase
+        .from('lunchbox_presets')
+        .update({ is_default: false })
+        .eq('student_id', preset.studentId);
+    }
+
     const payload = {
-      preset_name: preset.presetName,
-      brand: preset.brand || 'Custom',
       student_id: preset.studentId,
-      user_id: preset.userId,
-      length_cm: preset.lengthCm,
-      width_cm: preset.widthCm,
-      depth_cm: preset.depthCm,
-      capacity_ml: preset.capacityMl,
-      compartments: preset.compartments || 1,
-      shape: preset.shape || 'RECTANGULAR',
-      material: preset.material || 'Plastic',
-      is_default: preset.isDefault || false
+      preset_name: preset.presetName || 'Custom Lunchbox',
+      length_cm: parseFloat(preset.lengthCm) || 20,
+      width_cm: parseFloat(preset.widthCm) || 15,
+      height_cm: parseFloat(preset.heightCm || preset.depthCm) || 5,
+      notes: preset.notes || preset.brand || null,
+      is_default: isDefault
     };
 
     const { data, error } = await supabase
@@ -318,20 +544,62 @@ export async function supabaseSavePreset(preset) {
     return {
       id: data.id,
       presetName: data.preset_name,
-      brand: data.brand,
       studentId: data.student_id,
-      userId: data.user_id,
       lengthCm: data.length_cm,
       widthCm: data.width_cm,
-      depthCm: data.depth_cm,
-      capacityMl: data.capacity_ml,
-      compartments: data.compartments,
-      shape: data.shape,
-      material: data.material,
-      isDefault: data.is_default
+      heightCm: data.height_cm,
+      depthCm: data.height_cm,
+      notes: data.notes,
+      isDefault: data.is_default,
+      brand: data.notes || 'Custom Box',
+      capacityMl: Math.round(data.length_cm * data.width_cm * data.height_cm * 0.85),
+      compartments: 3
     };
   } catch (err) {
     console.error('Supabase save preset error:', err);
+    throw err;
+  }
+}
+
+/**
+ * Delete Lunchbox Preset
+ */
+export async function supabaseDeletePreset(presetId) {
+  try {
+    const { error } = await supabase
+      .from('lunchbox_presets')
+      .delete()
+      .eq('id', presetId);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (err) {
+    console.error('Supabase delete preset error:', err);
+    throw err;
+  }
+}
+
+/**
+ * Set Default Lunchbox Preset
+ */
+export async function supabaseSetDefaultPreset(presetId, studentId) {
+  try {
+    await supabase
+      .from('lunchbox_presets')
+      .update({ is_default: false })
+      .eq('student_id', studentId);
+
+    const { data, error } = await supabase
+      .from('lunchbox_presets')
+      .update({ is_default: true })
+      .eq('id', presetId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (err) {
+    console.error('Supabase set default preset error:', err);
     throw err;
   }
 }
@@ -490,10 +758,9 @@ export async function supabaseGetTeacherClasses(teacherId) {
       .from('classes')
       .select(`
         id,
-        name,
-        grade,
+        class_name,
         section,
-        join_code,
+        class_code,
         school:schools (id, name),
         students (
           id,
@@ -515,11 +782,13 @@ export async function supabaseGetTeacherClasses(teacherId) {
 
     return (classes || []).map(c => ({
       id: c.id,
-      name: c.name,
-      grade: c.grade,
+      name: `${c.class_name} - ${c.section}`,
+      className: c.class_name,
+      grade: c.class_name,
       section: c.section,
-      joinCode: c.join_code,
-      schoolName: c.school?.name || 'School',
+      joinCode: c.class_code,
+      classCode: c.class_code,
+      schoolName: c.school?.name || 'Greenwood International School',
       students: (c.students || []).map(s => ({
         id: s.id,
         studentId: s.id,
