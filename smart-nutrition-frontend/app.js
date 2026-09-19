@@ -60,14 +60,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Ensure clean gatewayUrl
-  if (localStorage.getItem('chewchecker_gateway') === 'http://localhost:8080') {
-    localStorage.setItem('chewchecker_gateway', 'http://localhost:8088');
+  if (localStorage.getItem('chewchecker_gateway') === 'http://localhost:8080' || 
+      (localStorage.getItem('chewchecker_gateway') && localStorage.getItem('chewchecker_gateway').includes('loca.lt'))) {
+    localStorage.removeItem('chewchecker_gateway');
   }
 
-  const DEFAULT_PROD_GATEWAY = 'https://blue-views-relate.loca.lt';
+  const DEFAULT_PROD_GATEWAY = 'https://innocent-premium-takes-queen.trycloudflare.com';
   const state = {
     gatewayUrl: (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GATEWAY_URL)
-      || localStorage.getItem('chewchecker_gateway')
+      || (localStorage.getItem('chewchecker_gateway') && !localStorage.getItem('chewchecker_gateway').includes('loca.lt') ? localStorage.getItem('chewchecker_gateway') : null)
       || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8088' : DEFAULT_PROD_GATEWAY),
     token: localStorage.getItem('chewchecker_access_token') || null,
     user: JSON.parse(localStorage.getItem('chewchecker_user_data') || 'null'),
