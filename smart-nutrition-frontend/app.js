@@ -64,10 +64,11 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('chewchecker_gateway', 'http://localhost:8088');
   }
 
+  const DEFAULT_PROD_GATEWAY = 'https://blue-views-relate.loca.lt';
   const state = {
     gatewayUrl: (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GATEWAY_URL)
-      ? import.meta.env.VITE_GATEWAY_URL
-      : (localStorage.getItem('chewchecker_gateway') || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8088' : '')),
+      || localStorage.getItem('chewchecker_gateway')
+      || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8088' : DEFAULT_PROD_GATEWAY),
     token: localStorage.getItem('chewchecker_access_token') || null,
     user: JSON.parse(localStorage.getItem('chewchecker_user_data') || 'null'),
     role: localStorage.getItem('chewchecker_current_role') || (JSON.parse(localStorage.getItem('chewchecker_user_data') || '{}').role) || null,
@@ -737,17 +738,24 @@ document.addEventListener('DOMContentLoaded', () => {
     let loginData = null;
     let errorMessage = null;
 
-    // 1. Live Backend Login via Auth Service 8081 or Gateway 8088
-    const endpoints = [
-      'http://localhost:8081/api/auth/login',
-      `${state.gatewayUrl}/api/auth/login`
-    ];
+    // 1. Live Backend Login via Gateway or Auth Service
+    const endpoints = [];
+    if (state.gatewayUrl) {
+      endpoints.push(`${state.gatewayUrl}/api/auth/login`);
+    }
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      endpoints.push('http://localhost:8081/api/auth/login');
+      endpoints.push('http://localhost:8088/api/auth/login');
+    }
 
     for (let url of endpoints) {
       try {
         let res = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Bypass-Tunnel-Reminder': 'true'
+          },
           body: JSON.stringify({ email, password })
         });
 
@@ -813,17 +821,24 @@ document.addEventListener('DOMContentLoaded', () => {
     let registeredData = null;
     let lastErrorMessage = null;
 
-    // Try port 8081 directly first, then gatewayUrl
-    const endpoints = [
-      'http://localhost:8081/api/auth/register',
-      `${state.gatewayUrl}/api/auth/register`
-    ];
+    // Try gatewayUrl first, then local ports if running locally
+    const endpoints = [];
+    if (state.gatewayUrl) {
+      endpoints.push(`${state.gatewayUrl}/api/auth/register`);
+    }
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      endpoints.push('http://localhost:8081/api/auth/register');
+      endpoints.push('http://localhost:8088/api/auth/register');
+    }
 
     for (let url of endpoints) {
       try {
         let res = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Bypass-Tunnel-Reminder': 'true'
+          },
           body: JSON.stringify(regPayload)
         });
 
@@ -3012,8 +3027,13 @@ INTELLIGENCE & PERSONALIZATION RULES:
   }
 
   async function safeFetch(path, options = {}) {
+    const finalHeaders = {
+      ...(options.headers || {}),
+      'Bypass-Tunnel-Reminder': 'true'
+    };
+    const reqOptions = { ...options, headers: finalHeaders };
     try {
-      const gwRes = await fetch(`${state.gatewayUrl}${path}`, options);
+      const gwRes = await fetch(`${state.gatewayUrl}${path}`, reqOptions);
       return gwRes;
     } catch(e) {
       console.warn("Gateway fetch failed, trying direct service port...", e);
