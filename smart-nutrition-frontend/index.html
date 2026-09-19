@@ -796,103 +796,141 @@
             </div>
           </div>
 
-          <!-- Redesigned Clean Lunch Analysis Card (Parent-First Chatbot Style) -->
+          <!-- Refined Parent-Friendly Lunch Analysis Card -->
           <div class="card scanner-clean-card hidden" id="detectionCard">
-            <!-- Header -->
+            <!-- Header: Title & Child Name -->
             <div class="scanner-card-header">
               <div class="scanner-header-left">
                 <span class="scanner-status-dot"></span>
-                <h3 class="scanner-main-title">Lunch Analysis Complete</h3>
-              </div>
-              <span id="detectionTargetChildBadge" class="scanner-child-badge">
-                <i class="fa-solid fa-user"></i> <span id="detectionTargetChildName">Selected Child</span>
-              </span>
-            </div>
-
-            <!-- 1. Scan Summary (Primary Section) -->
-            <div class="scanner-summary-section">
-              <div class="scanner-summary-grid">
-                <div class="scanner-summary-col">
-                  <span class="scanner-col-label">Detected Foods</span>
-                  <div id="detectedFoodList" class="scanner-bullet-list">
-                    <!-- Dynamic bullets: • Vegetable Pulao -->
-                  </div>
-                </div>
-                <div class="scanner-summary-col">
-                  <span class="scanner-col-label">Nutrition Summary</span>
-                  <div id="scannerNutritionSummaryList" class="scanner-bullet-list">
-                    <!-- Dynamic bullets: • 530 kcal, • 20.5 g Protein, etc. -->
-                  </div>
+                <div class="scanner-header-titles">
+                  <h3 class="scanner-main-title">Lunch Analysis Complete</h3>
+                  <div class="scanner-child-subtext">Child: <strong id="detectionTargetChildName">Selected Child</strong></div>
                 </div>
               </div>
             </div>
 
-            <!-- 2. Nutrition Highlights (Minimal Horizontal Row) -->
-            <div class="scanner-metrics-bar">
-              <div class="scanner-metric-cell">
-                <span class="scanner-metric-lbl">Calories</span>
-                <strong id="detCal" class="scanner-metric-val">540 kcal</strong>
+            <!-- 1. Primary Section: Detected Foods & Nutrition Summary (4 Clean Metric Cards) -->
+            <div class="scanner-primary-summary">
+              <!-- Left: Detected Foods -->
+              <div class="scanner-detected-col">
+                <span class="scanner-section-heading">Detected Foods:</span>
+                <div id="detectedFoodList" class="scanner-bullet-list">
+                  <!-- Dynamic bullets: • Vegetable Pulao -->
+                </div>
               </div>
-              <div class="scanner-metric-divider"></div>
-              <div class="scanner-metric-cell">
-                <span class="scanner-metric-lbl">Protein</span>
-                <strong id="detProtein" class="scanner-metric-val val-protein">18.5 g</strong>
-              </div>
-              <div class="scanner-metric-divider"></div>
-              <div class="scanner-metric-cell">
-                <span class="scanner-metric-lbl">Carbs</span>
-                <strong id="detCarbs" class="scanner-metric-val">65.0 g</strong>
-              </div>
-              <div class="scanner-metric-divider"></div>
-              <div class="scanner-metric-cell">
-                <span class="scanner-metric-lbl">Fiber</span>
-                <strong id="detFiber" class="scanner-metric-val">6.0 g</strong>
+
+              <!-- Right: Nutrition Summary (Shown only once) -->
+              <div class="scanner-nutrition-col">
+                <span class="scanner-section-heading">Nutrition Summary:</span>
+                <div class="scanner-metric-cards-grid">
+                  <div class="scanner-metric-card">
+                    <span class="scanner-metric-lbl">Calories</span>
+                    <strong id="detCal" class="scanner-metric-val">625 kcal</strong>
+                  </div>
+                  <div class="scanner-metric-card">
+                    <span class="scanner-metric-lbl">Protein</span>
+                    <strong id="detProtein" class="scanner-metric-val val-protein">23g</strong>
+                  </div>
+                  <div class="scanner-metric-card">
+                    <span class="scanner-metric-lbl">Carbs</span>
+                    <strong id="detCarbs" class="scanner-metric-val">63g</strong>
+                  </div>
+                  <div class="scanner-metric-card">
+                    <span class="scanner-metric-lbl">Fiber</span>
+                    <strong id="detFiber" class="scanner-metric-val">6g</strong>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <!-- 3. Food Breakdown (Clean List) -->
-            <div class="scanner-breakdown-section" id="detFoodBreakdownBox">
+            <!-- 2. "What This Means": Today's Lunch Assessment -->
+            <div class="scanner-assessment-section">
+              <span class="scanner-section-heading">Today's Lunch Assessment</span>
+              <div id="scannerAssessmentList" class="scanner-assessment-list">
+                <!-- Dynamic:
+                  ✓ Good protein intake
+                  ✓ Balanced energy level
+                  ✓ Suitable school lunch portion
+                -->
+              </div>
+            </div>
+
+            <!-- 3. Simple Meal Cards (Packed Food Items) -->
+            <div class="scanner-items-section" id="detFoodBreakdownBox">
               <div class="scanner-section-header">
-                <span class="scanner-section-title">Food Breakdown</span>
+                <span class="scanner-section-heading">Packed Food Items</span>
                 <button type="button" class="scanner-btn-text" id="btnEditExtractedFoodItems">
                   <i class="fa-solid fa-pen-to-square"></i> Edit Items
                 </button>
               </div>
-              <div id="detFoodItemsTable" class="scanner-breakdown-list">
-                <!-- Dynamic clean rows: Name on line 1, portion • kcal • protein on line 2 -->
+              <div id="detFoodItemsCards" class="scanner-meal-cards-grid">
+                <!-- Dynamic Simple Meal Cards:
+                  Card:
+                  Vegetable Pulao
+                  220g
+                  320 kcal
+                  6.5g Protein
+                -->
               </div>
             </div>
 
-            <!-- 4. Smart Insight Box (Chatbot Tip Styling) -->
-            <div id="scannerSmartInsight" class="scanner-insight-box">
-              <i class="fa-regular fa-lightbulb scanner-insight-icon"></i>
-              <div id="scannerSmartInsightText" class="scanner-insight-text">
-                Balanced lunch with good protein and energy distribution.
+            <!-- 4. Quick Recommendation Card: Suggested Next Lunch -->
+            <div class="scanner-recommendation-card">
+              <div class="scanner-rec-header">
+                <i class="fa-solid fa-lightbulb scanner-rec-icon"></i>
+                <span class="scanner-rec-heading">Suggested Next Lunch</span>
+              </div>
+              <div id="scannerNextLunchList" class="scanner-rec-list">
+                <!-- Dynamic recommendations:
+                  • Add one fruit serving
+                  • Include a water-rich side
+                  • Maintain current protein level
+                -->
               </div>
             </div>
 
-            <!-- 5. Secondary Information (Collapsed Accordion) -->
+            <!-- 5. Collapsible Technical Details (Hidden by Default) -->
             <details class="scanner-secondary-accordion">
               <summary class="scanner-secondary-summary">
-                <span><i class="fa-solid fa-sliders"></i> Container Calibration &amp; Adjustments</span>
+                <span><i class="fa-solid fa-sliders"></i> Technical Details &amp; Calibration</span>
                 <i class="fa-solid fa-chevron-down scanner-summary-chevron"></i>
               </summary>
               <div class="scanner-secondary-content">
-                <!-- Auto-detected container info -->
-                <div id="detectedContainerBadge" class="scanner-container-row">
-                  <div class="scanner-container-info">
-                    <span class="scanner-sub-label">Auto-Detected Container</span>
-                    <strong id="detectedContainerText" class="scanner-container-name">Stainless Steel Bento (~750 ml)</strong>
+                <!-- Container Calibration & Volume Estimation -->
+                <div class="scanner-tech-row" id="detectedContainerBadge">
+                  <div class="scanner-tech-info">
+                    <span class="scanner-sub-label">Container Calibration &amp; Volume Estimation</span>
+                    <strong id="detectedContainerText" class="scanner-tech-val">Stainless Steel Bento (~750 ml)</strong>
                   </div>
                   <a href="javascript:void(0)" id="linkConfigureLunchboxPresets" class="scanner-link-preset">
                     Fine-tune Preset <i class="fa-solid fa-arrow-right"></i>
                   </a>
                 </div>
 
-                <!-- Consumption Slider -->
+                <!-- Detection Confidence & AI Details -->
+                <div class="scanner-tech-grid">
+                  <div class="scanner-tech-info">
+                    <span class="scanner-sub-label">Detection Confidence</span>
+                    <strong class="scanner-tech-val" id="scannerConfidenceVal">High Confidence (98%)</strong>
+                  </div>
+                  <div class="scanner-tech-info">
+                    <span class="scanner-sub-label">AI Processing Details</span>
+                    <strong class="scanner-tech-val">Gemini Vision Multi-Modal Analysis</strong>
+                  </div>
+                  <div class="scanner-tech-info">
+                    <span class="scanner-sub-label">Volume Estimation Method</span>
+                    <strong class="scanner-tech-val">Bounding Box &amp; Preset Calibration</strong>
+                  </div>
+                  <div class="scanner-tech-info">
+                    <span class="scanner-sub-label">Scan Metadata</span>
+                    <strong class="scanner-tech-val" id="scannerTimestampVal">Processed Just Now</strong>
+                  </div>
+                </div>
+
+                <!-- Estimated Consumption Slider -->
                 <div id="parentConsumptionBlock" class="scanner-slider-row">
                   <div class="scanner-slider-header">
-                    <span>Estimated Consumption</span>
+                    <span class="scanner-sub-label">Estimated Consumption</span>
                     <span id="eatenPercentLabel" class="scanner-slider-val">85% Eaten</span>
                   </div>
                   <input type="range" id="eatenRange" min="0" max="100" value="85" class="scanner-slider">

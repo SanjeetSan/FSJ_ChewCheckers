@@ -5505,6 +5505,8 @@ body.dark-theme .preset-ghost-icon {
 
 /* ═══════════════════════════════════════════════════════════════════
    CLEAN LUNCH SCANNER RESULTS UI (PARENT-FIRST CHATBOT DESIGN)
+/* ═══════════════════════════════════════════════════════════════════
+   CLEAN LUNCH SCANNER RESULTS UI (PARENT-FRIENDLY NUTRITION SUMMARY)
 ═══════════════════════════════════════════════════════════════════ */
 .scanner-clean-card {
   background: #182234 !important;
@@ -5520,9 +5522,9 @@ body.dark-theme .preset-ghost-icon {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 1rem;
+  padding-bottom: 0.85rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.15rem;
   flex-wrap: wrap;
   gap: 0.75rem;
 }
@@ -5530,7 +5532,13 @@ body.dark-theme .preset-ghost-icon {
 .scanner-header-left {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.75rem;
+}
+
+.scanner-header-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
 }
 
 .scanner-status-dot {
@@ -5551,60 +5559,60 @@ body.dark-theme .preset-ghost-icon {
   letter-spacing: 0.2px;
 }
 
-.scanner-child-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  background: rgba(99, 102, 241, 0.12);
-  border: 1px solid rgba(99, 102, 241, 0.25);
-  color: #C7D2FE;
-  font-size: 0.8rem;
-  font-weight: 600;
+.scanner-child-subtext {
+  font-size: 0.85rem;
+  color: #94A3B8;
+  font-weight: 500;
 }
 
-/* 1. Scan Summary (Primary Section) */
-.scanner-summary-section {
+.scanner-child-subtext strong {
+  color: #F1F5F9;
+  font-weight: 700;
+}
+
+/* 1. Primary Section: Detected Foods & Nutrition Summary */
+.scanner-primary-summary {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 1.25rem;
   margin-bottom: 1.25rem;
 }
 
-.scanner-summary-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-}
-
-@media (max-width: 640px) {
-  .scanner-summary-grid {
+@media (max-width: 680px) {
+  .scanner-primary-summary {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
 }
 
-.scanner-col-label {
+.scanner-section-heading {
   display: block;
-  font-size: 0.78rem;
+  font-size: 0.825rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   color: #94A3B8;
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.55rem;
+  text-transform: uppercase;
+}
+
+.scanner-detected-col {
+  display: flex;
+  flex-direction: column;
 }
 
 .scanner-bullet-list {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.4rem;
 }
 
 .scanner-bullet-item {
   display: flex;
   align-items: baseline;
-  gap: 0.55rem;
-  font-size: 0.92rem;
+  gap: 0.5rem;
+  font-size: 0.95rem;
   color: #F1F5F9;
-  line-height: 1.5;
+  line-height: 1.45;
 }
 
 .scanner-bullet-dot {
@@ -5615,31 +5623,33 @@ body.dark-theme .preset-ghost-icon {
   flex-shrink: 0;
 }
 
-/* 2. Nutrition Highlights (Minimal Horizontal Row) */
-.scanner-metrics-bar {
+.scanner-nutrition-col {
   display: flex;
-  align-items: center;
-  justify-content: space-around;
-  padding: 0.85rem 1rem;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  margin-bottom: 1.25rem;
+  flex-direction: column;
 }
 
-.scanner-metric-cell {
-  text-align: center;
-  flex: 1;
+.scanner-metric-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+}
+
+.scanner-metric-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
 }
 
 .scanner-metric-lbl {
-  display: block;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: #94A3B8;
-  margin-bottom: 0.2rem;
 }
 
 .scanner-metric-val {
@@ -5653,15 +5663,47 @@ body.dark-theme .preset-ghost-icon {
   color: #34D399;
 }
 
-.scanner-metric-divider {
-  width: 1px;
-  height: 26px;
-  background: rgba(255, 255, 255, 0.08);
+/* 2. Today's Lunch Assessment ("What This Means") */
+.scanner-assessment-section {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.scanner-assessment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.scanner-obs-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.885rem;
+  font-weight: 500;
+  color: #E2E8F0;
+  line-height: 1.4;
+}
+
+.scanner-obs-icon {
+  font-weight: 700;
+  font-size: 0.95rem;
   flex-shrink: 0;
 }
 
-/* 3. Food Breakdown */
-.scanner-breakdown-section {
+.scanner-obs-icon.obs-check {
+  color: #34D399;
+}
+
+.scanner-obs-icon.obs-warn {
+  color: #FBBF24;
+}
+
+/* 3. Simple Meal Cards (Packed Food Items) */
+.scanner-items-section {
   margin-bottom: 1.25rem;
 }
 
@@ -5669,15 +5711,7 @@ body.dark-theme .preset-ghost-icon {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.scanner-section-title {
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #94A3B8;
+  margin-bottom: 0.55rem;
 }
 
 .scanner-btn-text {
@@ -5700,61 +5734,95 @@ body.dark-theme .preset-ghost-icon {
   text-decoration: underline;
 }
 
-.scanner-breakdown-list {
+.scanner-meal-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+.scanner-meal-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  padding: 0.75rem 0.85rem;
   display: flex;
   flex-direction: column;
+  gap: 0.2rem;
 }
 
-.scanner-breakdown-item {
-  padding: 0.65rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  display: flex;
-  flex-direction: column;
-  gap: 0.18rem;
-}
-
-.scanner-breakdown-item:last-child {
-  border-bottom: none;
-}
-
-.scanner-breakdown-name {
+.scanner-meal-card-name {
   font-size: 0.925rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #F8FAFC;
+  line-height: 1.3;
+  margin-bottom: 0.15rem;
 }
 
-.scanner-breakdown-meta {
+.scanner-meal-card-stat {
   font-size: 0.825rem;
   color: #94A3B8;
   font-weight: 500;
 }
 
-/* 4. Smart Insight Box */
-.scanner-insight-box {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.85rem 1rem;
-  background: rgba(99, 102, 241, 0.08);
+.scanner-meal-card-stat.val-protein {
+  color: #34D399;
+  font-weight: 600;
+}
+
+/* 4. Quick Recommendation Card (Suggested Next Lunch) */
+.scanner-recommendation-card {
+  background: rgba(99, 102, 241, 0.07);
+  border: 1px solid rgba(99, 102, 241, 0.2);
   border-left: 3.5px solid #818CF8;
-  border-radius: 4px 10px 10px 4px;
+  border-radius: 4px 12px 12px 4px;
+  padding: 0.85rem 1rem;
   margin-bottom: 1.25rem;
 }
 
-.scanner-insight-icon {
+.scanner-rec-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+}
+
+.scanner-rec-icon {
   color: #FBBF24;
-  font-size: 1.1rem;
-  margin-top: 0.15rem;
+  font-size: 0.95rem;
   flex-shrink: 0;
 }
 
-.scanner-insight-text {
-  font-size: 0.885rem;
-  color: #E2E8F0;
-  line-height: 1.55;
+.scanner-rec-heading {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #C7D2FE;
+  letter-spacing: 0.3px;
 }
 
-/* 5. Secondary Information (Collapsed Accordion) */
+.scanner-rec-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.scanner-rec-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  font-size: 0.865rem;
+  color: #E2E8F0;
+  line-height: 1.45;
+}
+
+.scanner-rec-bullet {
+  color: #818CF8;
+  font-size: 1.1rem;
+  line-height: 1;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* 5. Collapsible Technical Details */
 .scanner-secondary-accordion {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -5804,7 +5872,7 @@ body.dark-theme .preset-ghost-icon {
   gap: 0.85rem;
 }
 
-.scanner-container-row {
+.scanner-tech-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -5812,7 +5880,19 @@ body.dark-theme .preset-ghost-icon {
   flex-wrap: wrap;
 }
 
-.scanner-container-info {
+.scanner-tech-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+@media (max-width: 540px) {
+  .scanner-tech-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.scanner-tech-info {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
@@ -5826,8 +5906,8 @@ body.dark-theme .preset-ghost-icon {
   color: #64748B;
 }
 
-.scanner-container-name {
-  font-size: 0.875rem;
+.scanner-tech-val {
+  font-size: 0.85rem;
   font-weight: 600;
   color: #E2E8F0;
 }
