@@ -1605,34 +1605,34 @@
             </div>
           </div>
 
-          <!-- SECTION 2 & 3: NUTRITION STRENGTHS & NEEDS ATTENTION (2-COLUMN GRID - Matching Parent Reports Design System) -->
+          <!-- SECTION 2 & 3: STUDENTS REQUIRING ATTENTION & NUTRITION HIGHLIGHTS (2-COLUMN GRID - Matching Parent Reports Template) -->
           <div class="dashboard-insights-grid" style="margin-bottom:1.5rem;">
-            <!-- Classroom Nutrition Strengths -->
-            <div class="card strength-card">
-              <div class="insight-card-header">
-                <div class="insight-card-title">
-                  <span class="insight-title-badge strength"><i class="fa-solid fa-circle-check"></i></span>
-                  Classroom Nutrition Strengths
-                </div>
-                <span class="insight-subtitle">What's working well</span>
-              </div>
-              <div id="teacherActionAiInsightsList" class="insight-bullet-list">
-                <div style="font-size:0.85rem; color:var(--text-secondary);">Analyzing classroom meal data...</div>
-              </div>
-            </div>
-
-            <!-- Needs Attention -->
+            <!-- Card 1: Students Requiring Attention -->
             <div class="card attention-card">
               <div class="insight-card-header">
                 <div class="insight-card-title">
-                  <span class="insight-title-badge attention"><i class="fa-solid fa-triangle-exclamation"></i></span>
-                  <span>Needs Attention</span>
-                  <span id="teacherAttentionBadge" style="font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:999px; background:rgba(245,158,11,0.12); color:#FBBF24; border:1px solid rgba(245,158,11,0.25); margin-left:0.35rem;">0 Flagged</span>
+                  <span class="insight-title-badge attention"><i class="fa-solid fa-user-clock"></i></span>
+                  <span>Students Requiring Attention</span>
+                  <span id="teacherAttentionBadge" style="font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:999px; background:rgba(244,63,94,0.12); color:var(--accent-rose); border:1px solid rgba(244,63,94,0.25); margin-left:0.35rem;">0 Flagged</span>
                 </div>
-                <span class="insight-subtitle" id="teacherAttentionSubtitle">Opportunities to improve</span>
+                <span class="insight-subtitle" id="teacherAttentionSubtitle">Low intake or pending clearance</span>
               </div>
               <div id="teacherActionStudentsList" class="insight-bullet-list">
                 <div style="font-size:0.85rem; color:var(--text-secondary);">Checking student clearance statuses...</div>
+              </div>
+            </div>
+
+            <!-- Card 2: Nutrition Highlights -->
+            <div class="card strength-card">
+              <div class="insight-card-header">
+                <div class="insight-card-title">
+                  <span class="insight-title-badge strength" style="background:rgba(99,102,241,0.12); color:var(--primary);"><i class="fa-solid fa-chart-pie"></i></span>
+                  <span>Nutrition Highlights</span>
+                </div>
+                <span class="insight-subtitle">Classroom trends &amp; clearance</span>
+              </div>
+              <div id="teacherActionAiInsightsList" class="insight-bullet-list">
+                <div style="font-size:0.85rem; color:var(--text-secondary);">Analyzing classroom meal data...</div>
               </div>
             </div>
           </div>

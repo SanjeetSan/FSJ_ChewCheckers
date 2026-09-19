@@ -7320,7 +7320,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           }
         }
 
-        // --- SECTION 2 & 3: CLASSROOM NUTRITION STRENGTHS & NEEDS ATTENTION (Matching Parent Reports) ---
+        // --- SECTION 2: STUDENTS REQUIRING ATTENTION & SECTION 3: NUTRITION HIGHLIGHTS (Parent Reports Template) ---
         const lowThreshold = getLowIntakeThreshold();
         const lowConsStudents = students.filter(s => {
           const studentMeal = classMeals.find(m => m.studentId === s.id);
@@ -7351,57 +7351,18 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         const cappedWaste = Math.min(100, Math.max(0, Math.round(rawWaste)));
         const completionRate = Math.max(0, Math.min(100, Math.round(100 - cappedWaste)));
 
-        // 1. Render Classroom Nutrition Strengths (Left Card)
-        const aiInsightsContainer = document.getElementById('teacherActionAiInsightsList');
-        if (aiInsightsContainer) {
-          const strengths = [];
-
-          // Plate clearance rate
-          if (completionRate > 0) {
-            strengths.push({
-              icon: 'fa-solid fa-chart-pie',
-              text: `Healthy plate clearance (<strong>${completionRate}%</strong> finished on average across class)`
-            });
-          }
-
-          // Top consumed dish
-          const topFood = (report.topConsumedFoodItems && report.topConsumedFoodItems.length > 0) ? report.topConsumedFoodItems[0] : 'Dal Tadka';
-          strengths.push({
-            icon: 'fa-solid fa-star',
-            text: `Classroom favorite: <strong>${topFood}</strong> with high student clearance rate`
-          });
-
-          // Teacher review milestone
-          const reviewedCount = classMeals.filter(m => m.status === 'FULLY_CONSUMED' || m.status === 'PARTIALLY_CONSUMED' || m.status === 'VERIFIED').length;
-          if (reviewedCount > 0) {
-            strengths.push({
-              icon: 'fa-solid fa-circle-check',
-              text: `${reviewedCount} classroom meal${reviewedCount > 1 ? 's' : ''} reviewed and verified on time`
-            });
-          }
-
-          // Nutritional balance
-          strengths.push({
-            icon: 'fa-solid fa-seedling',
-            text: 'Nutritional balance and daily calorie targets consistently supported'
-          });
-
-          aiInsightsContainer.innerHTML = strengths.slice(0, 4).map(item => `
-            <div class="insight-bullet-row positive">
-              <span class="bullet-icon"><i class="${item.icon}"></i></span>
-              <span style="font-size:0.85rem;">${item.text}</span>
-            </div>
-          `).join('');
-        }
-
-        // 2. Render Needs Attention (Right Card)
+        // 1. Render Card 1: Students Requiring Attention (Matching Parent Report Row Template)
         const studentsListContainer = document.getElementById('teacherActionStudentsList');
         if (studentsListContainer) {
-          const attentions = [];
-
-          // Flagged students requiring clearance review or attention
-          if (lowConsStudents.length > 0) {
-            lowConsStudents.forEach(s => {
+          if (lowConsStudents.length === 0) {
+            studentsListContainer.innerHTML = `
+              <div class="insight-bullet-row positive" style="padding:0.75rem 1rem;">
+                <span class="bullet-icon"><i class="fa-solid fa-circle-check"></i></span>
+                <span style="font-size:0.85rem; color:var(--text-secondary);">All students have met today's meal intake targets (no clearance action required).</span>
+              </div>
+            `;
+          } else {
+            studentsListContainer.innerHTML = lowConsStudents.map(s => {
               const studentMeal = classMeals.find(m => m.studentId === s.id);
               let reasonText = `Low intake (< ${lowThreshold}% target)`;
               if (studentMeal && (studentMeal.status === 'PRE_MEAL_UPLOADED' || studentMeal.status === 'PENDING_LEFTOVER_ANALYSIS')) {
@@ -7409,100 +7370,153 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
               }
               const currentPct = (studentMeal && studentMeal.overallConsumptionPercentage !== null) ? Math.round(Number(studentMeal.overallConsumptionPercentage)) : 0;
               const escapedName = (s.name || 'Student').replace(/'/g, "\\'");
+              const initial = (s.name || 'S').trim().charAt(0).toUpperCase();
 
-              attentions.push(`
-                <div class="insight-bullet-row warning" style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; flex-wrap:wrap; padding:0.5rem 0.75rem;">
-                  <div style="display:flex; align-items:center; gap:0.6rem; flex:1; min-width:190px;">
-                    <span class="bullet-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
-                    <div style="font-size:0.835rem; line-height:1.35;">
-                      <strong style="color:var(--text-primary); font-family:'Outfit',sans-serif;">${s.name}</strong>
-                      <span style="font-size:0.7rem; color:var(--text-muted); font-family:monospace; background:rgba(255,255,255,0.06); padding:1px 5px; border-radius:3px;">${s.studentCode || ''}</span>:
-                      <span style="color:#FBBF24; font-weight:500;">${reasonText} (${currentPct}% consumed)</span>
+              return `
+                <div class="insight-bullet-row warning" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.6rem 0.85rem; flex-wrap:wrap;">
+                  <div style="display:flex; align-items:center; gap:0.75rem; flex:1; min-width:200px;">
+                    <div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, #F43F5E 0%, #BE123C 100%); color:#FFF; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.85rem; flex-shrink:0; box-shadow:0 2px 6px rgba(244,63,94,0.3);">
+                      ${initial}
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:2px;">
+                      <div style="display:flex; align-items:center; gap:6px;">
+                        <strong style="color:var(--text-primary); font-size:0.875rem; font-family:'Outfit',sans-serif;">${s.name}</strong>
+                        <span style="font-size:0.68rem; color:var(--text-muted); font-family:monospace; background:rgba(255,255,255,0.06); padding:1px 5px; border-radius:4px;">${s.studentCode || ''}</span>
+                      </div>
+                      <span style="font-size:0.75rem; color:#FDA4AF; display:flex; align-items:center; gap:4px;">
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size:0.7rem;"></i> ${reasonText} (${currentPct}% consumed)
+                      </span>
                     </div>
                   </div>
+
                   <div style="display:flex; gap:0.35rem; align-items:center; flex-shrink:0;">
                     ${studentMeal ? `
-                      <button type="button" class="btn-action-primary btn-action-review-meal" data-meal-id="${studentMeal.id}" data-student-name="${escapedName}" data-current-pct="${currentPct}" style="padding:0.25rem 0.6rem; font-size:0.72rem; height:26px; border-radius:6px; display:inline-flex; align-items:center; gap:4px;">
+                      <button type="button" class="btn-action-primary btn-action-review-meal" data-meal-id="${studentMeal.id}" data-student-name="${escapedName}" data-current-pct="${currentPct}" style="height:28px; padding:0 0.65rem; font-size:0.75rem; border-radius:6px; display:inline-flex; align-items:center; gap:4px;">
                         <i class="fa-solid fa-camera"></i> Review
                       </button>
                     ` : ''}
-                    <button type="button" class="btn-action-outline btn-action-chat-parent" data-parent-id="${s.parentId || ''}" data-student-name="${escapedName}" data-reason="${reasonText.replace(/"/g, '&quot;')}" style="padding:0.25rem 0.6rem; font-size:0.72rem; height:26px; border-radius:6px; display:inline-flex; align-items:center; gap:4px;">
+                    <button type="button" class="btn-action-outline btn-action-chat-parent" data-parent-id="${s.parentId || ''}" data-student-name="${escapedName}" data-reason="${reasonText.replace(/"/g, '&quot;')}" style="height:28px; padding:0 0.65rem; font-size:0.75rem; border-radius:6px; display:inline-flex; align-items:center; gap:4px;">
                       <i class="fa-solid fa-comments"></i> Message
+                    </button>
+                    <button type="button" class="btn-action-outline btn-action-view-profile" data-student-id="${s.id}" style="height:28px; padding:0 0.65rem; font-size:0.75rem; border-radius:6px; display:inline-flex; align-items:center; gap:4px;">
+                      <i class="fa-solid fa-id-card"></i> Profile
                     </button>
                   </div>
                 </div>
-              `);
+              `;
+            }).join('');
+
+            // Wire action buttons
+            studentsListContainer.querySelectorAll('.btn-action-review-meal').forEach(btn => {
+              btn.addEventListener('click', () => {
+                const mid = parseInt(btn.getAttribute('data-meal-id'));
+                const sName = btn.getAttribute('data-student-name') || 'Student';
+                const curPct = parseInt(btn.getAttribute('data-current-pct')) || 50;
+                if (typeof openPortionChangeModal === 'function') {
+                  openPortionChangeModal(mid, sName, curPct);
+                } else if (typeof openLeftoverModalForMeal === 'function') {
+                  openLeftoverModalForMeal(mid);
+                }
+              });
+            });
+
+            studentsListContainer.querySelectorAll('.btn-action-chat-parent').forEach(btn => {
+              btn.addEventListener('click', () => {
+                const pid = btn.getAttribute('data-parent-id');
+                const sName = btn.getAttribute('data-student-name');
+                const reason = btn.getAttribute('data-reason') || '';
+                if (!pid) {
+                  showToast("No parent account linked yet.", "warning");
+                  return;
+                }
+
+                let draftText = "";
+                if (reason.includes("pending clearance") || reason.includes("review pending")) {
+                  draftText = `Hello! I wanted to let you know that ${sName}'s lunchbox photo has been uploaded and is currently pending clearance. I will complete the leftover review shortly!`;
+                } else if (reason.includes("Low intake") || reason.includes("< 50%")) {
+                  draftText = `Hello! I wanted to touch base regarding ${sName}'s lunch today. ${sName} consumed less than 50% of their packed meal. Please let me know if there are any specific food preferences or if they felt unwell today.`;
+                } else {
+                  draftText = `Hello! I am reaching out regarding ${sName}'s meal intake at school today. Please let me know if you have any questions or dietary updates!`;
+                }
+
+                state.pendingDraftMessage = draftText;
+                state.activeChatContact = { id: parseInt(pid), name: `Parent of ${sName}`, role: "PARENT" };
+                switchPane('messaging');
+              });
+            });
+
+            studentsListContainer.querySelectorAll('.btn-action-view-profile').forEach(btn => {
+              btn.addEventListener('click', () => {
+                const sid = parseInt(btn.getAttribute('data-student-id'));
+                const st = students.find(x => x.id === sid);
+                if (st && typeof openStudentProfileModal === 'function') {
+                  openStudentProfileModal(st);
+                } else {
+                  const profileBtn = document.querySelector(`.btn-view-profile[data-student-id="${sid}"]`);
+                  if (profileBtn) profileBtn.click();
+                  else switchPane('teacher-roster');
+                }
+              });
             });
           }
+        }
 
-          // Plate waste observation
-          if (cappedWaste > 20) {
-            attentions.push(`
-              <div class="insight-bullet-row warning">
-                <span class="bullet-icon"><i class="fa-solid fa-chart-pie"></i></span>
-                <span style="font-size:0.85rem;">Average plate waste was ~<strong>${cappedWaste}%</strong> across logged meals</span>
+        // 2. Render Card 2: Nutrition Highlights (Matching Parent Report Row Template)
+        const aiInsightsContainer = document.getElementById('teacherActionAiInsightsList');
+        if (aiInsightsContainer) {
+          const topFood = (report.topConsumedFoodItems && report.topConsumedFoodItems.length > 0) ? report.topConsumedFoodItems[0] : 'Dal Tadka';
+          const needsReview = lowConsStudents.length > 0;
+          const insights = [];
+
+          // Row 1: Plate Completion
+          insights.push(`
+            <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.6rem 0.85rem;">
+              <div style="display:flex; align-items:center; gap:0.7rem;">
+                <span class="bullet-icon" style="background:rgba(245,158,11,0.12); color:#F59E0B;"><i class="fa-solid fa-chart-pie"></i></span>
+                <div>
+                  <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Plate Completion</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted);">Avg plate waste: <strong style="color:var(--text-primary);">${cappedWaste}%</strong> across logged meals</div>
+                </div>
               </div>
-            `);
-          }
-
-          // Balanced routine suggestion
-          attentions.push(`
-            <div class="insight-bullet-row warning">
-              <span class="bullet-icon"><i class="fa-solid fa-arrow-trend-up"></i></span>
-              <span style="font-size:0.85rem;">Recommend hydrating fruits or fresh vegetables for students with lower intake</span>
+              <span style="font-size:0.85rem; font-weight:800; color:#F59E0B; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.25); padding:3px 10px; border-radius:6px; font-family:'Outfit',sans-serif;">
+                ${completionRate}% Eaten
+              </span>
             </div>
           `);
 
-          // If no flagged students
-          if (lowConsStudents.length === 0) {
-            attentions.unshift(`
-              <div class="insight-bullet-row positive">
-                <span class="bullet-icon"><i class="fa-solid fa-circle-check"></i></span>
-                <span style="font-size:0.85rem;">All students are currently meeting nutrition clearance targets</span>
+          // Row 2: Top Consumed Item
+          insights.push(`
+            <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.6rem 0.85rem;">
+              <div style="display:flex; align-items:center; gap:0.7rem;">
+                <span class="bullet-icon" style="background:rgba(99,102,241,0.12); color:var(--primary);"><i class="fa-solid fa-utensils"></i></span>
+                <div>
+                  <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Top Consumed Item</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted);">Highest student clearance rate</div>
+                </div>
               </div>
-            `);
-          }
+              <span class="badge-dish-top" style="font-size:0.78rem; padding:3px 10px;">
+                <i class="fa-solid fa-star" style="color:#FBBF24;"></i> ${topFood}
+              </span>
+            </div>
+          `);
 
-          studentsListContainer.innerHTML = attentions.join('');
+          // Row 3: Intake Compliance
+          insights.push(`
+            <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.6rem 0.85rem;">
+              <div style="display:flex; align-items:center; gap:0.7rem;">
+                <span class="bullet-icon" style="background:${needsReview ? 'rgba(245,158,11,0.12)' : 'rgba(16,185,129,0.12)'}; color:${needsReview ? '#F59E0B' : '#10B981'};">
+                  <i class="fa-solid ${needsReview ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i>
+                </span>
+                <div>
+                  <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Intake Compliance</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted);">${needsReview ? `${lowConsStudents.length} student${lowConsStudents.length > 1 ? 's' : ''} with low intake (< 50%)` : 'All students meeting nutrition targets'}</div>
+                </div>
+              </div>
+              ${needsReview ? '<span class="badge-compliance-warning" style="font-size:0.75rem; padding:3px 9px;"><i class="fa-solid fa-triangle-exclamation"></i> Needs Review</span>' : '<span class="badge-compliance-optimal" style="font-size:0.75rem; padding:3px 9px;"><i class="fa-solid fa-circle-check"></i> Optimal Balance</span>'}
+            </div>
+          `);
 
-          // Wire action buttons
-          studentsListContainer.querySelectorAll('.btn-action-review-meal').forEach(btn => {
-            btn.addEventListener('click', () => {
-              const mid = parseInt(btn.getAttribute('data-meal-id'));
-              const sName = btn.getAttribute('data-student-name') || 'Student';
-              const curPct = parseInt(btn.getAttribute('data-current-pct')) || 50;
-              if (typeof openPortionChangeModal === 'function') {
-                openPortionChangeModal(mid, sName, curPct);
-              } else if (typeof openLeftoverModalForMeal === 'function') {
-                openLeftoverModalForMeal(mid);
-              }
-            });
-          });
-
-          studentsListContainer.querySelectorAll('.btn-action-chat-parent').forEach(btn => {
-            btn.addEventListener('click', () => {
-              const pid = btn.getAttribute('data-parent-id');
-              const sName = btn.getAttribute('data-student-name');
-              const reason = btn.getAttribute('data-reason') || '';
-              if (!pid) {
-                showToast("No parent account linked yet.", "warning");
-                return;
-              }
-
-              let draftText = "";
-              if (reason.includes("pending clearance") || reason.includes("review pending")) {
-                draftText = `Hello! I wanted to let you know that ${sName}'s lunchbox photo has been uploaded and is currently pending clearance. I will complete the leftover review shortly!`;
-              } else if (reason.includes("Low intake") || reason.includes("< 50%")) {
-                draftText = `Hello! I wanted to touch base regarding ${sName}'s lunch today. ${sName} consumed less than 50% of their packed meal. Please let me know if there are any specific food preferences or if they felt unwell today.`;
-              } else {
-                draftText = `Hello! I am reaching out regarding ${sName}'s meal intake at school today. Please let me know if you have any questions or dietary updates!`;
-              }
-
-              state.pendingDraftMessage = draftText;
-              state.activeChatContact = { id: parseInt(pid), name: `Parent of ${sName}`, role: "PARENT" };
-              switchPane('messaging');
-            });
-          });
+          aiInsightsContainer.innerHTML = insights.join('');
         }
       }
 
