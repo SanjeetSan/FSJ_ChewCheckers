@@ -5665,43 +5665,33 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const modal = document.getElementById('studentProfileModal');
     if (!modal) return;
 
-    document.getElementById('profileAvatar').textContent = (s.name || 'S').trim().charAt(0).toUpperCase();
-    document.getElementById('profileStudentName').textContent = s.name || 'Student';
-    document.getElementById('profileStudentCode').textContent = s.studentCode || ('STU-' + s.id);
-    document.getElementById('profileGender').textContent = s.gender || 'N/A';
-    document.getElementById('profileDOB').textContent = s.dateOfBirth ? formatDateDDMMYYYY(s.dateOfBirth) : 'N/A';
+    const elAvatar = document.getElementById('profileAvatar');
+    if (elAvatar) elAvatar.textContent = (s.name || 'S').trim().charAt(0).toUpperCase();
+    const elName = document.getElementById('profileStudentName');
+    if (elName) elName.textContent = s.name || 'Student';
+    const elCode = document.getElementById('profileStudentCode');
+    if (elCode) elCode.textContent = s.studentCode || ('STU-' + s.id);
+    const elGender = document.getElementById('profileGender');
+    if (elGender) elGender.textContent = s.gender || 'N/A';
+    const elDOB = document.getElementById('profileDOB');
+    if (elDOB) elDOB.textContent = s.dateOfBirth ? formatDateDDMMYYYY(s.dateOfBirth) : 'N/A';
 
+    // Food Allergies: Show alert banner ONLY if an allergy exists
     const standardBloodTypes = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
     const isBloodType = s.bloodGroup && standardBloodTypes.includes(s.bloodGroup.toUpperCase().trim());
-    document.getElementById('profileBloodGroup').textContent = isBloodType ? s.bloodGroup.toUpperCase().trim() : (s.bloodGroup || 'N/A');
-
-    // Retrieve Food Allergies accurately from s.allergies, persistent storage, or fallback
     const rawAllergy = s.allergies || getStoredStudentAllergies(s.id) || ((!isBloodType && s.bloodGroup && s.bloodGroup.toLowerCase() !== 'none' && s.bloodGroup.toLowerCase() !== 'n/a') ? s.bloodGroup : '');
-    const allergyText = (rawAllergy && rawAllergy.trim() && rawAllergy.toLowerCase() !== 'none' && rawAllergy.toLowerCase() !== 'no known allergens') ? rawAllergy.trim() : 'None';
-    const elAllergy = document.getElementById('profileAllergy');
-    if (elAllergy) {
-      if (allergyText !== 'None') {
-        elAllergy.innerHTML = `<span style="color:var(--accent-rose); font-weight:700;"><i class="fa-solid fa-triangle-exclamation" style="margin-right:0.35rem;"></i>${allergyText}</span>`;
+    const allergyText = (rawAllergy && rawAllergy.trim() && rawAllergy.toLowerCase() !== 'none' && rawAllergy.toLowerCase() !== 'no known allergens') ? rawAllergy.trim() : '';
+
+    const elAllergyAlert = document.getElementById('profileAllergyAlert');
+    const elAllergyText = document.getElementById('profileAllergyText');
+    if (elAllergyAlert && elAllergyText) {
+      if (allergyText) {
+        elAllergyText.textContent = allergyText;
+        elAllergyAlert.style.display = 'flex';
       } else {
-        elAllergy.textContent = 'None';
+        elAllergyAlert.style.display = 'none';
       }
     }
-
-    document.getElementById('profileClass').textContent = s.className || (state.activeClass ? `${state.activeClass.className} - ${state.activeClass.section}` : 'N/A');
-
-    // Calibrated lunch nutrient targets
-    const targets = (typeof calculateLunchTargets === 'function') ? calculateLunchTargets(s) : {};
-    const cal = s.lunchCalories || targets.lunchCalTarget || s.dailyCalories || 550;
-    const prot = s.lunchProtein || targets.lunchProteinTarget || s.dailyProtein || 20;
-    const carbs = s.lunchCarbs || targets.lunchCarbsTarget || s.dailyCarbs || 75;
-    const fat = s.lunchFat || targets.lunchFatTarget || s.dailyFat || 18;
-    const fiber = s.lunchFiber || targets.lunchFibreTarget || s.dailyFiber || 8;
-
-    document.getElementById('profileTargetCal').textContent = `${cal} kcal`;
-    document.getElementById('profileTargetProt').textContent = `${prot}g`;
-    document.getElementById('profileTargetCarbs').textContent = `${carbs}g`;
-    document.getElementById('profileTargetFat').textContent = `${fat}g`;
-    document.getElementById('profileTargetFiber').textContent = `${fiber}g`;
 
     populateProfileIntakeAnalysis(s);
 
@@ -5711,6 +5701,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
   function populateProfileIntakeAnalysis(s) {
     const dateEl = document.getElementById('profileIntakeDate');
     const blockEl = document.getElementById('profileIntakeAnalysisBlock');
+    const badgeEl = document.getElementById('profileConsumptionBadge');
     if (!blockEl) return;
 
     const targetDate = state.currentSelectedDate || new Date().toISOString().split('T')[0];
@@ -5718,26 +5709,52 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       dateEl.textContent = formatDateDDMMYYYY(targetDate);
     }
 
-    const meal = (state.currentMeals || []).find(m => m.studentId === s.id && m.status !== 'MEAL_NOT_PACKED')
-      || (state.teacherClassOverviewMeals || []).find(m => m.studentId === s.id && m.status !== 'MEAL_NOT_PACKED');
-
-    if (!meal) {
-      blockEl.innerHTML = `<div style="color:var(--text-muted); font-size:0.85rem;"><i class="fa-solid fa-circle-info"></i> No meal records found for this date.</div>`;
-      return;
-    }
-
-    if (meal.status === 'PRE_MEAL_UPLOADED' || meal.status === 'PENDING_LEFTOVER_ANALYSIS') {
-      blockEl.innerHTML = `<div style="color:var(--color-pending); font-weight:600; font-size:0.85rem;"><i class="fa-solid fa-clock"></i> Meal review is pending or leftover photo is required. Deficits will be computed after consumption is recorded.</div>`;
-      return;
-    }
-
-    // Targets
+    // Calibrated lunch nutrient targets
     const targets = (typeof calculateLunchTargets === 'function') ? calculateLunchTargets(s) : {};
     const calTarget = s.lunchCalories || targets.lunchCalTarget || s.dailyCalories || 550;
     const protTarget = s.lunchProtein || targets.lunchProteinTarget || s.dailyProtein || 20;
     const carbsTarget = s.lunchCarbs || targets.lunchCarbsTarget || s.dailyCarbs || 75;
     const fatTarget = s.lunchFat || targets.lunchFatTarget || s.dailyFat || 18;
     const fiberTarget = s.lunchFiber || targets.lunchFibreTarget || s.dailyFiber || 8;
+
+    const meal = (state.currentMeals || []).find(m => m.studentId === s.id && m.status !== 'MEAL_NOT_PACKED')
+      || (state.teacherClassOverviewMeals || []).find(m => m.studentId === s.id && m.status !== 'MEAL_NOT_PACKED');
+
+    if (!meal) {
+      if (badgeEl) badgeEl.textContent = '';
+      blockEl.innerHTML = `
+        <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:0.5rem; text-align:center; margin-bottom:0.75rem;">
+          <div style="background:var(--bg-card); padding:0.5rem 0.3rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle);">
+            <div style="font-size:0.68rem; color:var(--text-muted); font-weight:700;">CALORIES</div>
+            <div style="font-size:0.85rem; font-weight:800; color:var(--text-secondary); margin-top:2px;">—<span style="font-size:0.7rem; font-weight:500; color:var(--text-muted);">/${calTarget}</span></div>
+          </div>
+          <div style="background:var(--bg-card); padding:0.5rem 0.3rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle);">
+            <div style="font-size:0.68rem; color:var(--text-muted); font-weight:700;">PROTEIN</div>
+            <div style="font-size:0.85rem; font-weight:800; color:var(--text-secondary); margin-top:2px;">—<span style="font-size:0.7rem; font-weight:500; color:var(--text-muted);">/${protTarget}g</span></div>
+          </div>
+          <div style="background:var(--bg-card); padding:0.5rem 0.3rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle);">
+            <div style="font-size:0.68rem; color:var(--text-muted); font-weight:700;">CARBS</div>
+            <div style="font-size:0.85rem; font-weight:800; color:var(--text-secondary); margin-top:2px;">—<span style="font-size:0.7rem; font-weight:500; color:var(--text-muted);">/${carbsTarget}g</span></div>
+          </div>
+          <div style="background:var(--bg-card); padding:0.5rem 0.3rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle);">
+            <div style="font-size:0.68rem; color:var(--text-muted); font-weight:700;">FAT</div>
+            <div style="font-size:0.85rem; font-weight:800; color:var(--text-secondary); margin-top:2px;">—<span style="font-size:0.7rem; font-weight:500; color:var(--text-muted);">/${fatTarget}g</span></div>
+          </div>
+          <div style="background:var(--bg-card); padding:0.5rem 0.3rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle);">
+            <div style="font-size:0.68rem; color:var(--text-muted); font-weight:700;">FIBER</div>
+            <div style="font-size:0.85rem; font-weight:800; color:var(--text-secondary); margin-top:2px;">—<span style="font-size:0.7rem; font-weight:500; color:var(--text-muted);">/${fiberTarget}g</span></div>
+          </div>
+        </div>
+        <div style="color:var(--text-muted); font-size:0.82rem; text-align:center;"><i class="fa-solid fa-circle-info" style="margin-right:4px;"></i> No meal records logged for this date.</div>
+      `;
+      return;
+    }
+
+    if (meal.status === 'PRE_MEAL_UPLOADED' || meal.status === 'PENDING_LEFTOVER_ANALYSIS') {
+      if (badgeEl) badgeEl.textContent = 'Meal Pending Review';
+      blockEl.innerHTML = `<div style="color:var(--color-pending); font-weight:600; font-size:0.85rem;"><i class="fa-solid fa-clock"></i> Meal review is pending or leftover photo is required. Deficits will be computed after consumption is recorded.</div>`;
+      return;
+    }
 
     // Food items & packed baseline
     const items = meal.foodItems || [];
@@ -5761,6 +5778,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       } else {
         pct = 0;
       }
+    }
+
+    if (badgeEl) {
+      badgeEl.innerHTML = `<span style="background:rgba(99, 102, 241, 0.12); color:var(--primary); padding:3px 8px; border-radius:6px; font-weight:700;">${pct}% Eaten</span> <span style="font-size:0.75rem; color:var(--text-muted); font-weight:500;">(${items.length} items)</span>`;
     }
 
     const totalCalConsumed = items.reduce((acc, i) => acc + (parseFloat(i.consumedCalories) || 0), 0);
@@ -5792,50 +5813,66 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       deficits.push({ name: 'Fiber', val: fiberTarget - fiberAchieved, unit: 'g' });
     }
 
-    let deficitsHTML = '';
+    let statusBanner = '';
     if (deficits.length === 0) {
-      deficitsHTML = `
-        <div style="background:rgba(16, 185, 129, 0.1); color:var(--accent-green); padding:0.75rem; border-radius:var(--r-sm); border:1px solid rgba(16, 185, 129, 0.2); font-weight:700; font-size:0.85rem; display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem;">
-          <i class="fa-solid fa-circle-check"></i> All Daily Targets Met successfully!
+      statusBanner = `
+        <div style="background:rgba(16, 185, 129, 0.1); color:var(--accent-green); padding:0.55rem 0.75rem; border-radius:var(--r-sm); border:1px solid rgba(16, 185, 129, 0.2); font-weight:700; font-size:0.82rem; display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem;">
+          <i class="fa-solid fa-circle-check"></i> All Daily Lunch Targets Met successfully!
         </div>
       `;
     } else {
-      const deficitItems = deficits.map(d => `
-        <li style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:var(--accent-rose); font-weight:600; margin-bottom:0.35rem;">
-          <span>Missed ${d.name} Target</span>
-          <span>Deficit of ${d.val} ${d.unit}</span>
-        </li>
+      const deficitPills = deficits.map(d => `
+        <span style="background:rgba(244, 63, 94, 0.12); color:var(--accent-rose); padding:2px 7px; border-radius:4px; font-size:0.75rem; font-weight:700; border:1px solid rgba(244, 63, 94, 0.25);">
+          -${d.val}${d.unit} ${d.name}
+        </span>
       `).join('');
 
-      deficitsHTML = `
-        <div style="background:rgba(244, 63, 94, 0.08); padding:0.75rem; border-radius:var(--r-sm); border:1px solid rgba(244, 63, 94, 0.2); margin-top:0.75rem;">
-          <div style="font-size:0.8rem; font-weight:700; color:var(--accent-rose); margin-bottom:0.5rem;"><i class="fa-solid fa-triangle-exclamation"></i> Missed Nutrients list:</div>
-          <ul style="list-style:none; padding:0; margin:0;">
-            ${deficitItems}
-          </ul>
+      statusBanner = `
+        <div style="margin-top:0.75rem; background:rgba(244, 63, 94, 0.07); padding:0.55rem 0.75rem; border-radius:var(--r-sm); border:1px solid rgba(244, 63, 94, 0.18);">
+          <div style="font-size:0.75rem; font-weight:700; color:var(--accent-rose); margin-bottom:0.35rem; display:flex; align-items:center; gap:0.35rem;">
+            <i class="fa-solid fa-triangle-exclamation"></i> Deficits Detected:
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
+            ${deficitPills}
+          </div>
         </div>
       `;
     }
 
     blockEl.innerHTML = `
-      <div style="margin-bottom:0.75rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-        <div>
-          <span style="font-size:0.8rem; color:var(--text-secondary);">Consumption Level:</span>
-          <span style="font-size:1.15rem; font-weight:800; color:var(--primary); margin-left:0.5rem;">${pct}% Eaten</span>
-          <span style="font-size:0.75rem; color:var(--text-muted); margin-left:0.25rem;">(${items.length} items packed)</span>
+      <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:0.5rem; text-align:center;">
+        <div style="background:var(--bg-card); padding:0.55rem 0.35rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle);">
+          <div style="font-size:0.68rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Calories</div>
+          <div style="font-size:0.85rem; font-weight:800; color:${caloriesAchieved >= calTarget ? 'var(--accent-green)' : 'var(--accent-amber)'}; margin-top:2px;">
+            ${caloriesAchieved}<span style="font-size:0.7rem; font-weight:500; color:var(--text-muted);">/${calTarget}</span>
+          </div>
+        </div>
+        <div style="background:var(--bg-card); padding:0.55rem 0.35rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle);">
+          <div style="font-size:0.68rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Protein</div>
+          <div style="font-size:0.85rem; font-weight:800; color:${proteinAchieved >= protTarget ? 'var(--accent-green)' : 'var(--accent-amber)'}; margin-top:2px;">
+            ${proteinAchieved}<span style="font-size:0.7rem; font-weight:500; color:var(--text-muted);">/${protTarget}g</span>
+          </div>
+        </div>
+        <div style="background:var(--bg-card); padding:0.55rem 0.35rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle);">
+          <div style="font-size:0.68rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Carbs</div>
+          <div style="font-size:0.85rem; font-weight:800; color:${carbsAchieved >= carbsTarget ? 'var(--accent-green)' : 'var(--accent-amber)'}; margin-top:2px;">
+            ${carbsAchieved}<span style="font-size:0.7rem; font-weight:500; color:var(--text-muted);">/${carbsTarget}g</span>
+          </div>
+        </div>
+        <div style="background:var(--bg-card); padding:0.55rem 0.35rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle);">
+          <div style="font-size:0.68rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Fat</div>
+          <div style="font-size:0.85rem; font-weight:800; color:${fatAchieved >= fatTarget ? 'var(--accent-green)' : 'var(--accent-amber)'}; margin-top:2px;">
+            ${fatAchieved}<span style="font-size:0.7rem; font-weight:500; color:var(--text-muted);">/${fatTarget}g</span>
+          </div>
+        </div>
+        <div style="background:var(--bg-card); padding:0.55rem 0.35rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle);">
+          <div style="font-size:0.68rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Fiber</div>
+          <div style="font-size:0.85rem; font-weight:800; color:${fiberAchieved >= fiberTarget ? 'var(--accent-green)' : 'var(--accent-amber)'}; margin-top:2px;">
+            ${fiberAchieved}<span style="font-size:0.7rem; font-weight:500; color:var(--text-muted);">/${fiberTarget}g</span>
+          </div>
         </div>
       </div>
-      <div>
-        <div style="font-size:0.8rem; font-weight:700; color:var(--text-primary); margin-bottom:0.35rem;">Achieved Intake:</div>
-        <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
-          <span style="background:var(--bg-card); border:1px solid var(--border-subtle); padding:0.2rem 0.5rem; border-radius:var(--r-sm); font-size:0.75rem; color:var(--text-secondary);"> Cal: <strong style="color:var(--text-primary);">${caloriesAchieved} kcal</strong></span>
-          <span style="background:var(--bg-card); border:1px solid var(--border-subtle); padding:0.2rem 0.5rem; border-radius:var(--r-sm); font-size:0.75rem; color:var(--text-secondary);"> Prot: <strong style="color:var(--text-primary);">${proteinAchieved}g</strong></span>
-          <span style="background:var(--bg-card); border:1px solid var(--border-subtle); padding:0.2rem 0.5rem; border-radius:var(--r-sm); font-size:0.75rem; color:var(--text-secondary);"> Carbs: <strong style="color:var(--text-primary);">${carbsAchieved}g</strong></span>
-          <span style="background:var(--bg-card); border:1px solid var(--border-subtle); padding:0.2rem 0.5rem; border-radius:var(--r-sm); font-size:0.75rem; color:var(--text-secondary);"> Fat: <strong style="color:var(--text-primary);">${fatAchieved}g</strong></span>
-          <span style="background:var(--bg-card); border:1px solid var(--border-subtle); padding:0.2rem 0.5rem; border-radius:var(--r-sm); font-size:0.75rem; color:var(--text-secondary);"> Fiber: <strong style="color:var(--text-primary);">${fiberAchieved}g</strong></span>
-        </div>
-      </div>
-      ${deficitsHTML}
+      ${statusBanner}
     `;
   }
 

@@ -2434,63 +2434,36 @@
         </div>
       </div>
 
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1.25rem;">
-        <div style="background:var(--bg-page); padding:0.75rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
-          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Gender</span>
-          <div id="profileGender" style="font-weight:600; color:var(--text-primary); margin-top:0.15rem;">N/A</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.85rem;">
+        <div style="background:var(--bg-page); padding:0.65rem 0.85rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+          <span style="font-size:0.7rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Gender</span>
+          <div id="profileGender" style="font-weight:600; color:var(--text-primary); margin-top:0.15rem; font-size:0.9rem;">N/A</div>
         </div>
-        <div style="background:var(--bg-page); padding:0.75rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
-          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Date of Birth</span>
-          <div id="profileDOB" style="font-weight:600; color:var(--text-primary); margin-top:0.15rem;">N/A</div>
-        </div>
-        <div style="background:var(--bg-page); padding:0.75rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
-          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Blood Group</span>
-          <div id="profileBloodGroup" style="font-weight:600; color:var(--text-primary); margin-top:0.15rem;">N/A</div>
-        </div>
-        <div style="background:var(--bg-page); padding:0.75rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
-          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Class Assignment</span>
-          <div id="profileClass" style="font-weight:600; color:var(--text-primary); margin-top:0.15rem;">N/A</div>
-        </div>
-        <div style="background:var(--bg-page); padding:0.75rem; border-radius:var(--r-md); border:1px solid var(--border-subtle); grid-column: span 2;">
-          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Food Allergies</span>
-          <div id="profileAllergy" style="font-weight:600; color:var(--text-primary); margin-top:0.15rem;">None</div>
+        <div style="background:var(--bg-page); padding:0.65rem 0.85rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+          <span style="font-size:0.7rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Date of Birth</span>
+          <div id="profileDOB" style="font-weight:600; color:var(--text-primary); margin-top:0.15rem; font-size:0.9rem;">N/A</div>
         </div>
       </div>
 
-      <h4 style="font-size:0.95rem; font-weight:700; margin-bottom:0.5rem; color:var(--text-primary);">Daily Lunchbox Nutrient Targets</h4>
-      <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:0.5rem; margin-bottom:1.5rem; text-align:center;">
-        <div style="background:var(--bg-page); padding:0.5rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
-          <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">Calories</div>
-          <div id="profileTargetCal" style="font-size:0.85rem; font-weight:700; color:var(--primary);">0</div>
-        </div>
-        <div style="background:var(--bg-page); padding:0.5rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
-          <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">Protein</div>
-          <div id="profileTargetProt" style="font-size:0.85rem; font-weight:700; color:var(--accent-green);">0g</div>
-        </div>
-        <div style="background:var(--bg-page); padding:0.5rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
-          <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">Carbs</div>
-          <div id="profileTargetCarbs" style="font-size:0.85rem; font-weight:700; color:var(--accent-violet);">0g</div>
-        </div>
-        <div style="background:var(--bg-page); padding:0.5rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
-          <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">Fat</div>
-          <div id="profileTargetFat" style="font-size:0.85rem; font-weight:700; color:var(--accent-amber);">0g</div>
-        </div>
-        <div style="background:var(--bg-page); padding:0.5rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
-          <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">Fiber</div>
-          <div id="profileTargetFiber" style="font-size:0.85rem; font-weight:700; color:var(--accent-teal);">0g</div>
-        </div>
+      <!-- Food Allergy Alert (Only visible when allergy is present) -->
+      <div id="profileAllergyAlert" style="display:none; align-items:center; gap:0.6rem; background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.25); border-radius:var(--r-md); padding:0.6rem 0.85rem; margin-bottom:0.85rem; color:var(--accent-rose); font-size:0.85rem; font-weight:600;">
+        <i class="fa-solid fa-triangle-exclamation" style="font-size:1rem;"></i>
+        <span>Food Allergy: <strong id="profileAllergyText">None</strong></span>
       </div>
 
-      <!-- Daily Intake & Deficit Analysis -->
-      <h4 style="font-size:0.95rem; font-weight:700; margin-bottom:0.5rem; color:var(--text-primary); display:flex; align-items:center; gap:0.4rem;">
-        <i class="fa-solid fa-chart-column" style="color:var(--primary);"></i> Intake Status & Deficits (<span id="profileIntakeDate">Today</span>)
-      </h4>
-      <div id="profileIntakeAnalysisBlock" style="background:var(--bg-page); padding:1rem; border-radius:var(--r-md); border:1px solid var(--border-subtle); margin-bottom:1.5rem;">
+      <!-- Consolidated Lunch Intake & Nutrition Target Status -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem;">
+        <h4 style="font-size:0.9rem; font-weight:700; margin:0; color:var(--text-primary); display:flex; align-items:center; gap:0.4rem;">
+          <i class="fa-solid fa-chart-column" style="color:var(--primary);"></i> Lunch Intake vs Daily Targets (<span id="profileIntakeDate">Today</span>)
+        </h4>
+        <span id="profileConsumptionBadge" style="font-size:0.8rem; font-weight:700; color:var(--primary);"></span>
+      </div>
+      <div id="profileIntakeAnalysisBlock" style="background:var(--bg-page); padding:0.85rem; border-radius:var(--r-md); border:1px solid var(--border-subtle); margin-bottom:1.15rem;">
         <div style="color:var(--text-muted); font-size:0.85rem;">No meal records found for this date.</div>
       </div>
 
       <div style="display:flex; justify-content:flex-end;">
-        <button class="btn-action-outline" id="btnCloseProfileDetail" style="padding:0.5rem 1.25rem;">Close</button>
+        <button class="btn-action-outline" id="btnCloseProfileDetail" style="padding:0.45rem 1.25rem; font-size:0.85rem;">Close</button>
       </div>
     </div>
   </div>
