@@ -5363,10 +5363,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
       const escapedName = (s.name || 'Student').replace(/'/g, "\\'");
       const actionsHTML = `
-        <div style="display:flex; gap:0.4rem; justify-content:flex-end; align-items:center;">
-          ${meal ? `<button class="btn-action-primary" onclick="openPortionChangeModal(${meal.id}, '${escapedName}', ${pct !== null && pct !== undefined ? pct : 100})" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600;">Review Meal</button>` : ''}
-          <button class="btn-action-outline btn-view-profile" data-student-id="${s.id}" style="padding:0.35rem 0.65rem; font-size:0.775rem; font-weight:500;">Profile</button>
-          <button class="btn-action-outline btn-mark-absent" data-student-id="${s.id}" data-student-name="${escapedName}" style="padding:0.35rem 0.65rem; font-size:0.775rem; font-weight:500;">${isAbsent ? 'Present' : 'Absent'}</button>
+        <div style="display:flex; gap:0.45rem; justify-content:flex-end; align-items:center; flex-wrap:nowrap;">
+          ${meal ? `<button class="btn-action-primary" onclick="openPortionChangeModal(${meal.id}, '${escapedName}', ${pct !== null && pct !== undefined ? pct : 100})" style="padding:0.35rem 0.85rem; font-size:0.775rem; font-weight:700; border-radius:var(--r-md); white-space:nowrap;"><i class="fa-solid fa-clipboard-check"></i> Review Meal</button>` : ''}
+          <button class="btn-action-outline btn-view-profile" data-student-id="${s.id}" style="padding:0.35rem 0.75rem; font-size:0.775rem; font-weight:600; border-radius:var(--r-md); white-space:nowrap;">Profile</button>
+          <button class="btn-action-outline btn-mark-absent" data-student-id="${s.id}" data-student-name="${escapedName}" style="padding:0.35rem 0.75rem; font-size:0.775rem; font-weight:600; border-radius:var(--r-md); white-space:nowrap; ${isAbsent ? 'color:var(--accent-amber); border-color:rgba(245,158,11,0.3);' : ''}">${isAbsent ? 'Present' : 'Absent'}</button>
         </div>
       `;
 
@@ -5376,18 +5376,22 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             <input type="checkbox" class="student-select-chk" data-meal-id="${meal ? meal.id : ''}" data-student-id="${s.id}" ${isActionable ? '' : 'disabled style="opacity:0.25; cursor:not-allowed;"'}>
           </td>
           <td>
-            <div style="display:flex; align-items:center; gap:0.65rem;">
-              <div style="width:30px; height:30px; border-radius:50%; background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-secondary); font-weight:700; font-size:0.75rem; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                ${initials}
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <div style="width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg, var(--primary) 0%, #4F46E5 100%); color:#FFFFFF; font-weight:800; font-size:0.85rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 6px rgba(99,102,241,0.25);">
+                ${initials.charAt(0)}
               </div>
               <div>
                 <div style="font-size:0.95rem; font-weight:700; color:var(--text-primary); line-height:1.25;">${s.name}</div>
-                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.1rem;">Roll #${s.rollNumber || 'N/A'}</div>
+                ${(s.rollNumber && s.rollNumber !== 'N/A' && s.rollNumber !== 'null' && s.rollNumber !== '') ? `
+                  <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.1rem;">Roll #${s.rollNumber}</div>
+                ` : `
+                  <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.1rem; font-family:monospace;">${s.studentCode || ''}</div>
+                `}
               </div>
             </div>
           </td>
           <td>
-            <span style="font-size:0.8rem; color:var(--text-muted); font-family:monospace;">${s.studentCode}</span>
+            <span style="font-size:0.8rem; color:var(--text-muted); font-family:monospace; background:var(--bg-page); padding:0.2rem 0.5rem; border-radius:6px; border:1px solid var(--border-subtle);">${s.studentCode || '--'}</span>
           </td>
           <td>${mealSummaryHTML}</td>
           <td>${statusBadgeHTML}</td>

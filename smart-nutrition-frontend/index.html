@@ -1231,48 +1231,83 @@
         <!-- PANE 5: TEACHER CLASS OVERVIEW (CLEAN SCHOOL ERP REFINEMENT) -->
         <div class="pane-container" id="pane-teacher-roster">
           
-          <!-- 1. COMPACT SINGLE-ROW CLASS HEADER -->
-          <div class="teacher-header-banner">
-            <div class="teacher-header-left">
-              <span class="teacher-header-grade" id="teacherHeaderClassName">Grade 5 Class</span>
-              <span class="teacher-header-sep">·</span>
-              <span class="teacher-header-meta">Code: <strong id="teacherHeaderClassCode">CLS-6070</strong></span>
-              <span class="teacher-header-sep">·</span>
-              <span class="teacher-header-meta">Teacher: <strong id="teacherHeaderTeacherName">Jothi Prakash V</strong></span>
-              <span id="teacherHeaderTeacherEmail" style="display:none;">jothi@gmail.com</span>
-            </div>
-            <div class="teacher-header-right">
-              <div class="teacher-date-picker-wrap">
-                <i class="fa-regular fa-calendar"></i>
-                <input type="date" id="teacherSelectedDate" title="Select Date to View Meal Records" />
+          <!-- 1. MODERN CONSISTENT CLASS HEADER CARD -->
+          <div class="card mb-3" style="padding:1.15rem 1.5rem; border-top: 3px solid var(--primary); background: linear-gradient(135deg, var(--bg-card) 0%, rgba(99, 102, 241, 0.03) 100%); margin-bottom:1.25rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+              <div style="display:flex; align-items:center; gap:1rem;">
+                <div style="width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg, var(--primary) 0%, #4F46E5 100%); color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-size:1.25rem; box-shadow:0 4px 12px rgba(99,102,241,0.25); flex-shrink:0;">
+                  <i class="fa-solid fa-chalkboard-user"></i>
+                </div>
+                <div>
+                  <h3 style="font-size:1.2rem; margin:0 0 0.25rem 0; font-weight:800; font-family:'Outfit', sans-serif; display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+                    <span id="teacherHeaderClassName">Grade 5 Class</span>
+                    <span id="teacherHeaderClassCode" style="font-size:0.75rem; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); padding:0.15rem 0.55rem; border-radius:6px; color:var(--primary); font-weight:700; font-family:monospace;">CLS-6070</span>
+                  </h3>
+                  <div style="display:flex; align-items:center; gap:0.65rem; flex-wrap:wrap; font-size:0.775rem; color:var(--text-secondary);">
+                    <span><i class="fa-solid fa-user-tie" style="color:var(--primary); margin-right:0.3rem;"></i>Class Teacher: <strong id="teacherHeaderTeacherName" style="color:var(--text-primary); font-weight:600;">Jothi Prakash V</strong></span>
+                    <span id="teacherHeaderTeacherEmail" style="display:none;">jothi@gmail.com</span>
+                  </div>
+                </div>
               </div>
-              <button class="btn-compact-refresh" id="btnRefreshTeacherMeals" title="Refresh meal records">
-                <i class="fa-solid fa-rotate"></i> Refresh
-              </button>
+              <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+                <div class="teacher-date-picker-wrap" style="background:var(--bg-page); color:var(--text-primary); border:1px solid var(--border-subtle); font-weight:500; padding:0.3rem 0.65rem; font-size:0.8rem; display:inline-flex; align-items:center; gap:0.5rem; border-radius:var(--r-md); height:36px;">
+                  <i class="fa-regular fa-calendar" style="color:var(--primary);"></i>
+                  <input type="date" id="teacherSelectedDate" title="Select Date to View Meal Records" style="border:none; background:transparent; font-family:inherit; font-weight:500; font-size:0.8rem; color:var(--text-primary); cursor:pointer; outline:none;" />
+                </div>
+                <button class="btn-action-outline" id="btnRefreshTeacherMeals" title="Refresh meal records" style="height:36px; padding:0 0.85rem; font-size:0.8rem; display:inline-flex; align-items:center; gap:0.4rem; border-radius:var(--r-md);">
+                  <i class="fa-solid fa-rotate"></i> Refresh
+                </button>
+              </div>
             </div>
           </div>
 
-          <!-- 2. SUMMARY STATISTICS (DIRECTLY BELOW CLASS HEADER) -->
-          <div class="teacher-kpi-strip">
-            <div class="teacher-kpi-card">
-              <span class="teacher-kpi-label">Students in Class</span>
-              <div class="teacher-kpi-val" id="teacherMetricStudents">0</div>
+          <!-- 2. SUMMARY STATISTICS (RICH ACCENTED KPI CARDS) -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+            
+            <div class="card" style="padding:1.1rem 1.25rem; border-left: 4px solid var(--primary); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.25rem;">Students in Class</span>
+                <div class="metric-box-val" id="teacherMetricStudents" style="font-size:1.6rem; font-weight:800; color:var(--text-primary); line-height:1.2;">0</div>
+                <small style="font-size:0.72rem; color:var(--text-muted);">Enrolled roster</small>
+              </div>
+              <div style="width:38px; height:38px; border-radius:50%; background:rgba(99,102,241,0.08); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
+                <i class="fa-solid fa-users"></i>
+              </div>
             </div>
 
-            <div class="teacher-kpi-card">
-              <span class="teacher-kpi-label">Meals Submitted</span>
-              <div class="teacher-kpi-val" id="teacherMetricSubmitted">0</div>
+            <div class="card" style="padding:1.1rem 1.25rem; border-left: 4px solid var(--accent-teal); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.25rem;">Meals Submitted</span>
+                <div class="metric-box-val" id="teacherMetricSubmitted" style="font-size:1.6rem; font-weight:800; color:var(--accent-teal); line-height:1.2;">0</div>
+                <small style="font-size:0.72rem; color:var(--accent-teal); font-weight:600;">Today's scans</small>
+              </div>
+              <div style="width:38px; height:38px; border-radius:50%; background:rgba(20,184,166,0.08); color:var(--accent-teal); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
+                <i class="fa-solid fa-utensils"></i>
+              </div>
             </div>
 
-            <div class="teacher-kpi-card">
-              <span class="teacher-kpi-label">Pending Reviews</span>
-              <div class="teacher-kpi-val" id="teacherMetricPendingReviews">0</div>
+            <div class="card" style="padding:1.1rem 1.25rem; border-left: 4px solid var(--accent-amber); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.25rem;">Pending Reviews</span>
+                <div class="metric-box-val" id="teacherMetricPendingReviews" style="font-size:1.6rem; font-weight:800; color:var(--accent-amber); line-height:1.2;">0</div>
+                <small style="font-size:0.72rem; color:var(--accent-amber); font-weight:600;">Action needed</small>
+              </div>
+              <div style="width:38px; height:38px; border-radius:50%; background:rgba(245,158,11,0.08); color:var(--accent-amber); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
+                <i class="fa-solid fa-clock"></i>
+              </div>
             </div>
 
-            <div class="teacher-kpi-card">
-              <span class="teacher-kpi-label">Average Consumption</span>
-              <div class="teacher-kpi-val" id="teacherMetricAvgConsumption">0%</div>
+            <div class="card" style="padding:1.1rem 1.25rem; border-left: 4px solid var(--accent-green); background:var(--bg-card); display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:0.25rem;">Average Consumption</span>
+                <div class="metric-box-val" id="teacherMetricAvgConsumption" style="font-size:1.6rem; font-weight:800; color:var(--accent-green); line-height:1.2;">0%</div>
+                <small style="font-size:0.72rem; color:var(--accent-green); font-weight:600;">Plate clearance</small>
+              </div>
+              <div style="width:38px; height:38px; border-radius:50%; background:rgba(16,185,129,0.08); color:var(--accent-green); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
+                <i class="fa-solid fa-chart-pie"></i>
+              </div>
             </div>
+
           </div>
 
           <!-- 3. PENDING REVIEW QUEUE (SUBTLE CARD DIRECTLY AFTER METRICS) -->
