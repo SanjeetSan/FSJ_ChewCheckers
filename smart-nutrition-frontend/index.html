@@ -976,155 +976,127 @@
         <!-- PANE 3: LEFTOVER TRACKER & WASTE ANALYTICS (ACTIONABLE REPORTS DASHBOARD) -->
         <div class="pane-container" id="pane-leftover-tracker" style="padding:1.5rem 2rem;">
           
-          <!-- 1. HERO REPORT STATUS CARD (MATCHES PARENT DASHBOARD HERO DESIGN) -->
-          <div class="card hero-status-card" id="reportsHeroCard" style="margin-bottom:1.5rem;">
-            <div class="hero-status-header">
-              <div class="hero-status-title-group">
-                <h2 class="hero-child-title">
-                  <span id="reportsActiveChildName">Child Profile</span> <span class="hero-child-class" id="reportsActiveChildClass">(Classroom)</span>
-                </h2>
-                <div class="hero-status-eyebrow">
-                  <span class="hero-status-dot" id="reportsHeroStatusDot"></span>
-                  <span>Verified Intake & Leftover Analytics</span>
-                </div>
-              </div>
-              <div class="hero-status-badges">
-                <span class="hero-badge badge-success" id="reportsHeroBadgeVerified">
-                  <i class="fa-solid fa-shield-halved"></i> <span>School Verified</span>
-                </span>
-                <span class="hero-badge badge-success" id="nutritionistScoreBadge">
-                  <i class="fa-solid fa-medal"></i> Optimal Balance (85/100)
-                </span>
-              </div>
+          <!-- Active Child Context Banner -->
+          <div class="reports-active-child-banner" id="reportsActiveChildBanner">
+            <div class="reports-child-pill">
+              <span class="reports-child-avatar" id="reportsActiveChildAvatar">S</span>
+              <span class="reports-child-label">Viewing Reports for: <strong id="reportsActiveChildName">Sree</strong> <span id="reportsActiveChildClass" style="color:var(--text-muted);">(Grade 5 B)</span></span>
+            </div>
+            <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;"><i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i> Verified School Reports</span>
+          </div>
+
+          <!-- Top Section: 4 Actionable Analytics KPI Cards -->
+          <div class="reports-kpi-grid">
+            <div class="reports-kpi-card">
+              <span class="reports-kpi-label"><i class="fa-solid fa-chart-pie" style="color:var(--accent-green);"></i> Avg Plate Clearance</span>
+              <div class="reports-kpi-val" id="parentRepPlateClearance" style="color:var(--accent-green);">—</div>
+              <span class="reports-kpi-sub" id="parentRepAvgClearanceStatus">Waiting for first meal evaluation</span>
             </div>
 
-            <!-- Hero Metrics Grid (3 Progress Bars) -->
-            <div class="hero-metrics-grid">
-              <!-- Plate Clearance % -->
-              <div class="hero-metric-item">
-                <span class="hero-metric-label">Avg Plate Clearance</span>
-                <span class="hero-metric-value val-accent" id="reportsHeroClearanceVal">—</span>
-                <div class="hero-progress-bar">
-                  <div class="hero-progress-fill fill-completion" id="reportsHeroClearanceBar" style="width: 0%;"></div>
-                </div>
-              </div>
-
-              <!-- Protein Intake -->
-              <div class="hero-metric-item">
-                <span class="hero-metric-label">Growth Protein Intake</span>
-                <span class="hero-metric-value val-protein" id="reportsHeroProtVal">—</span>
-                <div class="hero-progress-bar">
-                  <div class="hero-progress-fill fill-protein" id="reportsHeroProtBar" style="width: 0%;"></div>
-                </div>
-              </div>
-
-              <!-- Caloric Intake -->
-              <div class="hero-metric-item">
-                <span class="hero-metric-label">Caloric Intake Progress</span>
-                <span class="hero-metric-value" id="reportsHeroCalVal">—</span>
-                <div class="hero-progress-bar">
-                  <div class="hero-progress-fill fill-cal" id="reportsHeroCalBar" style="width: 0%;"></div>
-                </div>
-              </div>
+            <div class="reports-kpi-card">
+              <span class="reports-kpi-label"><i class="fa-solid fa-circle-check" style="color:var(--primary);"></i> Clean Plate Days</span>
+              <div class="reports-kpi-val" id="parentRepWasteSaved" style="color:var(--primary);">—</div>
+              <span class="reports-kpi-sub" id="parentRepWasteSavedStatus">Awaiting lunch records</span>
             </div>
 
-            <!-- Hero Footer: Summary Chips -->
-            <div class="hero-status-footer">
-              <div class="hero-timing-group">
-                <span class="hero-time-chip is-verified">
-                  <i class="fa-solid fa-clipboard-check"></i> Verified Audits: <strong id="reportsHeroAuditCount">0 Confirmed</strong>
-                </span>
-                <span class="hero-time-chip">
-                  <i class="fa-solid fa-clock-rotate-left"></i> Latest Meal: <strong id="parentRepLatestStatus">—</strong>
-                </span>
-                <span id="reportsActiveChildAvatar" style="display:none;"></span>
-                <span id="parentRepLatestStatusSub" style="display:none;"></span>
-                <span id="nutrClearanceTrend" style="display:none;"></span>
-              </div>
-              <span class="hero-status-note" id="reportsHeroStatusNote">Verified nutrition data automatically synchronized from classroom audits.</span>
+            <div class="reports-kpi-card">
+              <span class="reports-kpi-label"><i class="fa-solid fa-user-check" style="color:var(--accent-teal);"></i> Teacher Verifications</span>
+              <div class="reports-kpi-val" id="parentRepVerifications" style="color:var(--accent-teal);">0</div>
+              <span class="reports-kpi-sub" id="parentRepTeacherVerificationsStatus">Awaiting lunchtime review</span>
+            </div>
+
+            <div class="reports-kpi-card">
+              <span class="reports-kpi-label"><i class="fa-solid fa-clock-rotate-left" style="color:#F59E0B;"></i> Latest Meal Record</span>
+              <div class="reports-kpi-val" id="parentRepLatestStatus" style="color:var(--text-muted);">—</div>
+              <span class="reports-kpi-sub" id="parentRepLatestStatusSub">Most recent lunchbox audit</span>
             </div>
           </div>
 
-          <!-- 2. INTAKE & WASTE PROGRESS SNAPSHOT (MATCHES WEEKLY PROGRESS SNAPSHOT DESIGN) -->
-          <div class="card weekly-progress-card" style="margin-bottom:1.5rem;">
-            <div class="weekly-progress-header">
-              <div>
-                <h3 class="weekly-progress-title">
-                  <i class="fa-solid fa-chart-line" style="color:var(--primary);"></i> Progress Snapshot & Key Metrics
-                </h3>
-                <span class="weekly-progress-subtitle">Summary of verified food clearance, nutrient targets, and classroom audits</span>
+          <!-- School Clearance Protocol Guidance (Compact Collapsible Info Bar) -->
+          <details class="reports-protocol-card">
+            <summary class="reports-protocol-summary">
+              <span><i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i> How School Verification Works</span>
+              <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;"><i class="fa-solid fa-chevron-down"></i> View 3-Step Protocol</span>
+            </summary>
+            <div class="reports-protocol-steps">
+              <div class="reports-protocol-step-item">
+                <div class="reports-protocol-step-num">1</div>
+                <div>
+                  <strong style="font-size:0.85rem; color:var(--text-primary); display:block;">Pack & Scan at Home</strong>
+                  <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:0.15rem;">Upload pre-meal lunchbox photo in morning.</span>
+                </div>
               </div>
-              <!-- Period controls -->
-              <div class="weekly-progress-controls">
-                <div class="filter-btn-group">
-                  <button type="button" class="btn-action-outline active" id="btnReportsFilterWeekly">Weekly</button>
-                  <button type="button" class="btn-action-outline" id="btnReportsFilterMonthly">Monthly</button>
+              <div class="reports-protocol-step-item">
+                <div class="reports-protocol-step-num">2</div>
+                <div>
+                  <strong style="font-size:0.85rem; color:var(--text-primary); display:block;">School Leftover Check</strong>
+                  <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:0.15rem;">Class teacher reviews plate clearance at lunch.</span>
+                </div>
+              </div>
+              <div class="reports-protocol-step-item">
+                <div class="reports-protocol-step-num">3</div>
+                <div>
+                  <strong style="font-size:0.85rem; color:var(--text-primary); display:block;">Real-Time Progress</strong>
+                  <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:0.15rem;">Verified nutrition data automatically syncs to reports.</span>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <!-- Short & Clean AI Nutrition Insights Card -->
+          <div class="card" id="parentNutritionistAssessmentCard" style="padding:1.15rem 1.4rem; margin-bottom:1.5rem; border-top:3px solid var(--accent-teal); background:var(--bg-card);">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:0.85rem; padding-bottom:0.65rem; border-bottom:1px solid var(--border-subtle);">
+              <div style="display:flex; align-items:center; gap:0.65rem;">
+                <div style="width:34px; height:34px; border-radius:10px; background:rgba(20, 184, 166, 0.1); color:var(--accent-teal); display:flex; align-items:center; justify-content:center; font-size:1.05rem;">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <div>
+                  <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-primary); margin:0;">AI Nutrition Insights</h3>
+                  <small style="color:var(--text-muted); font-size:0.75rem;">Daily dietary intake & meal clearance summary</small>
+                </div>
+              </div>
+              <span id="nutritionistScoreBadge" class="badge-status-consumed" style="font-size:0.8rem; font-weight:700;">
+                <i class="fa-solid fa-medal"></i> Optimal Balance (85/100)
+              </span>
+            </div>
+
+            <!-- 3 Compact Metric Highlight Chips -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.85rem; margin-bottom:0.85rem;">
+              <!-- Chip 1: Calories -->
+              <div style="background:var(--bg-page); padding:0.75rem 1rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+                <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.25rem;">
+                  <i class="fa-solid fa-fire" style="color:var(--primary); margin-right:0.3rem;"></i> Caloric Intake
+                </div>
+                <div id="nutrCalStat" style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">
+                  Avg 402 kcal / 550 kcal (73%)
+                </div>
+              </div>
+
+              <!-- Chip 2: Protein -->
+              <div style="background:var(--bg-page); padding:0.75rem 1rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+                <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.25rem;">
+                  <i class="fa-solid fa-dumbbell" style="color:var(--accent-green); margin-right:0.3rem;"></i> Growth Protein
+                </div>
+                <div id="nutrProtStat" style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">
+                  Avg 13.3g / 20g target
+                </div>
+              </div>
+
+              <!-- Chip 3: Plate Clearance -->
+              <div style="background:var(--bg-page); padding:0.75rem 1rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
+                <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.25rem;">
+                  <i class="fa-solid fa-chart-pie" style="color:var(--accent-teal); margin-right:0.3rem;"></i> Plate Clearance
+                </div>
+                <div id="nutrClearanceTrend" style="font-size:0.85rem; font-weight:700; color:var(--accent-teal);">
+                  Consistent eater (Low waste)
                 </div>
               </div>
             </div>
 
-            <!-- 5 Compact Snapshot Cards -->
-            <div class="progress-snapshot-grid">
-              <div class="snapshot-metric-card">
-                <span class="snapshot-metric-lbl">Avg Clearance</span>
-                <strong class="snapshot-metric-val" id="parentRepPlateClearance" style="color:var(--accent-green);">—</strong>
-                <span style="font-size:0.7rem; color:var(--text-muted);" id="parentRepAvgClearanceStatus">Verified intake rate</span>
-              </div>
-              <div class="snapshot-metric-card">
-                <span class="snapshot-metric-lbl">Clean Plate Days</span>
-                <strong class="snapshot-metric-val" id="parentRepWasteSaved" style="color:var(--primary);">—</strong>
-                <span style="font-size:0.7rem; color:var(--text-muted);" id="parentRepWasteSavedStatus">Clearance rate ≥ 90%</span>
-              </div>
-              <div class="snapshot-metric-card">
-                <span class="snapshot-metric-lbl">Average Calories</span>
-                <strong class="snapshot-metric-val" id="nutrCalStat">—</strong>
-                <span style="font-size:0.7rem; color:var(--text-muted);">Daily lunch consumption</span>
-              </div>
-              <div class="snapshot-metric-card">
-                <span class="snapshot-metric-lbl">Average Protein</span>
-                <strong class="snapshot-metric-val val-protein" id="nutrProtStat">—</strong>
-                <span style="font-size:0.7rem; color:var(--text-muted);">Growth protein intake</span>
-              </div>
-              <div class="snapshot-metric-card snapshot-score-card">
-                <span class="snapshot-metric-lbl">Teacher Audits</span>
-                <strong class="snapshot-metric-val val-score" id="parentRepVerifications">0</strong>
-                <span style="font-size:0.7rem; color:var(--text-muted);" id="parentRepTeacherVerificationsStatus">School confirmed</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3. NUTRITION STRENGTHS & NEEDS ATTENTION (2-COLUMN GRID MATCHING DASHBOARD) -->
-          <div class="dashboard-insights-grid" style="margin-bottom:1.5rem;">
-            <!-- Nutrition Strengths -->
-            <div class="card strength-card">
-              <div class="insight-card-header">
-                <div class="insight-card-title">
-                  <span class="insight-title-badge strength"><i class="fa-solid fa-circle-check"></i></span>
-                  Nutrition Strengths
-                </div>
-                <span class="insight-subtitle">What's working well</span>
-              </div>
-              <div id="reportsStrengthsList" class="insight-bullet-list">
-                <!-- Dynamic items -->
-              </div>
-            </div>
-
-            <!-- Needs Attention -->
-            <div class="card attention-card">
-              <div class="insight-card-header">
-                <div class="insight-card-title">
-                  <span class="insight-title-badge attention"><i class="fa-solid fa-triangle-exclamation"></i></span>
-                  Needs Attention
-                </div>
-                <span class="insight-subtitle">Opportunities to improve</span>
-              </div>
-              <div id="reportsNeedsAttentionList" class="insight-bullet-list">
-                <!-- Dynamic items -->
-              </div>
-              <div style="margin-top:0.85rem; padding:0.6rem 0.85rem; background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.2); border-radius:var(--r-md); font-size:0.8rem; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem;">
-                <i class="fa-solid fa-lightbulb" style="color:var(--accent-amber); font-size:0.9rem; flex-shrink:0;"></i>
-                <span id="nutritionistRecommendations" style="line-height:1.35;">Good meal consistency! Try adding a mild yogurt dip with chopped veggies to reduce vegetable plate waste.</span>
-              </div>
+            <!-- Single 1-line Parent Tip -->
+            <div style="background:rgba(245, 158, 11, 0.06); border:1px solid rgba(245, 158, 11, 0.2); border-radius:var(--r-md); padding:0.6rem 0.9rem; font-size:0.825rem; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem;">
+              <i class="fa-solid fa-lightbulb" style="color:var(--accent-amber); font-size:0.95rem; flex-shrink:0;"></i>
+              <span id="nutritionistRecommendations" style="line-height:1.35;">Good meal consistency! Try adding a mild yogurt dip with chopped veggies to reduce vegetable plate waste.</span>
             </div>
           </div>
 

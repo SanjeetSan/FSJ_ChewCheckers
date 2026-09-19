@@ -9557,41 +9557,6 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const elCleanStatus = document.getElementById('parentRepWasteSavedStatus');
     const elLatestStatus = document.getElementById('parentRepLatestStatus');
 
-    // 0. Cache data and handle Period Filtering (Weekly vs Monthly)
-    state._cachedReportMeals = meals;
-    state._cachedReportReports = reports;
-    state._cachedReportInsights = insightsData;
-    if (!state.reportsFilter) state.reportsFilter = 'weekly';
-
-    const btnRepWeekly = document.getElementById('btnReportsFilterWeekly');
-    const btnRepMonthly = document.getElementById('btnReportsFilterMonthly');
-    if (btnRepWeekly && btnRepMonthly && !btnRepWeekly.dataset.bound) {
-      btnRepWeekly.dataset.bound = "true";
-      btnRepMonthly.dataset.bound = "true";
-      btnRepWeekly.addEventListener('click', () => {
-        btnRepWeekly.classList.add('active');
-        btnRepMonthly.classList.remove('active');
-        state.reportsFilter = 'weekly';
-        updateLeftoverHistory(state._cachedReportMeals || meals, state._cachedReportReports || reports, state._cachedReportInsights || insightsData);
-      });
-      btnRepMonthly.addEventListener('click', () => {
-        btnRepMonthly.classList.add('active');
-        btnRepWeekly.classList.remove('active');
-        state.reportsFilter = 'monthly';
-        updateLeftoverHistory(state._cachedReportMeals || meals, state._cachedReportReports || reports, state._cachedReportInsights || insightsData);
-      });
-    }
-
-    if (btnRepWeekly && btnRepMonthly) {
-      if (state.reportsFilter === 'weekly') {
-        btnRepWeekly.classList.add('active');
-        btnRepMonthly.classList.remove('active');
-      } else {
-        btnRepMonthly.classList.add('active');
-        btnRepWeekly.classList.remove('active');
-      }
-    }
-
     // 1. Active Child Context
     const child = state.selectedChild || (state.children && state.children.length > 0 ? state.children[0] : null);
     if (child) {
@@ -9599,33 +9564,14 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       const repName = document.getElementById('reportsActiveChildName');
       const repClass = document.getElementById('reportsActiveChildClass');
       if (repAvatar) repAvatar.textContent = (child.name || 'S').trim().charAt(0).toUpperCase();
-      if (repName) repName.textContent = formatStudentName(child.name);
+      if (repName) repName.textContent = child.name;
       if (repClass) repClass.textContent = child.className ? `(${child.className})` : (child.classCode ? `(${child.classCode})` : '');
     }
 
     if (!Array.isArray(meals)) meals = [];
-    const allSortedMeals = [...meals].sort((a, b) => (b.id || 0) - (a.id || 0));
+    // Ensure sortedMeals is globally available throughout the entire function scope
+    const sortedMeals = [...meals].sort((a, b) => (b.id || 0) - (a.id || 0));
 
-    // Filter meals based on selected time window
-    const now = Date.now();
-    let scopedMeals = allSortedMeals;
-    if (state.reportsFilter === 'weekly') {
-      const weekAgo = now - 7 * 86400000;
-      const recent = allSortedMeals.filter(m => {
-        const d = m.mealDate ? new Date(m.mealDate).getTime() : (m.created_at ? new Date(m.created_at).getTime() : 0);
-        return d >= weekAgo;
-      });
-      scopedMeals = recent.length > 0 ? recent : allSortedMeals.slice(0, 7);
-    } else if (state.reportsFilter === 'monthly') {
-      const monthAgo = now - 30 * 86400000;
-      const recent = allSortedMeals.filter(m => {
-        const d = m.mealDate ? new Date(m.mealDate).getTime() : (m.created_at ? new Date(m.created_at).getTime() : 0);
-        return d >= monthAgo;
-      });
-      scopedMeals = recent.length > 0 ? recent : allSortedMeals.slice(0, 30);
-    }
-
-    const sortedMeals = scopedMeals;
     const verifiedMeals = sortedMeals.filter(m => !isMealPendingReview(m));
     const teacherVerificationCount = verifiedMeals.length;
 
@@ -9643,7 +9589,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       avgClearance = 100;
     }
 
-    // Top 4 Actionable KPI Metric Cards (in snapshot grid)
+    // Top 4 Actionable KPI Metric Cards
     if (elAvgClearance) {
       elAvgClearance.innerHTML = verifiedMeals.length > 0 ? `<span>${avgClearance}%</span>` : '—';
       elAvgClearance.style.color = verifiedMeals.length > 0 ? 'var(--accent-green)' : 'var(--text-muted)';
@@ -9653,7 +9599,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     if (elCleanPlates) {
       if (verifiedMeals.length > 0) {
         const unit = cleanPlateCount === 1 ? 'Day' : 'Days';
-        elCleanPlates.innerHTML = `<span>${cleanPlateCount}</span> <span class="reports-kpi-unit" style="font-size:0.85rem; font-weight:600;">${unit}</span>`;
+        elCleanPlates.innerHTML = `<span>${cleanPlateCount}</span> <span class="reports-kpi-unit">${unit}</span>`;
         elCleanPlates.style.color = 'var(--primary)';
       } else {
         elCleanPlates.textContent = '—';
@@ -9668,7 +9614,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     }
     if (elTeacherStatus) elTeacherStatus.textContent = teacherVerificationCount > 0 ? 'Confirmed by Class Teacher' : 'Awaiting lunchtime review';
 
-    const latestMeal = allSortedMeals.length > 0 ? allSortedMeals[0] : null;
+    const latestMeal = sortedMeals.length > 0 ? sortedMeals[0] : null;
     const elLatestStatusSub = document.getElementById('parentRepLatestStatusSub');
     if (elLatestStatus) {
       elLatestStatus.style.removeProperty('font-size');
@@ -9736,70 +9682,29 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const scoreBadge = document.getElementById('nutritionistScoreBadge');
     if (scoreBadge) {
       if (compositeScore >= 80) {
-        scoreBadge.className = 'hero-badge badge-success';
+        scoreBadge.className = 'badge-status-consumed';
         scoreBadge.innerHTML = `<i class="fa-solid fa-medal"></i> Optimal Balance (${compositeScore}/100)`;
       } else if (compositeScore >= 60) {
-        scoreBadge.className = 'hero-badge badge-success';
+        scoreBadge.className = 'badge-status-partial';
         scoreBadge.innerHTML = `<i class="fa-solid fa-check"></i> Good Progress (${compositeScore}/100)`;
       } else {
-        scoreBadge.className = 'hero-badge';
-        scoreBadge.style.background = 'rgba(239, 68, 68, 0.15)';
-        scoreBadge.style.color = 'var(--accent-rose)';
+        scoreBadge.className = 'badge-status-attention';
         scoreBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Needs Support (${compositeScore}/100)`;
       }
     }
 
-    // --- POPULATE HERO REPORT STATUS CARD PROGRESS BARS & LABELS ---
-    const heroClearanceVal = document.getElementById('reportsHeroClearanceVal');
-    const heroClearanceBar = document.getElementById('reportsHeroClearanceBar');
-    if (heroClearanceVal) {
-      heroClearanceVal.textContent = verifiedMeals.length > 0 ? `${avgClearance}%` : '—';
-    }
-    if (heroClearanceBar) {
-      heroClearanceBar.style.width = verifiedMeals.length > 0 ? `${avgClearance}%` : '0%';
-    }
-
-    const heroProtVal = document.getElementById('reportsHeroProtVal');
-    const heroProtBar = document.getElementById('reportsHeroProtBar');
-    if (heroProtVal) {
-      heroProtVal.textContent = avgConsumedProt > 0 ? `${avgConsumedProt}g / ${targetProt}g (${protScore}%)` : `Target: ${targetProt}g`;
-    }
-    if (heroProtBar) {
-      heroProtBar.style.width = `${Math.min(100, protScore)}%`;
-    }
-
-    const heroCalVal = document.getElementById('reportsHeroCalVal');
-    const heroCalBar = document.getElementById('reportsHeroCalBar');
-    if (heroCalVal) {
-      heroCalVal.textContent = avgConsumedCal > 0 ? `${avgConsumedCal} kcal / ${targetCal} kcal (${calScore}%)` : `Target: ${targetCal} kcal`;
-    }
-    if (heroCalBar) {
-      heroCalBar.style.width = `${Math.min(100, calScore)}%`;
-    }
-
-    const heroAuditCount = document.getElementById('reportsHeroAuditCount');
-    if (heroAuditCount) {
-      heroAuditCount.textContent = `${teacherVerificationCount} Confirmed`;
-    }
-
-    const heroStatusDot = document.getElementById('reportsHeroStatusDot');
-    if (heroStatusDot) {
-      if (latestMeal && isMealPendingReview(latestMeal)) {
-        heroStatusDot.className = 'hero-status-dot dot-pending';
-      } else {
-        heroStatusDot.className = 'hero-status-dot';
-      }
-    }
-
-    // --- POPULATE 5-COLUMN PROGRESS SNAPSHOT CARDS ---
     const nutrCal = document.getElementById('nutrCalStat');
     if (nutrCal) {
-      nutrCal.innerHTML = avgConsumedCal > 0 ? `${avgConsumedCal} kcal` : `—`;
+      nutrCal.innerHTML = avgConsumedCal > 0
+        ? `Avg <strong>${avgConsumedCal} kcal</strong> / ${targetCal} kcal (${calScore}%)`
+        : `Target: <strong>${targetCal} kcal</strong>`;
     }
 
     const nutrProt = document.getElementById('nutrProtStat');
     if (nutrProt) {
-      nutrProt.innerHTML = avgConsumedProt > 0 ? `${avgConsumedProt}g` : `—`;
+      nutrProt.innerHTML = avgConsumedProt > 0
+        ? `Avg <strong>${avgConsumedProt}g</strong> / ${targetProt}g target`
+        : `Target: <strong>${targetProt}g</strong> protein`;
     }
 
     const elTrend = document.getElementById('nutrClearanceTrend');
@@ -9807,80 +9712,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       elTrend.textContent = avgClearance >= 80 ? `${avgClearance}% Avg (Consistently cleans plate)` : (avgClearance >= 50 ? `${avgClearance}% Avg (Balanced appetite)` : `${avgClearance}% Avg (Portion support advised)`);
     }
 
-    // --- POPULATE NUTRITION STRENGTHS & NEEDS ATTENTION INSIGHTS ---
-    const repStrengthsEl = document.getElementById('reportsStrengthsList');
-    const repAttentionEl = document.getElementById('reportsNeedsAttentionList');
-    if (repStrengthsEl && repAttentionEl) {
-      if (verifiedMeals.length === 0) {
-        repStrengthsEl.innerHTML = `
-          <div class="insight-bullet-row" style="color:var(--text-muted);">
-            <span class="bullet-icon" style="color:var(--text-muted); font-size:0.8rem;">ℹ</span>
-            <span>Awaiting teacher audits to identify nutrition strengths.</span>
-          </div>
-        `;
-        repAttentionEl.innerHTML = `
-          <div class="insight-bullet-row" style="color:var(--text-muted);">
-            <span class="bullet-icon" style="color:var(--text-muted); font-size:0.8rem;">ℹ</span>
-            <span>Observations generate automatically once lunches are evaluated.</span>
-          </div>
-        `;
-      } else {
-        const repStrengths = [];
-        const repAttentions = [];
-
-        if (avgClearance >= 80) {
-          repStrengths.push(`High plate clearance (${avgClearance}% consumed across lunch sessions)`);
-        } else if (avgClearance < 65) {
-          repAttentions.push(`Average clearance (${avgClearance}%) indicates leftover food in lunchbox`);
-        }
-
-        if (cleanPlateCount > 0) {
-          repStrengths.push(`${cleanPlateCount} clean plate day${cleanPlateCount > 1 ? 's' : ''} recorded (≥90% clearance)`);
-        }
-
-        if (calScore >= 80) {
-          repStrengths.push(`Caloric intake meets lunch energy targets (~${avgConsumedCal} kcal)`);
-        } else if (calScore < 70) {
-          repAttentions.push(`Caloric intake (~${avgConsumedCal} kcal) is below the ${targetCal} kcal lunch target`);
-        }
-
-        if (protScore >= 80) {
-          repStrengths.push(`Good protein density supporting growth targets (~${avgConsumedProt}g / ${targetProt}g)`);
-        } else if (protScore < 70) {
-          repAttentions.push(`Growth protein intake (~${avgConsumedProt}g) is below the ${targetProt}g lunchtime target`);
-        }
-
-        // Food variety
-        const foodNames = Object.keys(foodItemIntakeMap);
-        if (foodNames.length >= 4) {
-          repStrengths.push(`Dietary variety maintained with ${foodNames.length} distinct food items`);
-        } else if (foodNames.length > 0 && foodNames.length < 3) {
-          repAttentions.push(`Expand food diversity beyond the ${foodNames.length} current staple items`);
-        }
-
-        if (repStrengths.length === 0) repStrengths.push("Consistent daily meal logging established");
-        if (repAttentions.length === 0) repAttentions.push("Maintain current balanced packing and portion routine");
-
-        repStrengthsEl.innerHTML = repStrengths.slice(0, 3).map(text => `
-          <div class="insight-bullet-row positive">
-            <span class="bullet-icon"><i class="fa-solid fa-check"></i></span>
-            <span>${text}</span>
-          </div>
-        `).join('');
-
-        repAttentionEl.innerHTML = repAttentions.slice(0, 3).map(text => `
-          <div class="insight-bullet-row warning">
-            <span class="bullet-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
-            <span>${text}</span>
-          </div>
-        `).join('');
-      }
-    }
-
     const elAdvice = document.getElementById('nutritionistRecommendations');
     if (elAdvice) {
       if (avgClearance >= 80) {
-        elAdvice.textContent = `Great eating consistency! ${child ? formatStudentName(child.name) : 'Your child'} is meeting caloric and protein targets steadily.`;
+        elAdvice.textContent = `Great eating consistency! ${child ? child.name : 'Your child'} is meeting caloric and protein targets steadily.`;
       } else {
         elAdvice.textContent = `Good overall progress! Try adding a mild yogurt dip with vegetables to increase side dish clearance.`;
       }
