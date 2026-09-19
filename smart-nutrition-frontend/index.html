@@ -467,86 +467,192 @@
               </div>
             </div>
 
-            <!-- 3 PRIORITIZED TOP NUTRITION METRICS SUMMARY CARDS -->
-            <div class="top-summary-grid">
-              
-              <!-- CARD 1: TODAY'S LUNCH STATUS -->
-              <div class="top-summary-card" id="dashCardLunchStatus">
-                <div>
-                  <div class="top-summary-card-header">
-                    <div class="top-summary-card-title">
-                      <i class="fa-solid fa-utensils" style="color:#0284C7; font-size:0.85rem;"></i> Today's Lunch
-                    </div>
-                    <span id="dashLunchStatusBadge" class="badge-status badge-partial" style="font-size:0.7rem; font-weight:800;">Awaiting Meal</span>
-                  </div>
-                  <div style="font-size:1.45rem; font-weight:900; color:var(--text-primary); font-family:'Outfit', sans-serif;" id="dashLunchConsumptionPct">--% Eaten</div>
-                  <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.2rem;" id="dashLunchConsumedSummary">
-                    <span id="dashLunchConsumedCal">0 kcal</span> • <span id="dashLunchConsumedProt">0g Prot</span>
-                  </div>
-                </div>
-                <div style="margin-top:0.75rem; padding-top:0.6rem; border-top:1px solid var(--border-subtle); font-size:0.725rem; color:var(--text-muted);" id="dashLunchStatusDetail">
-                  Live meal clearance status
-                </div>
-              </div>
-
-              <!-- CARD 3: NUTRITION SCORE (PRIMARY PROMINENT METRIC) -->
-              <div class="top-summary-card nutrition-score-card" id="dashCardNutritionScore">
-                <div>
-                  <div class="top-summary-card-header">
-                    <div class="top-summary-card-title">
-                      <i class="fa-solid fa-award" style="color:var(--primary); font-size:0.85rem;"></i> Nutrition Score
-                    </div>
-                    <span id="dashNutritionClassificationBadge" class="badge-status badge-violet" style="font-size:0.7rem; font-weight:800;">Pending Evaluation</span>
-                  </div>
-                  <div class="nutrition-score-display">
-                    <span class="nutrition-score-val" id="dashNutritionScoreVal">--</span>
-                    <span class="nutrition-score-max">/ 100</span>
-                  </div>
-                </div>
-                <p id="dashNutritionInterpretation" style="font-size:0.75rem; color:var(--text-secondary); margin:0.35rem 0 0 0; line-height:1.35;">
-                  Calculated from daily caloric intake and macro balance.
-                </p>
-              </div>
-
-              <!-- CARD 4: DAILY TARGET -->
-              <div class="top-summary-card" id="dashCardTargetProgress">
-                <div>
-                  <div class="top-summary-card-header">
-                    <div class="top-summary-card-title">
-                      <i class="fa-solid fa-bullseye" style="color:#D97706; font-size:0.85rem;"></i> Daily Target
-                    </div>
-                    <span id="dashLunchAchievementPct" class="badge-status badge-violet" style="font-size:0.7rem; font-weight:800;">0% Met</span>
-                  </div>
-                  <div style="font-size:1.25rem; font-weight:800; color:#D97706;" id="dashLunchCalProgressText">
-                    <span id="dashLunchConsumedCalProgress">0</span> / <span id="dashLunchCalTarget">500</span> kcal
-                  </div>
-                  <div class="progress-bar-wrap">
-                    <div class="progress-bar-fill" id="dashLunchProgressBar" style="width:0%;"></div>
-                  </div>
-                </div>
-                <div style="margin-top:0.5rem; display:flex; justify-content:space-between; align-items:center; font-size:0.725rem; color:var(--text-muted);">
-                  <span>Target Achievement</span>
-                  <span id="dashLunchAchievementRatio" style="font-weight:700; color:var(--text-secondary);">0 / 100%</span>
-                </div>
-              </div>
-
-            </div>
           </div>
 
-          <!-- FULL ANALYTICS DASHBOARD (CHANGES 3, 4, 5, 6) -->
+          <!-- FULL PARENT DASHBOARD: 5-TIER INFORMATION HIERARCHY -->
           <div id="parentDashboardContent" class="hidden">
             
-            <!-- SECTION 2: QUICK ACTIONS SHORTCUT BAR (CHANGE 6: HIERARCHY) -->
-            <div class="card" style="margin-bottom:1.5rem; padding:1rem 1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
-              <div style="font-weight:800; font-size:0.875rem; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem;">
-                <i class="fa-solid fa-bolt" style="color:var(--primary);"></i> Quick Actions:
+            <!-- 1. HERO STATUS CARD: TODAY'S LUNCH STATUS -->
+            <div class="card hero-status-card" id="dashHeroStatusCard">
+              <div class="hero-status-header">
+                <div class="hero-status-title-group">
+                  <div class="hero-status-eyebrow">
+                    <span class="hero-status-dot" id="heroStatusDot"></span>
+                    <span>Today's Lunch Status</span>
+                  </div>
+                  <h2 class="hero-child-title">
+                    <span id="heroChildName">Child Profile</span> <span class="hero-child-class" id="heroChildClass">(Classroom)</span>
+                  </h2>
+                </div>
+                <div class="hero-status-badges">
+                  <span class="hero-badge badge-success" id="heroBadgeLunchLogged">
+                    <i class="fa-solid fa-check"></i> <span id="heroTextLunchLogged">Lunch Logged</span>
+                  </span>
+                  <span class="hero-badge badge-success" id="heroBadgeTeacherVerified">
+                    <i class="fa-solid fa-circle-check"></i> <span id="heroTextTeacherVerified">Teacher Verified</span>
+                  </span>
+                </div>
               </div>
-              <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
-                <!-- Primary Action: Upload Lunchbox -->
+
+              <!-- Hero Metrics Grid -->
+              <div class="hero-metrics-grid">
+                <!-- Protein Progress -->
+                <div class="hero-metric-item">
+                  <span class="hero-metric-label">Protein Progress</span>
+                  <span class="hero-metric-value val-protein" id="heroProteinProgress">23g / 24g Protein</span>
+                  <div class="hero-progress-bar">
+                    <div class="hero-progress-fill fill-protein" id="heroProteinBar" style="width: 95%;"></div>
+                  </div>
+                </div>
+
+                <!-- Calorie Progress -->
+                <div class="hero-metric-item">
+                  <span class="hero-metric-label">Calorie Progress</span>
+                  <span class="hero-metric-value" id="heroCalProgress">625 / 500 kcal</span>
+                  <div class="hero-progress-bar">
+                    <div class="hero-progress-fill fill-cal" id="heroCalBar" style="width: 100%;"></div>
+                  </div>
+                </div>
+
+                <!-- Meal Completion % -->
+                <div class="hero-metric-item">
+                  <span class="hero-metric-label">Meal Completion</span>
+                  <span class="hero-metric-value val-accent" id="heroMealCompletion">88% Meal Completion</span>
+                  <div class="hero-progress-bar">
+                    <div class="hero-progress-fill fill-completion" id="heroCompletionBar" style="width: 88%;"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Hero Footer: Last Updated Time -->
+              <div class="hero-status-footer">
+                <span class="hero-last-updated">
+                  <i class="fa-regular fa-clock"></i> Last Updated: <strong id="heroLastUpdatedTime">12:45 PM</strong>
+                </span>
+                <span class="hero-status-note" id="heroStatusNote">Teacher verified: Child finished lunch normally.</span>
+              </div>
+            </div>
+
+            <!-- 2. NUTRITION STRENGTHS & NEEDS ATTENTION -->
+            <div class="dashboard-insights-grid">
+              <!-- Nutrition Strengths -->
+              <div class="card strength-card">
+                <div class="insight-card-header">
+                  <div class="insight-card-title">
+                    <i class="fa-solid fa-circle-check" style="color:#10B981;"></i> Nutrition Strengths
+                  </div>
+                  <span class="insight-subtitle">What's working well</span>
+                </div>
+                <div id="nutritionStrengthsList" class="insight-bullet-list">
+                  <!-- Dynamic items -->
+                </div>
+              </div>
+
+              <!-- Needs Attention -->
+              <div class="card attention-card">
+                <div class="insight-card-header">
+                  <div class="insight-card-title">
+                    <i class="fa-solid fa-triangle-exclamation" style="color:#F59E0B;"></i> Needs Attention
+                  </div>
+                  <span class="insight-subtitle">Opportunities to improve</span>
+                </div>
+                <div id="needsAttentionList" class="insight-bullet-list">
+                  <!-- Dynamic items -->
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. WEEKLY PROGRESS SNAPSHOT -->
+            <div class="card weekly-progress-card">
+              <div class="weekly-progress-header">
+                <div>
+                  <h3 class="weekly-progress-title">
+                    <i class="fa-solid fa-chart-line" style="color:var(--primary);"></i> Weekly Progress Snapshot
+                  </h3>
+                  <span class="weekly-progress-subtitle">7-day summary of logged lunches, reviews, and nutrition scores</span>
+                </div>
+                <!-- Period & Filter controls -->
+                <div class="weekly-progress-controls">
+                  <div class="trend-nav-pill-group">
+                    <button type="button" class="btn-trend-nav" id="btnTrendPrevPeriod" title="Previous period">
+                      <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <span id="trendCurrentPeriodLabel">This Week</span>
+                    <button type="button" class="btn-trend-nav" id="btnTrendNextPeriod" title="Next period" disabled>
+                      <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                  </div>
+                  <div class="filter-btn-group">
+                    <button class="btn-action-outline active" id="btnFilterWeekly">Weekly</button>
+                    <button class="btn-action-outline" id="btnFilterMonthly">Monthly</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 5 Compact Metrics -->
+              <div class="progress-snapshot-grid">
+                <div class="snapshot-metric-card">
+                  <span class="snapshot-metric-lbl">Lunches Logged</span>
+                  <strong class="snapshot-metric-val" id="snapLunchesLogged">5/5</strong>
+                </div>
+                <div class="snapshot-metric-card">
+                  <span class="snapshot-metric-lbl">Average Protein</span>
+                  <strong class="snapshot-metric-val val-protein" id="snapAvgProtein">22g</strong>
+                </div>
+                <div class="snapshot-metric-card">
+                  <span class="snapshot-metric-lbl">Average Calories</span>
+                  <strong class="snapshot-metric-val" id="snapAvgCalories">510 kcal</strong>
+                </div>
+                <div class="snapshot-metric-card">
+                  <span class="snapshot-metric-lbl">Teacher Reviews</span>
+                  <strong class="snapshot-metric-val" id="snapTeacherReviews">5/5</strong>
+                </div>
+                <div class="snapshot-metric-card snapshot-score-card">
+                  <span class="snapshot-metric-lbl">Nutrition Score</span>
+                  <strong class="snapshot-metric-val val-score" id="snapNutritionScore">87/100</strong>
+                </div>
+              </div>
+
+              <!-- Embedded Trend Chart -->
+              <div style="height: 280px; width: 100%; margin-top: 1.25rem;">
+                <canvas id="intakeChart"></canvas>
+              </div>
+            </div>
+
+            <!-- 4. RECENT LUNCH ACTIVITY (SIMPLIFIED) -->
+            <div class="card recent-activity-card">
+              <div class="recent-activity-header">
+                <div>
+                  <h3 class="recent-activity-title">
+                    <i class="fa-solid fa-clock-rotate-left" style="color:var(--primary);"></i> Recent Lunch Activity
+                  </h3>
+                  <span class="recent-activity-subtitle">Latest packed lunches and teacher verifications</span>
+                </div>
+                <div style="display:flex; gap:0.5rem; align-items:center;">
+                  <button class="btn-action-outline" id="btnOverviewScanLunchbox" style="padding:0.4rem 0.85rem; font-size:0.8rem; font-weight:700;">
+                    <i class="fa-solid fa-camera"></i> Log New Meal
+                  </button>
+                  <button class="btn-action-outline" id="btnViewFullHistory" style="padding:0.4rem 0.85rem; font-size:0.8rem; font-weight:700;">
+                    <i class="fa-solid fa-list"></i> View Full History
+                  </button>
+                </div>
+              </div>
+
+              <!-- Simplified Meal Items (Clean compact list, max 3-4 recent meals) -->
+              <div id="scanHistoryContainer" class="simplified-recent-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- 5. QUICK ACTIONS (SECONDARY ACTIONS AT BOTTOM) -->
+            <div class="card quick-actions-card">
+              <div class="quick-actions-header">
+                <span class="quick-actions-title"><i class="fa-solid fa-bolt" style="color:var(--primary);"></i> Quick Actions</span>
+              </div>
+              <div class="quick-actions-grid">
                 <button class="btn-quick-primary" id="btnQuickActionUpload">
                   <i class="fa-solid fa-camera"></i> Upload Lunchbox
                 </button>
-                <!-- Secondary Actions -->
                 <button class="btn-quick-secondary" id="btnQuickActionMessage">
                   <i class="fa-solid fa-comments"></i> Message Teacher
                 </button>
@@ -556,104 +662,6 @@
                 <button class="btn-quick-secondary" id="btnParentRefreshDashboard">
                   <i class="fa-solid fa-rotate"></i> Refresh Status
                 </button>
-              </div>
-            </div>
-
-            <!-- SECTION 3: RECENT LUNCH ACTIVITY (CHANGE 4: LIGHTWEIGHT, DATABASE-DRIVEN) -->
-            <div class="card" style="margin-bottom:1.5rem;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.15rem; flex-wrap:wrap; gap:0.5rem;">
-                <div>
-                  <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-primary); margin:0;">
-                    <i class="fa-solid fa-clock-rotate-left" style="color:var(--primary);"></i> Recent Lunch Activity
-                  </h3>
-                  <small style="color:var(--text-muted);">Verified meal consumption logs and teacher clearances</small>
-                </div>
-                <button class="btn-action-outline" id="btnOverviewScanLunchbox" style="padding:0.4rem 0.85rem; font-size:0.8rem; font-weight:700;">
-                  <i class="fa-solid fa-camera"></i> Log New Meal
-                </button>
-              </div>
-
-              <div id="scanHistoryContainer" style="display:flex; flex-direction:column; gap:0.65rem; max-height:340px; overflow-y:auto; padding-right:0.25rem;">
-                <!-- Dynamically populated from backend database records -->
-                <div style="color:var(--text-muted); text-align:center; padding:2rem;">No Scan Data Available</div>
-              </div>
-            </div>
-
-            <!-- SECTION 4: AI NUTRITION INSIGHTS -->
-            <div class="card" style="margin-bottom:1.5rem;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.15rem; flex-wrap:wrap; gap:0.5rem;">
-                <div>
-                  <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-primary); margin:0;">
-                    <i class="fa-solid fa-brain" style="color:var(--primary);"></i> AI Nutrition Insights
-                  </h3>
-                  <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700;" id="aiInsightsChildLabel">• Live Student Analysis</span>
-                </div>
-                <button type="button" class="btn-action-outline" id="btnAskAiInsightsSummary" style="padding:0.45rem 0.95rem; font-size:0.775rem; font-weight:700; color:var(--primary); border-color:var(--primary); background:rgba(91,80,229,0.06); border-radius:var(--r-full);">
-                  <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary);"></i> Ask AI Assistant for Detailed Summary
-                </button>
-              </div>
-              <div id="aiInsightsContainer" class="ai-insights-grid">
-                <!-- Populated dynamically with standardized 3-card layout from backend /api/reports/insights/{studentId} -->
-                <div style="color:var(--text-muted); padding:1rem; text-align:center; grid-column:1/-1;">Analyzing student's live consumption profile...</div>
-              </div>
-            </div>
-
-            <!-- SECTION 5: WEEKLY / MONTHLY TRENDS (NUTRITION SCORE TREND /100) -->
-            <div class="card" style="margin-bottom:1.75rem;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.15rem; flex-wrap:wrap; gap:0.5rem;">
-                <div>
-                  <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-primary); margin:0;" id="dashTrendCardTitle">
-                    <i class="fa-solid fa-chart-line" style="color:var(--primary);"></i> Weekly Nutrition Score Trends (/100)
-                  </h3>
-                  <small style="color:var(--text-muted);" id="dashTrendCardSubtitle">Historical nutrition score evaluation across weekly meal clearances</small>
-                </div>
-                <div style="display:flex; align-items:center; gap:0.65rem; flex-wrap:wrap;">
-                  <!-- Period Navigator (< Period Label >) -->
-                  <div class="trend-nav-pill-group" style="display:inline-flex; align-items:center; background:var(--bg-page); border:1px solid var(--border-subtle); border-radius:var(--r-md); padding:2px 4px; gap:4px;">
-                    <button type="button" class="btn-trend-nav" id="btnTrendPrevPeriod" title="Previous period" style="background:transparent; border:none; color:var(--text-secondary); width:28px; height:28px; border-radius:4px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; transition:all 0.15s ease;">
-                      <i class="fa-solid fa-chevron-left" style="font-size:0.75rem;"></i>
-                    </button>
-                    <span id="trendCurrentPeriodLabel" style="font-size:0.75rem; font-weight:700; color:var(--text-primary); padding:0 6px; white-space:nowrap; min-width:85px; text-align:center;">This Week</span>
-                    <button type="button" class="btn-trend-nav" id="btnTrendNextPeriod" title="Next period" disabled style="background:transparent; border:none; color:var(--text-muted); width:28px; height:28px; border-radius:4px; cursor:not-allowed; display:inline-flex; align-items:center; justify-content:center; transition:all 0.15s ease; opacity:0.4;">
-                      <i class="fa-solid fa-chevron-right" style="font-size:0.75rem;"></i>
-                    </button>
-                  </div>
-
-                  <!-- Weekly / Monthly Toggle -->
-                  <div style="display:inline-flex; gap:0.35rem;">
-                    <button class="btn-action-outline active" id="btnFilterWeekly" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:700;">Weekly</button>
-                    <button class="btn-action-outline" id="btnFilterMonthly" style="padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:700;">Monthly</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Stat Pills with Clear Context Labels -->
-              <div class="trend-stat-row">
-                <div class="trend-stat-pill">
-                  <div class="trend-stat-label" id="dashAvgScoreLabel">Weekly Average Score</div>
-                  <div class="trend-stat-val" id="dashWeeklyAvgScore">-- / 100</div>
-                </div>
-                <div class="trend-stat-pill">
-                  <div class="trend-stat-label" id="dashHighestDayLabel">Highest Score Day</div>
-                  <div class="trend-stat-val" id="dashWeeklyHighestDay">--</div>
-                </div>
-                <div class="trend-stat-pill">
-                  <div class="trend-stat-label" id="dashLowestDayLabel">Lowest Score Day</div>
-                  <div class="trend-stat-val" id="dashWeeklyLowestDay">--</div>
-                </div>
-                <div class="trend-stat-pill">
-                  <div class="trend-stat-label" id="dashDaysMeetingTargetLabel">Days Meeting Target (&ge;70%)</div>
-                  <div class="trend-stat-val" id="dashWeeklyDaysMeetingTarget">--</div>
-                </div>
-              </div>
-
-              <div style="height: 340px; width: 100%;">
-                <canvas id="intakeChart"></canvas>
-              </div>
-
-              <!-- Dynamic Trend Explanation Cards (Phase 3: Real Data-Driven Meaning) -->
-              <div id="dashTrendExplanationContainer" style="margin-top:1.25rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:0.75rem;">
-                <!-- Populated dynamically from real reports -->
               </div>
             </div>
 

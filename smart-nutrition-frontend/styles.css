@@ -5984,3 +5984,494 @@ body.dark-theme .preset-ghost-icon {
   gap: 0.5rem;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   PARENT-FIRST DASHBOARD STYLES (INFORMATION HIERARCHY REFACTOR)
+═══════════════════════════════════════════════════════════════════ */
+/* 1. HERO STATUS CARD */
+.hero-status-card {
+  background: #182234 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  padding: 1.5rem !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.22) !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.hero-status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 1.15rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  margin-bottom: 1.25rem;
+}
+
+.hero-status-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.hero-status-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #94A3B8;
+}
+
+.hero-status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+  display: inline-block;
+}
+
+.hero-status-dot.dot-pending {
+  background: #F59E0B;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+}
+
+.hero-child-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.2px;
+}
+
+.hero-child-class {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #94A3B8;
+  margin-left: 0.35rem;
+}
+
+.hero-status-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.785rem;
+  font-weight: 700;
+}
+
+.hero-badge.badge-success {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #34D399;
+}
+
+.hero-badge.badge-pending {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #FBBF24;
+}
+
+.hero-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .hero-metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+}
+
+.hero-metric-item {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.hero-metric-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94A3B8;
+}
+
+.hero-metric-value {
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: 0.2px;
+}
+
+.hero-metric-value.val-protein {
+  color: #34D399;
+}
+
+.hero-metric-value.val-accent {
+  color: #818CF8;
+}
+
+.hero-progress-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+
+.hero-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.hero-progress-fill.fill-protein {
+  background: #34D399;
+}
+
+.hero-progress-fill.fill-cal {
+  background: #F59E0B;
+}
+
+.hero-progress-fill.fill-completion {
+  background: #818CF8;
+}
+
+.hero-status-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.8rem;
+  color: #94A3B8;
+}
+
+.hero-last-updated strong {
+  color: #F1F5F9;
+}
+
+.hero-status-note {
+  color: #CBD5E1;
+  font-weight: 500;
+}
+
+/* 2. NUTRITION STRENGTHS & NEEDS ATTENTION */
+.dashboard-insights-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 680px) {
+  .dashboard-insights-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+.strength-card {
+  border-top: 3.5px solid #10B981 !important;
+}
+
+.attention-card {
+  border-top: 3.5px solid #F59E0B !important;
+}
+
+.insight-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.insight-card-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.insight-subtitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.insight-bullet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.insight-bullet-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  font-size: 0.885rem;
+  line-height: 1.45;
+  color: var(--text-primary);
+}
+
+.insight-bullet-row .bullet-icon {
+  font-weight: 800;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.insight-bullet-row.positive .bullet-icon {
+  color: #10B981;
+}
+
+.insight-bullet-row.warning .bullet-icon {
+  color: #F59E0B;
+}
+
+/* 3. WEEKLY PROGRESS SNAPSHOT */
+.weekly-progress-card {
+  margin-bottom: 1.5rem !important;
+}
+
+.weekly-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.15rem;
+}
+
+.weekly-progress-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.weekly-progress-subtitle {
+  font-size: 0.785rem;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 0.2rem;
+}
+
+.weekly-progress-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.progress-snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.65rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 900px) {
+  .progress-snapshot-grid {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  }
+}
+
+.snapshot-metric-card {
+  background: var(--bg-page);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  padding: 0.75rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.snapshot-metric-lbl {
+  font-size: 0.685rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+}
+
+.snapshot-metric-val {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: 0.2px;
+}
+
+.snapshot-metric-val.val-protein {
+  color: #10B981;
+}
+
+.snapshot-metric-val.val-score {
+  color: var(--primary);
+}
+
+.snapshot-score-card {
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.25);
+}
+
+/* 4. SIMPLIFIED RECENT LUNCH ACTIVITY */
+.recent-activity-card {
+  margin-bottom: 1.5rem !important;
+}
+
+.recent-activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.recent-activity-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.recent-activity-subtitle {
+  font-size: 0.785rem;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 0.2rem;
+}
+
+.simplified-recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.simplified-meal-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1.1rem;
+  background: var(--bg-page);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  gap: 1rem;
+  flex-wrap: wrap;
+  transition: border-color 0.15s ease;
+}
+
+.simplified-meal-card:hover {
+  border-color: var(--primary);
+}
+
+.simplified-meal-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.simplified-meal-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-md);
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.simplified-meal-info {
+  min-width: 0;
+}
+
+.simplified-meal-name {
+  font-size: 0.885rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.simplified-meal-date {
+  font-size: 0.775rem;
+  color: var(--text-muted);
+}
+
+.simplified-meal-stats {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.simplified-meal-stat-item {
+  font-size: 0.825rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.simplified-meal-stat-item strong {
+  color: var(--text-primary);
+}
+
+/* 5. QUICK ACTIONS */
+.quick-actions-card {
+  margin-bottom: 1.5rem !important;
+  padding: 1.15rem 1.35rem !important;
+}
+
+.quick-actions-header {
+  margin-bottom: 0.85rem;
+}
+
+.quick-actions-title {
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.quick-actions-grid {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+

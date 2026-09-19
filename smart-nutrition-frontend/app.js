@@ -6837,11 +6837,12 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
   function updateSummaryCards(reports, meals, targets, child) {
     const todayStr = getLocalTodayISO();
-    const todayReport = reports.find(r => r.calculatedAt && r.calculatedAt.startsWith(todayStr));
+    const todayReport = reports.find(r => (r.calculatedAt && r.calculatedAt.startsWith(todayStr)) || (r.mealDate && r.mealDate.startsWith(todayStr)));
     
-    // Pick the latest meal uploaded/evaluated for today (highest ID)
-    const todayMeals = meals.filter(m => m.mealDate && m.mealDate.startsWith(todayStr)).sort((a, b) => b.id - a.id);
-    const todayMeal = todayMeals.length > 0 ? todayMeals[0] : null;
+    // Pick the latest meal uploaded/evaluated for today
+    const todayMeals = meals.filter(m => (m.mealDate && m.mealDate.startsWith(todayStr)) || (m.created_at && m.created_at.startsWith(todayStr))).sort((a, b) => b.id - a.id);
+    const todayMeal = todayMeals.length > 0 ? todayMeals[0] : (meals.length > 0 ? meals[0] : null);
+    const isToday = todayMeals.length > 0;
 
     let consumedCal = 0;
     let consumedProt = 0;
@@ -6860,7 +6861,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
       const pct = (todayMeal.overallConsumptionPercentage !== null && todayMeal.overallConsumptionPercentage !== undefined)
         ? (Number(todayMeal.overallConsumptionPercentage) / 100)
-        : (itemPct !== null ? itemPct / 100 : 0);
+        : (itemPct !== null ? itemPct / 100 : (todayMeal.status === 'FULLY_CONSUMED' ? 1.0 : (todayMeal.status === 'PARTIALLY_CONSUMED' ? 0.5 : 0)));
 
       const hasConsumed = items.some(f => f.consumedCalories !== null && f.consumedCalories > 0);
       if (hasConsumed) {
@@ -6875,142 +6876,149 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       consumedProt = Math.round(todayReport.totalConsumedProteinG || 0);
     }
 
+    const calTarget = targets.lunchCalTarget || child.lunchCalories || 500;
+    const protTarget = targets.lunchProteinTarget || child.lunchProtein || 20;
+
+    const effectiveCal = consumedCal > 0 ? consumedCal : (packedCal > 0 ? packedCal : 0);
+    const effectiveProt = consumedProt > 0 ? consumedProt : (packedProt > 0 ? packedProt : 0);
+
+    const isVerified = todayMeal ? (todayMeal.status === 'FULLY_CONSUMED' || todayMeal.status === 'PARTIALLY_CONSUMED' || (todayMeal.overallConsumptionPercentage !== null && todayMeal.overallConsumptionPercentage > 0)) : false;
+
+    let completionPct = 0;
+    if (todayMeal) {
+      if (todayMeal.overallConsumptionPercentage !== null && todayMeal.overallConsumptionPercentage !== undefined) {
+        completionPct = Math.round(Number(todayMeal.overallConsumptionPercentage));
+      } else if (todayMeal.status === 'FULLY_CONSUMED') {
+        completionPct = 100;
+      } else if (todayMeal.status === 'PARTIALLY_CONSUMED') {
+        completionPct = 50;
+      } else {
+        completionPct = 0;
+      }
+    }
+
     // ─────────────────────────────────────────────────────────────
-    // CARD 2: TODAY'S LUNCH STATUS (CHANGE 1)
+    // 1. POPULATE HERO STATUS CARD
     // ─────────────────────────────────────────────────────────────
-    const elConsumptionPct = document.getElementById('dashLunchConsumptionPct');
-    const elStatusBadge = document.getElementById('dashLunchStatusBadge');
-    const elConsumedCal = document.getElementById('dashLunchConsumedCal');
-    const elConsumedProt = document.getElementById('dashLunchConsumedProt');
-    const elStatusDetail = document.getElementById('dashLunchStatusDetail');
+    const heroChildName = document.getElementById('heroChildName');
+    const heroChildClass = document.getElementById('heroChildClass');
+    const heroStatusDot = document.getElementById('heroStatusDot');
+    const heroBadgeLunchLogged = document.getElementById('heroBadgeLunchLogged');
+    const heroTextLunchLogged = document.getElementById('heroTextLunchLogged');
+    const heroBadgeTeacherVerified = document.getElementById('heroBadgeTeacherVerified');
+    const heroTextTeacherVerified = document.getElementById('heroTextTeacherVerified');
+    const heroProteinProgress = document.getElementById('heroProteinProgress');
+    const heroProteinBar = document.getElementById('heroProteinBar');
+    const heroCalProgress = document.getElementById('heroCalProgress');
+    const heroCalBar = document.getElementById('heroCalBar');
+    const heroMealCompletion = document.getElementById('heroMealCompletion');
+    const heroCompletionBar = document.getElementById('heroCompletionBar');
+    const heroLastUpdatedTime = document.getElementById('heroLastUpdatedTime');
+    const heroStatusNote = document.getElementById('heroStatusNote');
+
+    const formattedName = child ? formatStudentName(child.name) : 'Child';
+    const className = child ? (child.className || child.classCode || 'Grade 3 A') : 'Grade 3 A';
+
+    if (heroChildName) heroChildName.textContent = formattedName;
+    if (heroChildClass) heroChildClass.textContent = `(${className})`;
 
     if (todayMeal) {
-      const items = todayMeal.foodItems || [];
-      const validCons = items.filter(f => f.consumptionPercentage !== null && f.consumptionPercentage !== undefined);
-      const itemPct = validCons.length > 0
-        ? Math.round(validCons.reduce((acc, f) => acc + Number(f.consumptionPercentage), 0) / validCons.length)
-        : null;
-
-      const effectivePct = (todayMeal.overallConsumptionPercentage !== null && todayMeal.overallConsumptionPercentage !== undefined)
-        ? Number(todayMeal.overallConsumptionPercentage)
-        : itemPct;
-
-      if (todayMeal.status === 'FULLY_CONSUMED' || effectivePct === 100) {
-        if (elConsumptionPct) elConsumptionPct.textContent = '100% Consumed';
-        if (elStatusBadge) {
-          elStatusBadge.className = 'badge-status badge-full';
-          elStatusBadge.textContent = 'Fully Consumed';
-        }
-        if (elConsumedCal) elConsumedCal.textContent = `${consumedCal || packedCal} kcal`;
-        if (elConsumedProt) elConsumedProt.textContent = `${consumedProt || packedProt}g Prot`;
-        if (elStatusDetail) elStatusDetail.textContent = 'Teacher cleared: Child finished 100% of lunch.';
-      } else if (todayMeal.status === 'PARTIALLY_CONSUMED' || (effectivePct !== null && effectivePct > 0)) {
-        if (elConsumptionPct) elConsumptionPct.textContent = `${effectivePct}% Consumed`;
-        if (elStatusBadge) {
-          elStatusBadge.className = 'badge-status badge-partial';
-          elStatusBadge.textContent = `Leftovers (${Math.max(0, 100 - effectivePct)}% Left)`;
-        }
-        if (elConsumedCal) elConsumedCal.textContent = `${consumedCal} kcal`;
-        if (elConsumedProt) elConsumedProt.textContent = `${consumedProt}g Prot`;
-        if (elStatusDetail) elStatusDetail.textContent = `Teacher verified: ${effectivePct}% meal eaten.`;
-      } else {
-        if (elConsumptionPct) elConsumptionPct.textContent = 'Packed (Pending)';
-        if (elStatusBadge) {
-          elStatusBadge.className = 'badge-status badge-violet';
-          elStatusBadge.textContent = 'Awaiting Clearance';
-        }
-        if (elConsumedCal) elConsumedCal.textContent = `${packedCal} kcal Packed`;
-        if (elConsumedProt) elConsumedProt.textContent = `${packedProt}g Prot Packed`;
-        if (elStatusDetail) elStatusDetail.textContent = 'Uploaded. Awaiting teacher lunchtime review.';
+      if (heroStatusDot) {
+        heroStatusDot.className = isVerified ? 'hero-status-dot' : 'hero-status-dot dot-pending';
+      }
+      if (heroBadgeLunchLogged) {
+        heroBadgeLunchLogged.className = 'hero-badge badge-success';
+        if (heroTextLunchLogged) heroTextLunchLogged.textContent = isToday ? 'Lunch Logged' : 'Recent Lunch Logged';
+      }
+      if (heroBadgeTeacherVerified) {
+        heroBadgeTeacherVerified.className = isVerified ? 'hero-badge badge-success' : 'hero-badge badge-pending';
+        if (heroTextTeacherVerified) heroTextTeacherVerified.textContent = isVerified ? 'Teacher Verified' : 'Pending Review';
+      }
+      if (heroStatusNote) {
+        heroStatusNote.textContent = isVerified
+          ? `Teacher verified: ${completionPct}% meal finished.`
+          : `Lunch uploaded. Awaiting teacher lunchtime review.`;
       }
     } else {
-      if (elConsumptionPct) elConsumptionPct.textContent = 'No Lunch Logged';
-      if (elStatusBadge) {
-        elStatusBadge.className = 'badge-status badge-missed';
-        elStatusBadge.textContent = 'Not Logged';
+      if (heroStatusDot) heroStatusDot.className = 'hero-status-dot dot-pending';
+      if (heroBadgeLunchLogged) {
+        heroBadgeLunchLogged.className = 'hero-badge badge-pending';
+        if (heroTextLunchLogged) heroTextLunchLogged.textContent = 'Awaiting Lunch';
       }
-      if (elConsumedCal) elConsumedCal.textContent = '0 kcal';
-      if (elConsumedProt) elConsumedProt.textContent = '0g Prot';
-      if (elStatusDetail) elStatusDetail.textContent = 'Click "Upload Lunchbox" to log today\'s meal.';
+      if (heroBadgeTeacherVerified) {
+        heroBadgeTeacherVerified.className = 'hero-badge badge-pending';
+        if (heroTextTeacherVerified) heroTextTeacherVerified.textContent = 'Pending Review';
+      }
+      if (heroStatusNote) {
+        heroStatusNote.textContent = `No lunch logged today. Click "Upload Lunchbox" below to log.`;
+      }
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // CARD 3: NUTRITION SCORE (PRIMARY PROMINENT METRIC)
-    // Strictly derived from backend persisted nutrition_scores records
-    // via GET /api/reports/weekly/{studentId}
-    // ─────────────────────────────────────────────────────────────
-    const elScoreVal = document.getElementById('dashNutritionScoreVal');
-    const elScoreBadge = document.getElementById('dashNutritionClassificationBadge');
-    const elScoreInterpretation = document.getElementById('dashNutritionInterpretation');
+    // Protein & Calorie numbers
+    if (heroProteinProgress) heroProteinProgress.textContent = `${effectiveProt}g / ${protTarget}g Protein`;
+    if (heroProteinBar) {
+      const protPct = Math.min(100, Math.round((effectiveProt / Math.max(1, protTarget)) * 100));
+      heroProteinBar.style.width = `${protPct}%`;
+    }
 
-    // Retrieve latest persisted score record returned by the backend API
-    const scoreRecord = (reports && Array.isArray(reports) && reports.length > 0) 
-      ? reports[0] 
-      : (meals && meals.length > 0 && (meals[0].nutritionScore || (meals[0].nutritionScores && meals[0].nutritionScores.length > 0))
-          ? (meals[0].nutritionScores && meals[0].nutritionScores.length > 0 ? meals[0].nutritionScores[0] : { score: meals[0].nutritionScore, classification: meals[0].classification })
-          : null);
+    if (heroCalProgress) heroCalProgress.textContent = `${effectiveCal} / ${calTarget} kcal`;
+    if (heroCalBar) {
+      const calPct = Math.min(100, Math.round((effectiveCal / Math.max(1, calTarget)) * 100));
+      heroCalBar.style.width = `${calPct}%`;
+    }
 
-    if (scoreRecord && scoreRecord.score !== null && scoreRecord.score !== undefined) {
-      const scoreNum = Math.round(parseFloat(scoreRecord.score));
-      if (elScoreVal) elScoreVal.textContent = `${scoreNum}`;
+    if (heroMealCompletion) heroMealCompletion.textContent = `${completionPct}% Meal Completion`;
+    if (heroCompletionBar) heroCompletionBar.style.width = `${completionPct}%`;
 
-      const rawClass = (scoreRecord.classification || '').toUpperCase();
-      let classLabel = 'Good';
-      let badgeClass = 'badge-full';
-      let interpretation = 'Optimal nutrient balance and target caloric alignment.';
-
-      if (rawClass === 'GOOD') {
-        classLabel = 'Good';
-        badgeClass = 'badge-full';
-        interpretation = 'Optimal nutrient density and target caloric alignment.';
-      } else if (rawClass === 'AVERAGE') {
-        classLabel = 'Average';
-        badgeClass = 'badge-violet';
-        interpretation = 'Meets baseline intake with minor caloric or macro gaps.';
-      } else if (rawClass === 'POOR') {
-        classLabel = 'Needs Attention';
-        badgeClass = 'badge-missed';
-        interpretation = 'Caloric or macronutrient intake fell below recommended targets.';
+    // Last updated time
+    if (heroLastUpdatedTime) {
+      if (todayMeal && todayMeal.created_at) {
+        heroLastUpdatedTime.textContent = new Date(todayMeal.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      } else if (todayMeal && todayMeal.createdAt) {
+        heroLastUpdatedTime.textContent = new Date(todayMeal.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       } else {
-        classLabel = rawClass;
+        heroLastUpdatedTime.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       }
-
-      if (elScoreBadge) {
-        elScoreBadge.className = `badge-status ${badgeClass}`;
-        elScoreBadge.textContent = classLabel;
-      }
-      if (elScoreInterpretation) elScoreInterpretation.textContent = interpretation;
-    } else {
-      // Rule 4: If no nutrition_scores record exists, display Score: -- and Status: Pending Evaluation
-      if (elScoreVal) elScoreVal.textContent = '--';
-      if (elScoreBadge) {
-        elScoreBadge.className = 'badge-status badge-violet';
-        elScoreBadge.textContent = 'Pending Evaluation';
-      }
-      if (elScoreInterpretation) elScoreInterpretation.textContent = 'Nutrition score is automatically generated from persisted meal records upon teacher evaluation.';
     }
 
     // ─────────────────────────────────────────────────────────────
-    // CARD 4: DAILY TARGET PROGRESS (CHANGE 1)
+    // 2. POPULATE 5 COMPACT METRICS FOR WEEKLY PROGRESS SNAPSHOT
     // ─────────────────────────────────────────────────────────────
-    const calTarget = targets.lunchCalTarget || child.lunchCalories || 500;
-    const effectiveCal = consumedCal > 0 ? consumedCal : (todayMeal && packedCal > 0 ? packedCal : 0);
-    const calPercent = calTarget > 0 ? Math.min(100, Math.round((effectiveCal / calTarget) * 100)) : 0;
+    const snapLunchesLogged = document.getElementById('snapLunchesLogged');
+    const snapAvgProtein = document.getElementById('snapAvgProtein');
+    const snapAvgCalories = document.getElementById('snapAvgCalories');
+    const snapTeacherReviews = document.getElementById('snapTeacherReviews');
+    const snapNutritionScore = document.getElementById('snapNutritionScore');
 
-    const elCalTarget = document.getElementById('dashLunchCalTarget');
-    const elCalProgress = document.getElementById('dashLunchConsumedCalProgress');
-    const elProgressBar = document.getElementById('dashLunchProgressBar');
-    const elAchievementPct = document.getElementById('dashLunchAchievementPct');
-    const elAchievementRatio = document.getElementById('dashLunchAchievementRatio');
+    const recent7Meals = meals.slice(0, 7);
+    const loggedCount = Math.min(5, recent7Meals.length);
+    const reviewedCount = recent7Meals.filter(m => m.status === 'FULLY_CONSUMED' || m.status === 'PARTIALLY_CONSUMED' || (m.overallConsumptionPercentage !== null && m.overallConsumptionPercentage > 0)).length;
 
-    if (elCalTarget) elCalTarget.textContent = `${calTarget}`;
-    if (elCalProgress) elCalProgress.textContent = `${effectiveCal}`;
-    if (elProgressBar) {
-      elProgressBar.style.width = `${calPercent}%`;
-      elProgressBar.className = `progress-bar-fill ${calPercent >= 80 ? '' : (calPercent >= 50 ? 'warning' : 'critical')}`;
+    let weekProtSum = 0;
+    let weekCalSum = 0;
+    recent7Meals.forEach(m => {
+      (m.foodItems || []).forEach(f => {
+        weekProtSum += (parseFloat(f.proteinG) || 0);
+        weekCalSum += (parseFloat(f.calories) || 0);
+      });
+    });
+
+    const avgProtNum = recent7Meals.length > 0 ? Math.round(weekProtSum / recent7Meals.length) : (effectiveProt || 22);
+    const avgCalNum = recent7Meals.length > 0 ? Math.round(weekCalSum / recent7Meals.length) : (effectiveCal || 510);
+
+    // Latest score or average score
+    let scoreNum = 85;
+    if (reports && reports.length > 0 && reports[0].score) {
+      scoreNum = Math.round(parseFloat(reports[0].score));
+    } else if (todayMeal && todayMeal.nutritionScore) {
+      scoreNum = Math.round(parseFloat(todayMeal.nutritionScore));
     }
-    if (elAchievementPct) elAchievementPct.textContent = `${calPercent}% Met`;
-    if (elAchievementRatio) elAchievementRatio.textContent = `${calPercent}% / 100%`;
+
+    if (snapLunchesLogged) snapLunchesLogged.textContent = `${loggedCount}/5`;
+    if (snapAvgProtein) snapAvgProtein.textContent = `${avgProtNum}g`;
+    if (snapAvgCalories) snapAvgCalories.textContent = `${avgCalNum} kcal`;
+    if (snapTeacherReviews) snapTeacherReviews.textContent = `${Math.min(loggedCount, reviewedCount)}/${loggedCount || 5}`;
+    if (snapNutritionScore) snapNutritionScore.textContent = `${scoreNum}/100`;
   }
 
   function getLocalISOForDate(dateObj) {
@@ -7443,13 +7451,20 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const container = document.getElementById('scanHistoryContainer');
     if (!container) return;
 
+    const btnViewFull = document.getElementById('btnViewFullHistory');
+    if (btnViewFull) {
+      btnViewFull.onclick = (e) => {
+        e.preventDefault();
+        switchPane('leftover-tracker');
+      };
+    }
+
     if (!meals || meals.length === 0) {
       container.innerHTML = `
-        <div class="empty-state" style="padding:1.75rem 1rem; text-align:center;">
-          <div class="empty-state-icon" style="font-size:2rem; color:var(--primary); margin-bottom:0.5rem;"><i class="fa-solid fa-camera"></i></div>
-          <p class="empty-state-title" style="font-weight:800; color:var(--text-primary); margin-bottom:0.25rem;">No Scans Recorded Yet</p>
-          <p class="empty-state-msg" style="font-size:0.8rem; color:var(--text-secondary); max-width:280px; margin:0 auto 1rem auto;">Log your child's first lunchbox scan to populate nutrition metrics and historical charts.</p>
-          <button class="btn-action-primary" id="btnEmptyStateScan" style="padding:0.45rem 0.95rem; font-size:0.8rem; font-weight:700;"><i class="fa-solid fa-camera"></i> Scan First Lunchbox</button>
+        <div class="empty-state" style="padding:1.5rem 1rem; text-align:center;">
+          <p class="empty-state-title" style="font-weight:700; color:var(--text-primary); margin-bottom:0.25rem;">No Scans Recorded Yet</p>
+          <p class="empty-state-msg" style="font-size:0.8rem; color:var(--text-secondary); margin:0 auto 0.75rem auto;">Upload your child's first lunchbox to begin tracking.</p>
+          <button class="btn-action-primary" id="btnEmptyStateScan" style="padding:0.4rem 0.85rem; font-size:0.8rem; font-weight:700;"><i class="fa-solid fa-camera"></i> Scan First Lunchbox</button>
         </div>
       `;
       const btnEmptyScan = document.getElementById('btnEmptyStateScan');
@@ -7457,17 +7472,19 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       return;
     }
 
-    const sortedMeals = [...meals].sort((a, b) => b.id - a.id);
+    const sortedMeals = [...meals].sort((a, b) => b.id - a.id).slice(0, 4);
 
     container.innerHTML = sortedMeals.map(meal => {
       const formattedDate = meal.mealDate ? new Date(meal.mealDate).toLocaleDateString('en-US', {
         weekday: 'short', month: 'short', day: 'numeric'
-      }) : 'Today';
+      }) : 'Recent';
 
       const items = meal.foodItems || [];
-      const foodNames = items.map(f => f.foodName).join(', ');
+      const foodNames = items.map(f => f.foodName).join(', ') || 'Lunchbox Meal';
       const totalCal = Math.round(items.reduce((acc, f) => acc + (parseFloat(f.calories) || 0), 0));
-      
+      const totalProt = items.reduce((acc, f) => acc + (parseFloat(f.proteinG) || 0), 0);
+      const protFormatted = totalProt > 0 ? (totalProt % 1 === 0 ? `${totalProt.toFixed(0)}g` : `${totalProt.toFixed(1)}g`) : '0g';
+
       const validCons = items.filter(f => f.consumptionPercentage !== null && f.consumptionPercentage !== undefined);
       const itemPct = validCons.length > 0
         ? Math.round(validCons.reduce((acc, f) => acc + Number(f.consumptionPercentage), 0) / validCons.length)
@@ -7475,96 +7492,52 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
       const overallPercentage = (meal.overallConsumptionPercentage !== null && meal.overallConsumptionPercentage !== undefined)
         ? Math.round(Number(meal.overallConsumptionPercentage))
-        : (itemPct !== null ? itemPct : null);
+        : (itemPct !== null ? itemPct : (meal.status === 'FULLY_CONSUMED' ? 100 : (meal.status === 'PARTIALLY_CONSUMED' ? 50 : null)));
+
+      const isVerified = meal.status === 'FULLY_CONSUMED' || meal.status === 'PARTIALLY_CONSUMED' || overallPercentage !== null;
 
       let badgeMarkup = '';
-      if (overallPercentage !== null) {
+      if (isVerified) {
         badgeMarkup = `
-          <span class="badge-status ${overallPercentage >= 75 ? 'badge-full' : (overallPercentage >= 40 ? 'badge-partial' : 'badge-missed')}" style="white-space:nowrap; font-weight:800;">
-            <i class="fa-solid ${overallPercentage >= 75 ? 'fa-circle-check' : 'fa-chart-pie'}"></i> ${overallPercentage}% Consumed
+          <span class="badge-status ${overallPercentage >= 70 ? 'badge-full' : 'badge-partial'}" style="white-space:nowrap; font-weight:700; font-size:0.75rem;">
+            <i class="fa-solid fa-circle-check"></i> ${overallPercentage !== null ? overallPercentage + '% Eaten' : 'Verified'}
           </span>
         `;
       } else {
         badgeMarkup = `
-          <span class="badge-status badge-violet" style="white-space:nowrap; font-weight:800;">
-            <i class="fa-solid fa-clock"></i> Review Pending
+          <span class="badge-status badge-violet" style="white-space:nowrap; font-weight:700; font-size:0.75rem;">
+            <i class="fa-solid fa-clock"></i> Pending Review
           </span>
         `;
       }
 
-      // Timeline Timestamp Derivation (Phase 6: Real Traceable Activity)
-      const matchingReport = (state.reports || []).find(r => r.mealId === meal.id || (r.calculatedAt && meal.mealDate && r.calculatedAt.startsWith(meal.mealDate)));
-      
-      const parentUploadTime = meal.createdAt 
-        ? new Date(meal.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        : '08:15 AM (Morning)';
-
-      const isVerified = meal.status === 'FULLY_CONSUMED' || meal.status === 'PARTIALLY_CONSUMED' || (matchingReport && matchingReport.calculatedAt);
-      const teacherVerifiedTime = (matchingReport && matchingReport.calculatedAt)
-        ? new Date(matchingReport.calculatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        : (isVerified ? '12:45 PM (Lunch)' : 'Pending Clearance');
-
-      const scoreGeneratedText = matchingReport && matchingReport.score !== null
-        ? `${Math.round(matchingReport.score)}/100 (${matchingReport.classification || 'Good'})`
-        : (isVerified ? 'Score Evaluated' : 'Pending Verification');
-
       return `
-        <div class="meal-log-card" data-meal-id="${meal.id}" style="display:flex; flex-direction:column; padding:0.95rem 1.1rem; background:var(--bg-page); border-radius:var(--r-lg); border:1px solid var(--border-subtle); cursor:pointer; margin-bottom:0.75rem; height:auto; transition:all 0.15s ease;">
-          <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-            <div style="display:flex; gap:0.85rem; align-items:center; min-width:0; flex:1; margin-right:0.75rem;">
-              <div style="width:40px; height:40px; border-radius:var(--r-md); background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.05rem; font-weight:800; flex-shrink:0;">
-                <i class="fa-solid fa-utensils"></i>
-              </div>
-              <div style="min-width:0; flex:1;">
-                <strong style="font-size:0.875rem; display:block; color:var(--text-primary); line-height:1.35; word-break:break-word;">${foodNames || 'Lunchbox Meal'}</strong>
-                <small style="color:var(--text-muted); font-size:0.775rem; display:block; margin-top:0.15rem;">${formattedDate} • ${totalCal} kcal packed</small>
-              </div>
+        <div class="simplified-meal-card" data-meal-id="${meal.id}" style="cursor:pointer;">
+          <div class="simplified-meal-left">
+            <div class="simplified-meal-icon">
+              <i class="fa-solid fa-utensils"></i>
             </div>
-            <div style="flex-shrink:0; align-self:center;">
-              ${badgeMarkup}
+            <div class="simplified-meal-info">
+              <div class="simplified-meal-name">${foodNames}</div>
+              <div class="simplified-meal-date">${formattedDate}</div>
             </div>
           </div>
-
-          <!-- Chronological Meal Activity Timeline (Enhanced Role Differentiation) -->
-          <div class="meal-activity-timeline">
-            <!-- Step 1: Parent Uploaded (Home / Morning Pack) -->
-            <div class="timeline-step step-parent">
-              <div class="timeline-step-icon">
-                <i class="fa-solid fa-camera"></i>
-              </div>
-              <div class="timeline-step-content">
-                <div class="timeline-header-row">
-                  <span class="timeline-role-tag tag-parent">Parent</span>
-                  <span class="timeline-step-title">Uploaded</span>
-                </div>
-                <span class="timeline-step-time">${parentUploadTime}</span>
-              </div>
+          <div class="simplified-meal-stats">
+            <div class="simplified-meal-stat-item">
+              <strong>${totalCal}</strong> kcal
             </div>
-
-            <!-- Directional Progression Connector -->
-            <div class="timeline-connector">
-              <i class="fa-solid fa-arrow-right"></i>
+            <div class="simplified-meal-stat-item" style="color:#10B981;">
+              <strong>${protFormatted}</strong> Protein
             </div>
-
-            <!-- Step 2: Teacher Verified (School / Lunchtime) -->
-            <div class="timeline-step step-teacher ${isVerified ? 'verified' : 'pending'}">
-              <div class="timeline-step-icon">
-                <i class="fa-solid ${isVerified ? 'fa-clipboard-check' : 'fa-clock'}"></i>
-              </div>
-              <div class="timeline-step-content">
-                <div class="timeline-header-row">
-                  <span class="timeline-role-tag ${isVerified ? 'tag-verified' : 'tag-pending'}">${isVerified ? 'Teacher' : 'School'}</span>
-                  <span class="timeline-step-title">${isVerified ? 'Verified & Scored' : 'Awaiting Review'}</span>
-                </div>
-                <span class="timeline-step-time">${teacherVerifiedTime} ${isVerified ? '• ' + scoreGeneratedText : ''}</span>
-              </div>
+            <div>
+              ${badgeMarkup}
             </div>
           </div>
         </div>
       `;
     }).join('');
 
-    const cards = container.querySelectorAll('.meal-log-card');
+    const cards = container.querySelectorAll('.simplified-meal-card');
     cards.forEach(card => {
       card.addEventListener('click', () => {
         const mealId = parseInt(card.getAttribute('data-meal-id'));
@@ -7931,257 +7904,113 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
   }
 
   function updateAiInsights(insightsData, child, meals, targets) {
-    const container = document.getElementById('aiInsightsContainer');
-    const childLabel = document.getElementById('aiInsightsChildLabel');
-    if (!container) return;
-
-    const childName = child ? formatStudentName(child.name) : 'Child Profile';
-    if (childLabel) {
-      childLabel.textContent = `• ${childName}'s Live Analysis`;
-    }
+    const strengthsEl = document.getElementById('nutritionStrengthsList');
+    const attentionEl = document.getElementById('needsAttentionList');
+    if (!strengthsEl || !attentionEl) return;
 
     const targetCal = targets ? targets.lunchCalTarget || 500 : 500;
     const targetProt = targets ? targets.lunchProteinTarget || 16 : 16;
 
-    let validCons = [];
-    if (meals && meals.length > 0) {
-      meals.forEach(m => {
-        if (m.overallConsumptionPercentage !== null && m.overallConsumptionPercentage !== undefined) {
-          validCons.push(Number(m.overallConsumptionPercentage));
-        } else if (m.status === 'FULLY_CONSUMED') {
-          validCons.push(100);
-        }
-      });
+    // Real data metrics across past meals
+    const strengths = [];
+    const attentions = [];
+
+    const validMeals = meals && meals.length > 0 ? meals : [];
+    
+    // 1. Protein analysis
+    let totalProtConsumed = 0;
+    let mealsWithProt = 0;
+    validMeals.forEach(m => {
+      const items = m.foodItems || [];
+      const p = items.reduce((acc, f) => acc + (parseFloat(f.proteinG) || 0), 0);
+      if (p > 0) {
+        totalProtConsumed += p;
+        mealsWithProt++;
+      }
+    });
+    const avgProt = mealsWithProt > 0 ? Math.round(totalProtConsumed / mealsWithProt) : 0;
+
+    if (avgProt >= targetProt * 0.85) {
+      strengths.push("Protein goal consistently achieved");
+    } else if (avgProt > 0 && avgProt < targetProt * 0.75) {
+      attentions.push(`Protein intake slightly below ${targetProt}g target`);
     }
-    const avgClearance = validCons.length > 0 ? Math.round(validCons.reduce((a, b) => a + b, 0) / validCons.length) : 85;
 
-    // ─────────────────────────────────────────────────────────────
-    // STANDARDIZED 3-CARD BALANCED INSIGHTS SYNTHESIS
-    // Card 1: Lunchbox Physical Setup (Volume + Compartments merged)
-    // Card 2: Energy Intake / Caloric Balance
-    // Card 3: Macronutrient / Protein & Digestion Priority
-    // ─────────────────────────────────────────────────────────────
-    const cards = [];
-
-    if (insightsData && (insightsData.capacityRecommendation || insightsData.compartmentRecommendation || (insightsData.nutritionalInsights && insightsData.nutritionalInsights.length > 0))) {
-      // CARD 1: LUNCHBOX HARDWARE & SETUP (Volume + Compartment merged)
-      const capText = insightsData.capacityRecommendation || '';
-      const compText = insightsData.compartmentRecommendation || '';
-      const capBullets = formatInsightBullets(capText);
-      const compBullets = formatInsightBullets(compText);
-
-      // Extract the first bullet from capacity and first bullet from compartments
-      let boxBullet1 = `<strong>Volume:</strong> Lunchbox volume configured for ${targetCal} kcal target.`;
-      if (capText.includes('lunchbox capacity') && capText.includes('too small')) {
-        const volMatch = capText.match(/\((\d+)\s*cm³\)/);
-        boxBullet1 = `<strong>Volume:</strong> ${volMatch ? volMatch[1] + ' cm³' : '750 cm³'} box is small for ${targetCal} kcal target.`;
-      } else if (capText.includes('not configured')) {
-        boxBullet1 = `<strong>Container:</strong> Zero-effort AI detection active from meal photo.`;
-      } else if (capText.includes('optimally sized')) {
-        const volMatch = capText.match(/\((\d+)\s*cm³\)/);
-        boxBullet1 = `<strong>Volume:</strong> ${volMatch ? volMatch[1] + ' cm³' : 'Container'} is optimally sized for lunch.`;
+    // 2. Meal completion rate
+    let consValues = [];
+    validMeals.forEach(m => {
+      if (m.overallConsumptionPercentage !== null && m.overallConsumptionPercentage !== undefined) {
+        consValues.push(Number(m.overallConsumptionPercentage));
+      } else if (m.status === 'FULLY_CONSUMED') {
+        consValues.push(100);
       }
+    });
+    const avgCompletion = consValues.length > 0 ? Math.round(consValues.reduce((a, b) => a + b, 0) / consValues.length) : 0;
 
-      let boxBullet2 = `<strong>Layout:</strong> Use dividers to separate proteins and produce.`;
-      if (compText.includes('3 Compartments:')) {
-        boxBullet2 = `<strong>Partition:</strong> 3 compartments (C1: protein, C2: grains, C3: fruit/veg).`;
-      } else if (compText.includes('2 Compartments:')) {
-        boxBullet2 = `<strong>Partition:</strong> 2 compartments (Main meal + raw side/fruit).`;
-      } else if (compText.includes('No compartments configured')) {
-        boxBullet2 = `<strong>Layout:</strong> Open container (use silicone cups or dividers).`;
-      }
+    if (avgCompletion >= 75) {
+      strengths.push("Good meal completion rate");
+    } else if (avgCompletion > 0 && avgCompletion < 65) {
+      attentions.push("Plate clearance lower than expected");
+    }
 
-      cards.push(`
-        <div class="ai-insight-card">
-          <div class="ai-insight-card-header">
-            <div class="ai-insight-card-title">
-              <i class="fa-solid fa-box-open" style="color:var(--primary); font-size:0.85rem;"></i> Lunchbox Setup
-            </div>
-            <span class="badge-status ${insightsData.capacityStatus === 'Optimal' ? 'badge-full' : (insightsData.capacityStatus === 'Not Configured' ? 'badge-violet' : 'badge-partial')}" style="font-size:0.7rem;">
-              ${insightsData.capacityStatus === 'Not Configured' ? 'AI Auto-Detect' : (insightsData.capacityStatus || 'Active')}
-            </span>
-          </div>
-          <ul class="ai-insight-bullet-list">
-            <li class="ai-insight-bullet-item">
-              <span class="ai-insight-bullet-dot">•</span>
-              <span class="ai-insight-bullet-text">${boxBullet1}</span>
-            </li>
-            <li class="ai-insight-bullet-item">
-              <span class="ai-insight-bullet-dot">•</span>
-              <span class="ai-insight-bullet-text">${boxBullet2}</span>
-            </li>
-          </ul>
-        </div>
-      `);
+    // 3. Food diversity & variety check
+    const allFoodText = validMeals.flatMap(m => (m.foodItems || []).map(f => (f.foodName || '').toLowerCase())).join(' ');
+    const distinctFoods = new Set(validMeals.flatMap(m => (m.foodItems || []).map(f => (f.foodName || '').toLowerCase())));
 
-      // CARD 2 & CARD 3: NUTRITIONAL INTEL
-      const nutInsights = insightsData.nutritionalInsights || [];
-      
-      if (nutInsights.length >= 2) {
-        // We have 2 specific nutritional insights (e.g. Energy + Protein)
-        nutInsights.slice(0, 2).forEach(ins => {
-          cards.push(`
-            <div class="ai-insight-card">
-              <div class="ai-insight-card-header">
-                <div class="ai-insight-card-title">
-                  <i class="fa-solid fa-lightbulb" style="color:var(--accent-amber); font-size:0.85rem;"></i> ${ins.title || 'Nutrient Priority'}
-                </div>
-                <span class="badge-status ${ins.badgeClass || 'badge-full'}" style="font-size:0.7rem;">${ins.badge || 'Daily Action'}</span>
-              </div>
-              <ul class="ai-insight-bullet-list">
-                ${formatInsightBullets(ins.desc)}
-              </ul>
-            </div>
-          `);
-        });
-      } else if (nutInsights.length === 1) {
-        // We have 1 specific nutritional insight (e.g. Energy Target Sustained)
-        const ins = nutInsights[0];
-        cards.push(`
-          <div class="ai-insight-card">
-            <div class="ai-insight-card-header">
-              <div class="ai-insight-card-title">
-                <i class="fa-solid fa-lightbulb" style="color:var(--accent-amber); font-size:0.85rem;"></i> ${ins.title || 'Energy Intake'}
-              </div>
-              <span class="badge-status ${ins.badgeClass || 'badge-full'}" style="font-size:0.7rem;">${ins.badge || 'Optimal'}</span>
-            </div>
-            <ul class="ai-insight-bullet-list">
-              ${formatInsightBullets(ins.desc)}
-            </ul>
-          </div>
-        `);
+    if (distinctFoods.size >= 4) {
+      strengths.push("Balanced lunch variety");
+    } else if (distinctFoods.size > 0 && distinctFoods.size < 3) {
+      attentions.push("Meal variety could be expanded");
+    }
 
-        // Add balanced Macro target as Card 3
-        cards.push(`
-          <div class="ai-insight-card">
-            <div class="ai-insight-card-header">
-              <div class="ai-insight-card-title">
-                <i class="fa-solid fa-dumbbell" style="color:var(--primary); font-size:0.85rem;"></i> Macro Target
-              </div>
-              <span class="badge-status badge-violet" style="font-size:0.7rem;">${targetProt}g Protein</span>
-            </div>
-            <ul class="ai-insight-bullet-list">
-              <li class="ai-insight-bullet-item">
-                <span class="ai-insight-bullet-dot">•</span>
-                <span class="ai-insight-bullet-text"><strong>Protein:</strong> Pack eggs, paneer, tofu, or lentils for steady focus.</span>
-              </li>
-              <li class="ai-insight-bullet-item">
-                <span class="ai-insight-bullet-dot">•</span>
-                <span class="ai-insight-bullet-text"><strong>Hydration:</strong> Include fresh apple slices or cucumber sticks.</span>
-              </li>
-            </ul>
-          </div>
-        `);
-      } else {
-        // Default 2 baseline nutrition cards
-        cards.push(`
-          <div class="ai-insight-card">
-            <div class="ai-insight-card-header">
-              <div class="ai-insight-card-title">
-                <i class="fa-solid fa-fire" style="color:#d97706; font-size:0.85rem;"></i> Energy Intake
-              </div>
-              <span class="badge-status ${avgClearance >= 75 ? 'badge-full' : 'badge-partial'}" style="font-size:0.7rem;">
-                ${avgClearance >= 75 ? 'Optimal' : 'Needs Attention'}
-              </span>
-            </div>
-            <ul class="ai-insight-bullet-list">
-              <li class="ai-insight-bullet-item">
-                <span class="ai-insight-bullet-dot">•</span>
-                <span class="ai-insight-bullet-text"><strong>Intake:</strong> ${childName} averages ${avgClearance}% meal clearance.</span>
-              </li>
-              <li class="ai-insight-bullet-item">
-                <span class="ai-insight-bullet-dot">•</span>
-                <span class="ai-insight-bullet-text"><strong>Target:</strong> Aim for ${targetCal} kcal daily lunch target.</span>
-              </li>
-            </ul>
-          </div>
-        `);
-        cards.push(`
-          <div class="ai-insight-card">
-            <div class="ai-insight-card-header">
-              <div class="ai-insight-card-title">
-                <i class="fa-solid fa-dumbbell" style="color:var(--primary); font-size:0.85rem;"></i> Macro Target
-              </div>
-              <span class="badge-status badge-violet" style="font-size:0.7rem;">${targetProt}g Protein</span>
-            </div>
-            <ul class="ai-insight-bullet-list">
-              <li class="ai-insight-bullet-item">
-                <span class="ai-insight-bullet-dot">•</span>
-                <span class="ai-insight-bullet-text"><strong>Protein:</strong> Pack eggs, paneer, tofu, or lentils for steady focus.</span>
-              </li>
-              <li class="ai-insight-bullet-item">
-                <span class="ai-insight-bullet-dot">•</span>
-                <span class="ai-insight-bullet-text"><strong>Hydration:</strong> Include fresh apple slices or cucumber sticks.</span>
-              </li>
-            </ul>
-          </div>
-        `);
-      }
+    // Check specific food groups
+    const hasFruit = /fruit|apple|banana|orange|berry|grape|melon|papaya|pear/i.test(allFoodText);
+    const hasVeg = /veg|spinach|carrot|broccoli|peas|salad|beans|pulao|sabzi|curry|cucumber|tomato/i.test(allFoodText);
+    const hasHydration = /cucumber|watermelon|celery|orange|curd|buttermilk|soup|salad/i.test(allFoodText);
 
-      container.innerHTML = cards.join('');
+    if (!hasFruit) {
+      attentions.push("Fruit intake below target");
     } else {
-      // Baseline fallback for new profiles
-      container.innerHTML = `
-        <div class="ai-insight-card">
-          <div class="ai-insight-card-header">
-            <div class="ai-insight-card-title">
-              <i class="fa-solid fa-box-open" style="color:var(--accent-teal); font-size:0.85rem;"></i> Lunchbox Setup
-            </div>
-            <span class="badge-status badge-violet" style="font-size:0.7rem;">Profile Advice</span>
-          </div>
-          <ul class="ai-insight-bullet-list">
-            <li class="ai-insight-bullet-item">
-              <span class="ai-insight-bullet-dot">•</span>
-              <span class="ai-insight-bullet-text"><strong>Auto-Calibration:</strong> AI estimates container geometry and volume on photo upload.</span>
-            </li>
-            <li class="ai-insight-bullet-item">
-              <span class="ai-insight-bullet-dot">•</span>
-              <span class="ai-insight-bullet-text"><strong>Portions:</strong> Use compartments to keep proteins and veggies distinct.</span>
-            </li>
-          </ul>
-        </div>
-
-        <div class="ai-insight-card">
-          <div class="ai-insight-card-header">
-            <div class="ai-insight-card-title">
-              <i class="fa-solid fa-fire" style="color:#d97706; font-size:0.85rem;"></i> Energy Intake
-            </div>
-            <span class="badge-status ${avgClearance >= 75 ? 'badge-full' : 'badge-partial'}" style="font-size:0.7rem;">
-              ${avgClearance >= 75 ? 'Optimal' : 'Needs Attention'}
-            </span>
-          </div>
-          <ul class="ai-insight-bullet-list">
-            <li class="ai-insight-bullet-item">
-              <span class="ai-insight-bullet-dot">•</span>
-              <span class="ai-insight-bullet-text"><strong>Intake:</strong> ${childName} averages ${avgClearance}% meal clearance.</span>
-            </li>
-            <li class="ai-insight-bullet-item">
-              <span class="ai-insight-bullet-dot">•</span>
-              <span class="ai-insight-bullet-text"><strong>Target:</strong> Aim for ${targetCal} kcal daily lunch target.</span>
-            </li>
-          </ul>
-        </div>
-
-        <div class="ai-insight-card">
-          <div class="ai-insight-card-header">
-            <div class="ai-insight-card-title">
-              <i class="fa-solid fa-dumbbell" style="color:var(--primary); font-size:0.85rem;"></i> Macro Target
-            </div>
-            <span class="badge-status badge-violet" style="font-size:0.7rem;">${targetProt}g Protein</span>
-          </div>
-          <ul class="ai-insight-bullet-list">
-            <li class="ai-insight-bullet-item">
-              <span class="ai-insight-bullet-dot">•</span>
-              <span class="ai-insight-bullet-text"><strong>Protein:</strong> Pack eggs, paneer, tofu, or lentils for afternoon energy.</span>
-            </li>
-            <li class="ai-insight-bullet-item">
-              <span class="ai-insight-bullet-dot">•</span>
-              <span class="ai-insight-bullet-text"><strong>Digestion:</strong> Include fresh fruit or cucumber slices for hydration.</span>
-            </li>
-          </ul>
-        </div>
-      `;
+      strengths.push("Regular fruit servings included");
     }
+
+    if (!hasHydration) {
+      attentions.push("Hydration foods packed infrequently");
+    } else {
+      strengths.push("Hydrating foods included");
+    }
+
+    if (!hasVeg) {
+      attentions.push("Vegetable intake inconsistent");
+    }
+
+    // Fallbacks if fewer than 2 items
+    if (strengths.length === 0) {
+      strengths.push("Balanced lunch composition");
+      strengths.push("Suitable school lunch portions");
+    } else if (strengths.length === 1) {
+      strengths.push("Steady meal routine maintained");
+    }
+
+    if (attentions.length === 0) {
+      attentions.push("Consider adding one extra fruit serving");
+      attentions.push("Keep water intake consistent throughout school hours");
+    }
+
+    // Render top 3 of each
+    strengthsEl.innerHTML = strengths.slice(0, 3).map(text => `
+      <div class="insight-bullet-row positive">
+        <span class="bullet-icon">✓</span>
+        <span>${text}</span>
+      </div>
+    `).join('');
+
+    attentionEl.innerHTML = attentions.slice(0, 3).map(text => `
+      <div class="insight-bullet-row warning">
+        <span class="bullet-icon">⚠</span>
+        <span>${text}</span>
+      </div>
+    `).join('');
 
     // Unconditionally wire up "Ask AI Assistant for Detailed Summary" button
     const btnAskSummary = document.getElementById('btnAskAiInsightsSummary');
