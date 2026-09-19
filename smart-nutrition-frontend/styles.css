@@ -7247,6 +7247,10 @@ body.dark-theme .preset-ghost-icon {
 .attention-card {
   border: 1px solid var(--border-subtle) !important;
   border-top: 1px solid var(--border-subtle) !important;
+  border-radius: var(--r-xl) !important;
+  padding: 1.35rem 1.5rem !important;
+  background: var(--bg-card) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
 }
 
 .insight-card-header {
