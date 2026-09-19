@@ -223,12 +223,12 @@ export async function supabaseGetParentChildren(parentId) {
         weightKg: s.weight_kg,
         rollNumber: s.roll_number,
         className: classNameFormatted,
-        classCode: c.class_code || 'CLS-3214',
+        classCode: c.class_code || 'CLS-6070',
         classId: c.id,
         studentClass: {
           id: c.id,
           className: c.class_name,
-          classCode: c.class_code || 'CLS-3214',
+          classCode: c.class_code || 'CLS-6070',
           section: c.section,
           teacherName: 'Ms. Jothi'
         },
@@ -354,12 +354,12 @@ export async function supabaseAddChild(parentId, childData) {
       weightKg: newStudent.weight_kg,
       rollNumber: newStudent.roll_number,
       className: childData.classCode || 'Grade 5 - B',
-      classCode: childData.classCode || 'CLS-3214',
+      classCode: childData.classCode || 'CLS-6070',
       classId: newStudent.class_id,
       studentClass: {
         id: classId,
         className: 'Grade 5',
-        classCode: childData.classCode || 'CLS-3214',
+        classCode: childData.classCode || 'CLS-6070',
         section: 'B',
         teacherName: 'Ms. Jothi'
       },
@@ -443,10 +443,14 @@ export async function supabaseDeleteChild(childId, parentId) {
  */
 export async function supabaseLinkClassCode(studentId, classCode) {
   try {
+    const rawCode = (classCode || '').trim().toUpperCase();
+    const codes = (rawCode === 'CLS-6070' || rawCode === 'CLS-3214') ? ['CLS-6070', 'CLS-3214'] : [rawCode];
     const { data: cls, error: clsErr } = await supabase
       .from('classes')
       .select('id, class_name, section, class_code')
-      .eq('class_code', classCode.trim().toUpperCase())
+      .in('class_code', codes)
+      .order('id', { ascending: true })
+      .limit(1)
       .maybeSingle();
 
     if (clsErr || !cls) {
@@ -1070,10 +1074,14 @@ export async function supabaseGetAllUserMessages(userId) {
  */
 export async function supabaseGetStudentsByClassCode(classCode) {
   try {
+    const rawCode = (classCode || 'CLS-6070').trim().toUpperCase();
+    const codes = (rawCode === 'CLS-6070' || rawCode === 'CLS-3214') ? ['CLS-6070', 'CLS-3214'] : [rawCode];
     const { data: cls } = await supabase
       .from('classes')
       .select('id, class_name, section, class_code')
-      .eq('class_code', (classCode || 'CLS-3214').trim().toUpperCase())
+      .in('class_code', codes)
+      .order('id', { ascending: true })
+      .limit(1)
       .maybeSingle();
 
     if (!cls) return [];
@@ -1151,10 +1159,14 @@ export async function supabaseGetStudentNutritionReports(studentId) {
  */
 export async function supabaseGetClassMeals(classCode) {
   try {
+    const rawCode = (classCode || 'CLS-6070').trim().toUpperCase();
+    const codes = (rawCode === 'CLS-6070' || rawCode === 'CLS-3214') ? ['CLS-6070', 'CLS-3214'] : [rawCode];
     const { data: cls } = await supabase
       .from('classes')
       .select('id')
-      .eq('class_code', (classCode || 'CLS-3214').trim().toUpperCase())
+      .in('class_code', codes)
+      .order('id', { ascending: true })
+      .limit(1)
       .maybeSingle();
 
     if (!cls) return [];

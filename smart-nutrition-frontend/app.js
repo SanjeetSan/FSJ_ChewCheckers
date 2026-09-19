@@ -3379,7 +3379,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         return new Response(JSON.stringify(messages || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if (path.startsWith('/api/teacher/students')) {
         const urlObj = new URL('http://dummy.com' + path);
-        const classCode = urlObj.searchParams.get('classCode') || (state.activeClass?.classCode || 'CLS-3214');
+        const classCode = urlObj.searchParams.get('classCode') || (state.activeClass?.classCode || 'CLS-6070');
         const students = await supabaseGetStudentsByClassCode(classCode);
         return new Response(JSON.stringify(students || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if (path.startsWith('/api/reports/weekly/') || path.startsWith('/api/reports/monthly/')) {
@@ -3391,12 +3391,12 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         const insights = await supabaseGetStudentInsights(studentId);
         return new Response(JSON.stringify(insights || {}), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if (path.startsWith('/api/meals/today/class/')) {
-        const classCode = path.split('/').pop() || (state.activeClass?.classCode || 'CLS-3214');
+        const classCode = path.split('/').pop() || (state.activeClass?.classCode || 'CLS-6070');
         const classMeals = await supabaseGetClassMeals(classCode);
         return new Response(JSON.stringify(classMeals || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if (path.startsWith('/api/teacher/reports/')) {
         const urlObj = new URL('http://dummy.com' + path);
-        const classCode = urlObj.searchParams.get('classCode') || (state.activeClass?.classCode || 'CLS-3214');
+        const classCode = urlObj.searchParams.get('classCode') || (state.activeClass?.classCode || 'CLS-6070');
         const isWeekly = path.includes('/weekly');
         const report = await supabaseGetTeacherClassReport(classCode, isWeekly);
         return new Response(JSON.stringify(report), { status: 200, headers: { 'Content-Type': 'application/json' } });
@@ -4643,7 +4643,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
   }
 
   async function loadTeacherTodayMealRoster(selectedDateStr) {
-    const classCode = (state.activeClass && state.activeClass.classCode) ? state.activeClass.classCode : "CLS3B-9842";
+    const classCode = (state.activeClass && state.activeClass.classCode) ? state.activeClass.classCode : "CLS-6070";
     state.currentTeacherClassCode = classCode;
 
     // Handle Interactive Date Picker
@@ -4659,7 +4659,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
     // Header Details
     const headerClassName = document.getElementById('teacherHeaderClassName');
-    if (headerClassName) headerClassName.textContent = (state.activeClass && state.activeClass.className) ? `${state.activeClass.className} Class` : "Grade 3B Class";
+    if (headerClassName) headerClassName.textContent = (state.activeClass && state.activeClass.className) ? `${state.activeClass.className} Class` : "Grade 5 Class";
     const headerClassCode = document.getElementById('teacherHeaderClassCode');
     if (headerClassCode) headerClassCode.textContent = classCode;
     const headerTeacherName = document.getElementById('teacherHeaderTeacherName');
@@ -5279,7 +5279,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       btn.addEventListener('click', async () => {
         const studentId = parseInt(btn.getAttribute('data-student-id'));
         const studentName = btn.getAttribute('data-student-name');
-        const cCode = (state.activeClass && state.activeClass.classCode) ? state.activeClass.classCode : "CLS-3214";
+        const cCode = (state.activeClass && state.activeClass.classCode) ? state.activeClass.classCode : "CLS-6070";
         const todayStr = new Date().toISOString().split('T')[0];
         const storageKey = `chewcheckers_absent_${cCode}_${todayStr}`;
         
