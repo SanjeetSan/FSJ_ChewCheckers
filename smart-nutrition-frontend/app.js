@@ -6517,34 +6517,34 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
               const initial = (s.name || 'S').trim().charAt(0).toUpperCase();
 
               return `
-                <div class="attention-student-card" style="background:var(--bg-page); border:1px solid var(--border-subtle); border-radius:var(--r-md); padding:0.85rem 1rem; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
-                  <div class="attention-student-left" style="display:flex; align-items:center; gap:0.75rem; flex:1 1 200px; min-width:0;">
-                    <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg, var(--accent-rose), #FB7185); color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem; flex-shrink:0; box-shadow:0 2px 8px rgba(244,63,94,0.3);">
-                      ${initial}
+                <div class="attention-student-card">
+                  <div class="attention-student-top">
+                    <div class="attention-student-identity">
+                      <div class="attention-student-avatar">
+                        ${initial}
+                      </div>
+                      <div class="attention-student-info">
+                        <strong class="attention-student-name">${s.name}</strong>
+                        <span class="attention-student-code">${s.studentCode || ''}</span>
+                      </div>
                     </div>
-                    <div style="min-width:0;">
-                      <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
-                        <strong style="font-size:0.9rem; color:var(--text-primary); font-weight:700;">${s.name}</strong>
-                        <span style="font-size:0.75rem; color:var(--primary); font-family:monospace; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); padding:1px 6px; border-radius:4px; font-weight:700;">${s.studentCode || ''}</span>
-                      </div>
-                      <div style="margin-top:0.3rem;">
-                        <span class="badge-status-attention" style="padding:0.2rem 0.55rem; font-size:0.72rem; display:inline-flex; align-items:center; gap:0.35rem; border-radius:6px;">
-                          <i class="fa-solid fa-triangle-exclamation"></i> ${reasonText}
-                        </span>
-                      </div>
+                    <div>
+                      <span class="badge-status-attention attention-student-badge">
+                        <i class="fa-solid fa-triangle-exclamation"></i> ${reasonText}
+                      </span>
                     </div>
                   </div>
 
-                  <div class="attention-student-actions" style="display:flex; gap:0.4rem; align-items:center; flex-shrink:0;">
+                  <div class="attention-student-actions">
                     ${studentMeal ? `
-                      <button class="btn-action-primary btn-action-review-meal" data-meal-id="${studentMeal.id}" data-student-name="${escapedName}" data-current-pct="${currentPct}" style="height:32px; padding:0 12px; font-size:0.78rem; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; gap:5px;">
+                      <button class="btn-action-primary btn-action-review-meal" data-meal-id="${studentMeal.id}" data-student-name="${escapedName}" data-current-pct="${currentPct}">
                         <i class="fa-solid fa-camera"></i> Review
                       </button>
                     ` : ''}
-                    <button class="btn-action-outline btn-action-chat-parent" data-parent-id="${s.parentId || ''}" data-student-name="${escapedName}" data-reason="${reasonText.replace(/"/g, '&quot;')}" style="height:32px; padding:0 12px; font-size:0.78rem; font-weight:600; border-radius:8px; display:inline-flex; align-items:center; gap:5px;">
+                    <button class="btn-action-outline btn-action-chat-parent" data-parent-id="${s.parentId || ''}" data-student-name="${escapedName}" data-reason="${reasonText.replace(/"/g, '&quot;')}">
                       <i class="fa-solid fa-comments"></i> Message
                     </button>
-                    <button class="btn-action-outline btn-action-view-profile" data-student-id="${s.id}" style="height:32px; padding:0 12px; font-size:0.78rem; font-weight:600; border-radius:8px; display:inline-flex; align-items:center; gap:5px;">
+                    <button class="btn-action-outline btn-action-view-profile" data-student-id="${s.id}">
                       <i class="fa-solid fa-id-card"></i> Profile
                     </button>
                   </div>
