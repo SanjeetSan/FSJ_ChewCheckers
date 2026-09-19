@@ -27,6 +27,8 @@ import {
   supabaseSendMessage,
   supabaseGetAllUserMessages,
   supabaseGetStudentsByClassCode,
+  supabaseGetEligibleStudents,
+  supabaseUnlinkStudent,
   supabaseGetStudentNutritionReports,
   supabaseGetClassMeals,
   supabaseGetTeacherClassReport,
@@ -3421,6 +3423,24 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         const currentUserId = state.user?.id || (state.user?.email === 'pradeep@gmail.com' ? 83 : (state.user?.email === 'dharun@gmail.com' ? 4 : 2));
         const messages = await supabaseGetAllUserMessages(currentUserId);
         return new Response(JSON.stringify(messages || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path.startsWith('/api/teacher/students/eligible')) {
+        const urlObj = new URL('http://dummy.com' + path);
+        const query = urlObj.searchParams.get('query') || '';
+        const classCode = urlObj.searchParams.get('classCode') || (state.activeClass?.classCode || 'CLS-6070');
+        const eligible = await supabaseGetEligibleStudents(classCode, query);
+        return new Response(JSON.stringify(eligible || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path.includes('/link') && path.startsWith('/api/teacher/students/') && options.method === 'POST') {
+        const parts = path.split('/');
+        const studentId = parseInt(parts[4]);
+        const urlObj = new URL('http://dummy.com' + path);
+        const classCode = urlObj.searchParams.get('classCode') || (state.activeClass?.classCode || 'CLS-6070');
+        const linked = await supabaseLinkClassCode(studentId, classCode);
+        return new Response(JSON.stringify(linked), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path.includes('/unlink') && path.startsWith('/api/teacher/students/') && options.method === 'DELETE') {
+        const parts = path.split('/');
+        const studentId = parseInt(parts[4]);
+        await supabaseUnlinkStudent(studentId);
+        return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if (path.startsWith('/api/teacher/students')) {
         const urlObj = new URL('http://dummy.com' + path);
         const classCode = urlObj.searchParams.get('classCode') || (state.activeClass?.classCode || 'CLS-6070');
@@ -5534,7 +5554,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       btn.addEventListener('click', async () => {
         const studentId = btn.getAttribute('data-student-id');
         const studentName = btn.getAttribute('data-student-name');
-        const classCode = state.activeClass.classCode;
+        const classCode = (state.activeClass && state.activeClass.classCode) ? state.activeClass.classCode : (state.currentTeacherClassCode || "CLS-6070");
 
         const confirmed = await showConfirmModal({
           title: `Unlink ${studentName}?`,
@@ -5547,13 +5567,16 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         if (confirmed) {
           setButtonLoading(btn, true, 'Unlinking...');
           try {
-            const res = await safeFetch(`/api/teacher/students/${studentId}/unlink?classCode=${classCode}`, {
+            const res = await safeFetch(`/api/teacher/students/${studentId}/unlink?classCode=${encodeURIComponent(classCode)}`, {
               method: 'DELETE',
               headers: { 'Authorization': `Bearer ${state.token}` }
             });
             if (res.ok) {
               showToast(`Unlinked student ${studentName} successfully.`);
+              state.activeClassStudents = [];
+              state.teacherClassOverviewMeals = [];
               await loadTeacherTodayMealRoster();
+              await loadTeacherReports();
             } else {
               const errData = await res.json().catch(() => ({}));
               showToast(`Failed to unlink: ${errData.message || 'Error'}`, "error");
@@ -7030,7 +7053,8 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:1.5rem; color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Loading eligible students...</td></tr>`;
 
       try {
-        const res = await safeFetch(`/api/teacher/students/eligible?query=${encodeURIComponent(query)}`, {
+        const classCode = (state.activeClass && state.activeClass.classCode) ? state.activeClass.classCode : (state.currentTeacherClassCode || "CLS-6070");
+        const res = await safeFetch(`/api/teacher/students/eligible?query=${encodeURIComponent(query)}&classCode=${encodeURIComponent(classCode)}`, {
           method: 'GET',
           headers: { 'Authorization': `Bearer ${state.token}` }
         });
@@ -7058,11 +7082,11 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
               btn.addEventListener('click', async () => {
                 const studentId = btn.getAttribute('data-student-id');
                 const studentName = btn.getAttribute('data-student-name');
-                const classCode = state.activeClass.classCode;
+                const currentClassCode = (state.activeClass && state.activeClass.classCode) ? state.activeClass.classCode : (state.currentTeacherClassCode || "CLS-6070");
 
                 setButtonLoading(btn, true, 'Linking...');
                 try {
-                  const linkRes = await safeFetch(`/api/teacher/students/${studentId}/link?classCode=${classCode}`, {
+                  const linkRes = await safeFetch(`/api/teacher/students/${studentId}/link?classCode=${encodeURIComponent(currentClassCode)}`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${state.token}` }
                   });
@@ -7070,7 +7094,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
                   if (linkRes.ok) {
                     showToast(`Linked student ${studentName} successfully!`);
                     linkStudentModal.classList.remove('open');
+                    state.activeClassStudents = [];
+                    state.teacherClassOverviewMeals = [];
                     await loadTeacherTodayMealRoster();
+                    await loadTeacherReports();
                   } else {
                     const errData = await linkRes.json().catch(() => ({}));
                     showToast(`Link failed: ${errData.message || 'Error'}`, "error");

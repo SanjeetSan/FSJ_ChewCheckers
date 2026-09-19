@@ -1187,6 +1187,84 @@ export async function supabaseGetStudentsByClassCode(classCode) {
 }
 
 /**
+ * Get Eligible Students to link to class
+ * (Students who are active and not currently enrolled in this class)
+ */
+export async function supabaseGetEligibleStudents(classCode, searchQuery = '') {
+  try {
+    const rawCode = (classCode || 'CLS-6070').trim().toUpperCase();
+    const codes = (rawCode === 'CLS-6070' || rawCode === 'CLS-3214') ? ['CLS-6070', 'CLS-3214'] : [rawCode];
+    const { data: cls } = await supabase
+      .from('classes')
+      .select('id, class_name, section, class_code')
+      .in('class_code', codes)
+      .order('id', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    const currentClassId = cls ? cls.id : null;
+
+    let query = supabase
+      .from('students')
+      .select('id, name, student_code, roll_number, gender, date_of_birth, blood_group, class_id')
+      .eq('is_active', true)
+      .order('id', { ascending: false });
+
+    const { data: allStudents, error } = await query;
+    if (error) throw error;
+
+    let eligible = (allStudents || []).filter(s => {
+      if (currentClassId && s.class_id === currentClassId) {
+        return false;
+      }
+      return true;
+    }).map(s => ({
+      id: s.id,
+      name: s.name,
+      studentCode: s.student_code || `STU-${s.id}`,
+      rollNumber: s.roll_number || 'N/A',
+      gender: s.gender || 'N/A',
+      dateOfBirth: s.date_of_birth,
+      bloodGroup: s.blood_group
+    }));
+
+    if (searchQuery && searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      eligible = eligible.filter(s =>
+        (s.name && s.name.toLowerCase().includes(q)) ||
+        (s.studentCode && s.studentCode.toLowerCase().includes(q)) ||
+        (s.rollNumber && s.rollNumber.toLowerCase().includes(q))
+      );
+    }
+
+    return eligible.slice(0, 30);
+  } catch (err) {
+    console.error('Supabase get eligible students error:', err);
+    return [];
+  }
+}
+
+/**
+ * Unlink Student from Class (sets class_id = null)
+ */
+export async function supabaseUnlinkStudent(studentId) {
+  try {
+    const { data, error } = await supabase
+      .from('students')
+      .update({ class_id: null })
+      .eq('id', studentId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { success: true, student: data };
+  } catch (err) {
+    console.error('Supabase unlink student error:', err);
+    throw err;
+  }
+}
+
+/**
  * Fetch Nutrition Evaluation Reports for Student (Weekly/Monthly Dashboard Trends)
  */
 export async function supabaseGetStudentNutritionReports(studentId) {
