@@ -6914,7 +6914,7 @@ body.dark-theme .preset-ghost-icon {
 .hero-status-title-group {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.35rem;
 }
 
 .hero-status-eyebrow {
