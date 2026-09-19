@@ -3912,6 +3912,161 @@ body.dark-theme .toast-item.toast-info {
 .btn-quick-pct.btn-0:hover, .btn-quick-pct.btn-0.active { background: #EF4444; color: #FFFFFF; }
 
 /* ═══════════════════════════════════════════════════════════════════
+   PORTION CORRECTION MODAL (CLEAN, UNIFIED, MINIMALIST PALETTE)
+   ═══════════════════════════════════════════════════════════════════ */
+.portion-correction-dialog {
+  max-width: 500px !important;
+  border-radius: var(--r-card) !important;
+}
+
+.portion-correction-dialog .modal-title-heading {
+  font-size: 1.15rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.portion-correction-dialog .modal-title-heading i {
+  color: var(--primary);
+  font-size: 1rem;
+}
+
+.portion-student-card {
+  background: var(--bg-page);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-btn);
+  padding: 1rem 1.25rem;
+  margin-top: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.portion-student-badge {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.portion-student-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 0.25rem;
+}
+
+.portion-student-sub {
+  font-size: 0.825rem;
+  color: var(--text-secondary);
+  margin-top: 0.35rem;
+  line-height: 1.4;
+}
+
+/* 5-Column Selection Grid */
+.portion-pct-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.65rem;
+  margin-bottom: 1.5rem;
+}
+
+.btn-pct-select {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-btn);
+  padding: 1rem 0.35rem;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-card);
+  outline: none;
+  width: 100%;
+}
+
+.btn-pct-val {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+  transition: color 0.18s ease;
+}
+
+.btn-pct-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  transition: color 0.18s ease;
+}
+
+/* Hover and Active: Clean Unified Highlight without Rainbow Clutter */
+.btn-pct-select:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.btn-pct-select:hover .btn-pct-val {
+  color: var(--primary);
+}
+
+.btn-pct-select:hover .btn-pct-label {
+  color: var(--text-primary);
+}
+
+.btn-pct-select:active,
+.btn-pct-select.active {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  transform: translateY(0);
+}
+
+.btn-pct-select:active .btn-pct-val,
+.btn-pct-select.active .btn-pct-val {
+  color: var(--primary);
+}
+
+.modal-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* Dark Theme Specific Rules */
+body.dark-theme .portion-student-card {
+  background: #0F172A;
+  border-color: #334155;
+}
+
+body.dark-theme .btn-pct-select {
+  background: #1E293B;
+  border-color: #334155;
+}
+
+body.dark-theme .btn-pct-select:hover {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: var(--primary);
+}
+
+body.dark-theme .btn-pct-select:hover .btn-pct-val {
+  color: #A5B4FC;
+}
+
+body.dark-theme .btn-pct-select:hover .btn-pct-label {
+  color: #E2E8F0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    CLEAN SCHOOL ERP TEACHER DASHBOARD STYLES
    ═══════════════════════════════════════════════════════════════════ */
 

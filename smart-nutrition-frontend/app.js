@@ -4831,7 +4831,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             let statusBadge = `<span class="badge-status-pending"><i class="fa-solid fa-clock"></i> Pending Review</span>`;
             let actionCell = `
               <div style="display:flex; justify-content:flex-end; gap:0.4rem; align-items:center;">
-                <button class="btn-action-primary" onclick="openPortionChangeModal(${meal.id}, '${escapedName}')" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600;">Review Meal</button>
+                <button class="btn-action-primary" onclick="openPortionChangeModal(${meal.id}, '${escapedName}', ${meal.consumptionPercentage ?? 100})" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600;">Review Meal</button>
                 <button class="btn-action-outline" onclick="recordTeacherQuickConsumption(${meal.id}, 100)" title="Quick mark as 100% clean plate" style="padding:0.35rem 0.7rem; font-size:0.775rem;">100% Eaten</button>
               </div>
             `;
@@ -4841,7 +4841,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
               actionCell = `
                 <div style="display:flex; justify-content:flex-end; gap:0.4rem; align-items:center;">
                   <button class="btn-action-primary" onclick="openLeftoverModalForMeal(${meal.id})" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600;">Upload Leftover Photo</button>
-                  <button class="btn-action-outline" onclick="openPortionChangeModal(${meal.id}, '${escapedName}')" style="padding:0.35rem 0.7rem; font-size:0.775rem;">Change %</button>
+                  <button class="btn-action-outline" onclick="openPortionChangeModal(${meal.id}, '${escapedName}', ${meal.consumptionPercentage ?? 50})" style="padding:0.35rem 0.7rem; font-size:0.775rem;">Change %</button>
                 </div>
               `;
             }
@@ -4902,7 +4902,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     }
   };
 
-  window.openPortionChangeModal = function(mealId, studentName) {
+  window.openPortionChangeModal = function(mealId, studentName, currentPct) {
     const modal = document.getElementById('portionCorrectionModal');
     const nameElem = document.getElementById('portionModalStudentName');
     const btnClose = document.getElementById('btnClosePortionModal');
@@ -4915,6 +4915,16 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
     if (nameElem) nameElem.textContent = studentName || "Student";
     modal.classList.add('open');
+
+    // Highlight current portion tile if provided
+    modal.querySelectorAll('.btn-pct-select').forEach(btn => {
+      const pct = parseInt(btn.getAttribute('data-pct'));
+      if (currentPct !== undefined && currentPct !== null && pct === parseInt(currentPct)) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
 
     const closeModal = () => modal.classList.remove('open');
     if (btnClose) btnClose.onclick = closeModal;
@@ -5179,7 +5189,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       const escapedName = (s.name || 'Student').replace(/'/g, "\\'");
       const actionsHTML = `
         <div style="display:flex; gap:0.4rem; justify-content:flex-end; align-items:center;">
-          ${meal ? `<button class="btn-action-primary" onclick="openPortionChangeModal(${meal.id}, '${escapedName}')" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600;">Review Meal</button>` : ''}
+          ${meal ? `<button class="btn-action-primary" onclick="openPortionChangeModal(${meal.id}, '${escapedName}', ${meal.consumptionPercentage ?? 100})" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:600;">Review Meal</button>` : ''}
           <button class="btn-action-outline btn-view-profile" data-student-id="${s.id}" style="padding:0.35rem 0.65rem; font-size:0.775rem; font-weight:500;">Profile</button>
           <button class="btn-action-outline btn-mark-absent" data-student-id="${s.id}" data-student-name="${escapedName}" style="padding:0.35rem 0.65rem; font-size:0.775rem; font-weight:500;">${isAbsent ? 'Present' : 'Absent'}</button>
         </div>

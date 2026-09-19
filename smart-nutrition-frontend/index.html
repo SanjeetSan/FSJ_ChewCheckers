@@ -2261,46 +2261,46 @@
 
   <!-- MODAL: CUSTOM PORTION CORRECTION MODAL -->
   <div class="modal-backdrop" id="portionCorrectionModal">
-    <div class="modal-container" style="max-width:480px;">
+    <div class="modal-container portion-correction-dialog">
       <div class="modal-title-row">
-        <h3 style="font-size:1.15rem; display:flex; align-items:center; gap:0.5rem; margin:0;">
-          <i class="fa-solid fa-rotate-left" style="color:var(--primary)"></i> Correct Portion Consumed
+        <h3 class="modal-title-heading">
+          <i class="fa-solid fa-rotate-left"></i> Correct Portion Consumed
         </h3>
-        <button class="modal-close-btn" id="btnClosePortionModal">&times;</button>
+        <button class="modal-close-btn" id="btnClosePortionModal" type="button" title="Close dialog">&times;</button>
       </div>
 
-      <div style="background:var(--bg-page); padding:1rem 1.15rem; border-radius:var(--r-md); border:1px solid var(--border-subtle); margin-top:0.85rem; margin-bottom:1.25rem;">
-        <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Student</div>
-        <strong id="portionModalStudentName" style="font-size:1.1rem; color:var(--text-primary); display:block; margin-top:0.15rem;">Student Name</strong>
-        <p style="font-size:0.825rem; color:var(--text-secondary); margin:0.35rem 0 0 0;">Select the corrected meal portion consumed by this student:</p>
+      <div class="portion-student-card">
+        <div class="portion-student-badge">Student</div>
+        <h4 id="portionModalStudentName" class="portion-student-name">Student Name</h4>
+        <p class="portion-student-sub">Select the corrected meal portion consumed by this student:</p>
       </div>
 
-      <!-- Quick Percentage Pill Buttons Grid -->
-      <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:0.6rem; margin-bottom:1.5rem;" id="portionModalPctGrid">
-        <button class="btn-pct-select" data-pct="100" style="padding:0.85rem 0.25rem; font-weight:800; border-radius:var(--r-md); border:2px solid var(--accent-green); background:rgba(16,185,129,0.05); cursor:pointer; text-align:center; transition:all 0.2s ease;">
-          <div style="font-size:1.15rem; color:var(--accent-green); font-weight:800;">100%</div>
-          <small style="font-size:0.65rem; color:var(--text-muted); display:block; margin-top:0.25rem;">Clean Plate</small>
+      <!-- Quick Percentage Selection Tiles Grid -->
+      <div class="portion-pct-grid" id="portionModalPctGrid">
+        <button class="btn-pct-select" data-pct="100" type="button">
+          <span class="btn-pct-val">100%</span>
+          <span class="btn-pct-label">Clean Plate</span>
         </button>
-        <button class="btn-pct-select" data-pct="75" style="padding:0.85rem 0.25rem; font-weight:800; border-radius:var(--r-md); border:2px solid var(--primary); background:rgba(99,102,241,0.05); cursor:pointer; text-align:center; transition:all 0.2s ease;">
-          <div style="font-size:1.15rem; color:var(--primary); font-weight:800;">75%</div>
-          <small style="font-size:0.65rem; color:var(--text-muted); display:block; margin-top:0.25rem;">Most Eaten</small>
+        <button class="btn-pct-select" data-pct="75" type="button">
+          <span class="btn-pct-val">75%</span>
+          <span class="btn-pct-label">Most Eaten</span>
         </button>
-        <button class="btn-pct-select" data-pct="50" style="padding:0.85rem 0.25rem; font-weight:800; border-radius:var(--r-md); border:2px solid var(--accent-violet); background:rgba(139,92,246,0.05); cursor:pointer; text-align:center; transition:all 0.2s ease;">
-          <div style="font-size:1.15rem; color:var(--accent-violet); font-weight:800;">50%</div>
-          <small style="font-size:0.65rem; color:var(--text-muted); display:block; margin-top:0.25rem;">Half Eaten</small>
+        <button class="btn-pct-select" data-pct="50" type="button">
+          <span class="btn-pct-val">50%</span>
+          <span class="btn-pct-label">Half Eaten</span>
         </button>
-        <button class="btn-pct-select" data-pct="25" style="padding:0.85rem 0.25rem; font-weight:800; border-radius:var(--r-md); border:2px solid var(--accent-amber); background:rgba(245,158,11,0.05); cursor:pointer; text-align:center; transition:all 0.2s ease;">
-          <div style="font-size:1.15rem; color:var(--accent-amber); font-weight:800;">25%</div>
-          <small style="font-size:0.65rem; color:var(--text-muted); display:block; margin-top:0.25rem;">Quarter Eaten</small>
+        <button class="btn-pct-select" data-pct="25" type="button">
+          <span class="btn-pct-val">25%</span>
+          <span class="btn-pct-label">Quarter Eaten</span>
         </button>
-        <button class="btn-pct-select" data-pct="0" style="padding:0.85rem 0.25rem; font-weight:800; border-radius:var(--r-md); border:2px solid var(--accent-rose); background:rgba(239,68,68,0.05); cursor:pointer; text-align:center; transition:all 0.2s ease;">
-          <div style="font-size:1.15rem; color:var(--accent-rose); font-weight:800;">0%</div>
-          <small style="font-size:0.65rem; color:var(--text-muted); display:block; margin-top:0.25rem;">Untouched</small>
+        <button class="btn-pct-select" data-pct="0" type="button">
+          <span class="btn-pct-val">0%</span>
+          <span class="btn-pct-label">Untouched</span>
         </button>
       </div>
 
-      <div style="display:flex; justify-content:flex-end; gap:0.6rem;">
-        <button class="btn-action-outline" id="btnCancelPortionModal" style="padding:0.5rem 1.25rem;">Cancel</button>
+      <div class="modal-footer-actions">
+        <button class="btn-action-outline" id="btnCancelPortionModal" type="button">Cancel</button>
       </div>
     </div>
   </div>
