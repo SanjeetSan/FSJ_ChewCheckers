@@ -187,9 +187,9 @@
 
       <!-- CORE NAVIGATION (MAIN SCROLLABLE AREA) -->
       <nav class="sidebar-nav-core" id="sidebarNavCore">
-        <div class="sidebar-nav-label">MAIN</div>
         <!-- Parent Nav Group -->
         <div id="navGroupParent" class="nav-group-container">
+          <div class="sidebar-nav-label">MAIN</div>
           <button class="nav-link-btn active" data-pane="parent-overview">
             <i class="fa-solid fa-house"></i> <span>Dashboard</span>
           </button>
@@ -201,9 +201,6 @@
           </button>
           <button class="nav-link-btn" data-pane="ai-assistant">
             <i class="fa-solid fa-robot"></i> <span>AI Assistant</span>
-          </button>
-          <button class="nav-link-btn" data-pane="messaging">
-            <i class="fa-solid fa-comments"></i> <span>Messages</span>
           </button>
           <div style="display:flex; flex-direction:column;">
             <button class="nav-link-btn nav-parent-toggle" id="btnNavChildren" type="button" title="Expand Children Navigation">
@@ -219,10 +216,16 @@
               </button>
             </div>
           </div>
+
+          <div class="sidebar-nav-label" style="margin-top: 0.5rem;">COMMUNICATION</div>
+          <button class="nav-link-btn" data-pane="messaging">
+            <i class="fa-solid fa-comments"></i> <span>Messages</span>
+          </button>
         </div>
 
         <!-- Teacher Nav Group -->
         <div id="navGroupTeacher" class="nav-group-container hidden">
+          <div class="sidebar-nav-label">MAIN</div>
           <button class="nav-link-btn active" data-pane="teacher-roster">
             <i class="fa-solid fa-chart-line"></i> <span>Class Overview</span>
           </button>
@@ -232,6 +235,8 @@
           <button class="nav-link-btn" data-pane="teacher-reports">
             <i class="fa-solid fa-file-invoice"></i> <span>Nutrition Reports</span>
           </button>
+
+          <div class="sidebar-nav-label" style="margin-top: 0.5rem;">COMMUNICATION</div>
           <button class="nav-link-btn" data-pane="messaging">
             <i class="fa-solid fa-comments"></i> <span>Messages</span>
           </button>
@@ -239,6 +244,7 @@
 
         <!-- Admin Nav Group -->
         <div id="navGroupAdmin" class="nav-group-container hidden">
+          <div class="sidebar-nav-label">MAIN</div>
           <button class="nav-link-btn active" data-pane="admin-users">
             <i class="fa-solid fa-users-gear"></i> <span>User Accounts</span>
           </button>
