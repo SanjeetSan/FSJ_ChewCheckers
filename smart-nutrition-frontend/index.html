@@ -2224,16 +2224,44 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label class="form-label" style="display:flex; justify-content:space-between; font-weight:700;">
-            <span>Clearance Slider (Eaten Percentage)</span>
-            <span id="teacherLeftoverPercentLabel" style="color:var(--primary); font-size:1rem;">85% Eaten</span>
-          </label>
-          <input type="range" id="teacherLeftoverRange" min="0" max="100" value="85" style="width:100%; accent-color:var(--primary);">
+        <!-- Leftover Detection Guidance Notice -->
+        <div style="background:rgba(239, 68, 68, 0.06); border:1px solid rgba(239, 68, 68, 0.2); border-radius:var(--r-md); padding:0.75rem 0.9rem; display:flex; align-items:center; gap:0.6rem;">
+          <i class="fa-solid fa-camera" style="color:var(--accent-rose); font-size:1rem; flex-shrink:0;"></i>
+          <span style="font-size:0.785rem; color:var(--text-secondary); line-height:1.35;">
+            <strong>Leftovers Present (&lt; 100% Consumed):</strong> Upload a photo of the lunchbox leftovers. Gemini AI will detect leftover items and calculate exact nutrient intake.
+          </span>
         </div>
 
-        <button type="submit" class="btn-action-primary" style="padding:0.75rem; width:100%;">
-          <i class="fa-solid fa-circle-check"></i> Save Clearance Log & Trigger Nutrition Scoring
+        <!-- POST-MEAL PHOTO UPLOAD DROPZONE -->
+        <div class="form-group">
+          <label class="form-label" style="font-weight:700; display:flex; justify-content:space-between; align-items:center;">
+            <span><i class="fa-solid fa-camera" style="color:var(--primary); margin-right:0.3rem;"></i> Post-Meal Leftover Photo *</span>
+            <span style="font-size:0.75rem; color:var(--accent-rose); font-weight:700;">Required for &lt; 100% intake</span>
+          </label>
+          <div class="leftover-upload-dropzone" id="teacherLeftoverDropzone" style="border:2px dashed var(--border-subtle); border-radius:var(--r-md); padding:1.25rem 1rem; text-align:center; background:var(--bg-page); cursor:pointer; transition:all 0.15s ease;">
+            <input type="file" id="teacherLeftoverPostImageInput" accept="image/*" style="display:none;" required>
+            <div id="teacherLeftoverDropzoneContent">
+              <i class="fa-solid fa-cloud-arrow-up" style="font-size:2rem; color:var(--primary); margin-bottom:0.5rem; display:block;"></i>
+              <strong style="font-size:0.875rem; color:var(--text-primary); display:block;">Click to snap or upload post-meal photo</strong>
+              <small style="color:var(--text-muted); font-size:0.75rem; display:block; margin-top:0.25rem;">AI will detect remaining leftovers and calculate nutrition intake</small>
+            </div>
+            <div id="teacherLeftoverPreviewWrap" style="display:none; position:relative;">
+              <img id="teacherLeftoverPreviewImg" src="" alt="Leftover Preview" style="max-height:160px; border-radius:var(--r-md); margin:0 auto; object-fit:cover; display:block; border:1px solid var(--border-subtle);">
+              <button type="button" id="btnRemoveLeftoverImg" class="btn-action-outline" style="margin-top:0.5rem; padding:0.25rem 0.65rem; font-size:0.75rem;">Change Photo</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="display:flex; justify-content:space-between; font-weight:700;">
+            <span>Estimated Consumption %</span>
+            <span id="teacherLeftoverPercentLabel" style="color:var(--primary); font-size:1rem;">75% Eaten</span>
+          </label>
+          <input type="range" id="teacherLeftoverRange" min="0" max="95" value="75" style="width:100%; accent-color:var(--primary);">
+        </div>
+
+        <button type="submit" class="btn-action-primary" id="btnSubmitTeacherLeftover" style="padding:0.75rem; width:100%;">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Analyze Leftovers & Detect Intake
         </button>
       </form>
     </div>
@@ -2396,6 +2424,22 @@
         <button class="btn-pct-select" data-pct="0" type="button">
           <span class="btn-pct-val">0%</span>
           <span class="btn-pct-label">Untouched</span>
+        </button>
+      </div>
+
+      <!-- Leftover Detection Guidance & Direct Photo Upload CTA -->
+      <div style="background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.2); border-radius:var(--r-md); padding:0.85rem 1rem; margin-top:1rem;">
+        <div style="display:flex; align-items:flex-start; gap:0.6rem;">
+          <i class="fa-solid fa-camera" style="color:var(--primary); font-size:1.1rem; margin-top:2px; flex-shrink:0;"></i>
+          <div>
+            <strong style="font-size:0.825rem; color:var(--text-primary); display:block; margin-bottom:0.2rem;">Post-Meal Leftover Detection Requirement</strong>
+            <span style="font-size:0.775rem; color:var(--text-secondary); line-height:1.35; display:block;">
+              <strong>100% Clean Plate</strong> verifies instantly. If less than 100% was consumed, upload a post-meal lunchbox photo for Gemini AI leftover detection.
+            </span>
+          </div>
+        </div>
+        <button type="button" class="btn-action-primary" id="btnPortionUploadLeftovers" style="width:100%; margin-top:0.75rem; padding:0.6rem 1rem; font-size:0.85rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.5rem; border-radius:var(--r-md); cursor:pointer;">
+          <i class="fa-solid fa-camera"></i> Upload Post-Meal Photo (&lt; 100% Eaten)
         </button>
       </div>
 

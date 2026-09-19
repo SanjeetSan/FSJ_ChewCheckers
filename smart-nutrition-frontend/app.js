@@ -4963,6 +4963,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const nameElem = document.getElementById('portionModalStudentName');
     const btnClose = document.getElementById('btnClosePortionModal');
     const btnCancel = document.getElementById('btnCancelPortionModal');
+    const btnUploadLeftovers = document.getElementById('btnPortionUploadLeftovers');
 
     if (!modal) {
       showToast("Portion correction modal not found.", "error");
@@ -4990,9 +4991,27 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       btn.onclick = async () => {
         const pct = parseInt(btn.getAttribute('data-pct'));
         closeModal();
-        await recordTeacherQuickConsumption(mealId, pct);
+        if (pct === 100) {
+          // 100% Clean Plate: 0 plate waste, 1-click verify immediately
+          await recordTeacherQuickConsumption(mealId, 100);
+        } else {
+          // < 100% Eaten: Teacher must upload a post-meal photo for Gemini AI leftover detection
+          showToast(`Portion is ${pct}% — Post-meal photo required for Gemini AI leftover detection.`, "info");
+          if (window.openTeacherLogLeftoverModal) {
+            window.openTeacherLogLeftoverModal(null, pct, mealId, studentName);
+          }
+        }
       };
     });
+
+    if (btnUploadLeftovers) {
+      btnUploadLeftovers.onclick = () => {
+        closeModal();
+        if (window.openTeacherLogLeftoverModal) {
+          window.openTeacherLogLeftoverModal(null, currentPct || 75, mealId, studentName);
+        }
+      };
+    }
   };
 
   window.openLeftoverModalForMeal = function(mealId) {
@@ -5717,9 +5736,41 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     `;
   }
 
-  async function openTeacherLogLeftoverModal(studentId) {
+  window.openTeacherLogLeftoverModal = async function(studentId, defaultPct = 75, mealId = null, studentName = null) {
     const modal = document.getElementById('teacherLeftoverModal');
     if (!modal) return;
+
+    const rangeInput = document.getElementById('teacherLeftoverRange');
+    const percentLabel = document.getElementById('teacherLeftoverPercentLabel');
+    const sNameElem = document.getElementById('teacherLeftoverStudentName');
+    const mDateElem = document.getElementById('teacherLeftoverMealDate');
+    const sIdInput = document.getElementById('teacherLeftoverStudentId');
+    const mIdInput = document.getElementById('teacherLeftoverMealId');
+
+    // Reset leftover file input, preview, and border styles
+    const postImgInput = document.getElementById('teacherLeftoverPostImageInput');
+    const previewWrap = document.getElementById('teacherLeftoverPreviewWrap');
+    const dropContent = document.getElementById('teacherLeftoverDropzoneContent');
+    const previewImg = document.getElementById('teacherLeftoverPreviewImg');
+    const dropzone = document.getElementById('teacherLeftoverDropzone');
+    if (postImgInput) postImgInput.value = '';
+    if (previewWrap) previewWrap.style.display = 'none';
+    if (dropContent) dropContent.style.display = 'block';
+    if (previewImg) previewImg.src = '';
+    if (dropzone) dropzone.style.borderColor = 'var(--border-subtle)';
+
+    const pctVal = (defaultPct !== undefined && defaultPct !== null) ? parseInt(defaultPct) : 75;
+    if (rangeInput) rangeInput.value = Math.min(95, Math.max(0, pctVal));
+    if (percentLabel) percentLabel.textContent = `${rangeInput ? rangeInput.value : pctVal}% Eaten`;
+
+    if (mealId) {
+      if (sIdInput) sIdInput.value = studentId || '';
+      if (mIdInput) mIdInput.value = mealId;
+      if (sNameElem) sNameElem.textContent = studentName || "Student";
+      if (mDateElem) mDateElem.textContent = "Today's Lunchbox Clearance";
+      modal.classList.add('open');
+      return;
+    }
 
     showToast("Checking student today's meal status...", "info");
     const todayStr = new Date().toISOString().split('T')[0];
@@ -5732,27 +5783,17 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       if (res.ok) {
         const meals = await res.json();
         const todayMeals = meals.filter(m => m.mealDate && m.mealDate.startsWith(todayStr)).sort((a, b) => b.id - a.id);
-        const todayMeal = todayMeals.length > 0 ? todayMeals[0] : null;
+        const todayMeal = todayMeals.length > 0 ? todayMeals[0] : (meals.length > 0 ? meals[0] : null);
 
         if (!todayMeal) {
           showToast("Parent has not uploaded today's pre-meal photo yet!", "error");
           return;
         }
 
-        document.getElementById('teacherLeftoverStudentId').value = studentId;
-        document.getElementById('teacherLeftoverMealId').value = todayMeal.id;
-        document.getElementById('teacherLeftoverStudentName').textContent = "Log leftovers for student";
-        document.getElementById('teacherLeftoverMealDate').textContent = `Meal Date: ${todayMeal.mealDate}`;
-        if (todayMeal.preMealImageUrl) {
-          const img = document.getElementById('teacherLeftoverPreImage');
-          if (img) {
-            if (todayMeal.preMealImageUrl.startsWith('/')) {
-              img.src = `http://localhost:8082${todayMeal.preMealImageUrl}`;
-            } else {
-              img.src = todayMeal.preMealImageUrl;
-            }
-          }
-        }
+        if (sIdInput) sIdInput.value = studentId;
+        if (mIdInput) mIdInput.value = todayMeal.id;
+        if (sNameElem) sNameElem.textContent = studentName || (todayMeal.student ? todayMeal.student.name : "Student");
+        if (mDateElem) mDateElem.textContent = `Meal Date: ${todayMeal.mealDate || todayStr}`;
 
         modal.classList.add('open');
       } else {
@@ -5762,7 +5803,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       console.error(e);
       showToast("Network Error connecting to Meal service", "error");
     }
-  }
+  };
 
   function setupTeacherLeftoverModal() {
     const modal = document.getElementById('teacherLeftoverModal');
@@ -5770,6 +5811,12 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const form = document.getElementById('teacherLeftoverForm');
     const rangeInput = document.getElementById('teacherLeftoverRange');
     const percentLabel = document.getElementById('teacherLeftoverPercentLabel');
+    const dropzone = document.getElementById('teacherLeftoverDropzone');
+    const postImgInput = document.getElementById('teacherLeftoverPostImageInput');
+    const previewWrap = document.getElementById('teacherLeftoverPreviewWrap');
+    const previewImg = document.getElementById('teacherLeftoverPreviewImg');
+    const dropContent = document.getElementById('teacherLeftoverDropzoneContent');
+    const btnRemoveImg = document.getElementById('btnRemoveLeftoverImg');
 
     if (closeBtn) {
       closeBtn.addEventListener('click', () => modal.classList.remove('open'));
@@ -5779,67 +5826,163 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       rangeInput.addEventListener('input', (e) => percentLabel.textContent = `${e.target.value}% Eaten`);
     }
 
+    function showLeftoverPreview(file) {
+      if (!file) return;
+      if (dropzone) dropzone.style.borderColor = 'var(--border-subtle)';
+      if (previewImg) previewImg.src = URL.createObjectURL(file);
+      if (previewWrap) previewWrap.style.display = 'block';
+      if (dropContent) dropContent.style.display = 'none';
+    }
+
+    function clearLeftoverPreview() {
+      if (postImgInput) postImgInput.value = '';
+      if (previewWrap) previewWrap.style.display = 'none';
+      if (dropContent) dropContent.style.display = 'block';
+      if (previewImg) previewImg.src = '';
+    }
+
+    if (dropzone && postImgInput) {
+      dropzone.addEventListener('click', (e) => {
+        if (e.target === btnRemoveImg || (btnRemoveImg && btnRemoveImg.contains(e.target))) return;
+        postImgInput.click();
+      });
+      dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.style.borderColor = 'var(--primary)';
+      });
+      dropzone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dropzone.style.borderColor = 'var(--border-subtle)';
+      });
+      dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.style.borderColor = 'var(--border-subtle)';
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          postImgInput.files = e.dataTransfer.files;
+          showLeftoverPreview(e.dataTransfer.files[0]);
+        }
+      });
+      postImgInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          showLeftoverPreview(e.target.files[0]);
+        }
+      });
+    }
+
+    if (btnRemoveImg) {
+      btnRemoveImg.addEventListener('click', (e) => {
+        e.stopPropagation();
+        clearLeftoverPreview();
+      });
+    }
+
     if (form) {
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const submitBtn = form.querySelector('button[type="submit"]');
         const mealId = parseInt(document.getElementById('teacherLeftoverMealId').value);
-        const eatenPercent = parseInt(rangeInput ? rangeInput.value : 100);
+        const eatenPercent = parseInt(rangeInput ? rangeInput.value : 75);
 
+        const file = (postImgInput && postImgInput.files && postImgInput.files.length > 0) ? postImgInput.files[0] : null;
+
+        // Mandate post-meal photo if intake is less than 100%
+        if (eatenPercent < 100 && !file) {
+          showToast("Post-meal photo is required when intake is less than 100%!", "error");
+          if (dropzone) dropzone.style.borderColor = 'var(--accent-rose)';
+          return;
+        }
+
+        setButtonLoading(submitBtn, true, 'Gemini AI Analyzing...');
+        showToast("Gemini AI analyzing leftovers & detecting nutrient intake...", "info");
+
+        let detectedViaBackend = false;
         let postImageUrl = null;
-        const postImgInput = document.getElementById('teacherLeftoverPostImageInput');
-        if (postImgInput && postImgInput.files && postImgInput.files.length > 0) {
-          const file = postImgInput.files[0];
+
+        if (file) {
           const formData = new FormData();
           formData.append('file', file);
           try {
-            const uploadRes = await fetch(`${state.gatewayUrl}/api/meals/upload-image`, {
+            let res = await fetch(`${state.gatewayUrl}/api/meals/${mealId}/leftover-image`, {
               method: 'POST',
               headers: { 'Authorization': `Bearer ${state.token}` },
               body: formData
             });
-            if (uploadRes.ok) {
-              const uData = await uploadRes.json();
-              postImageUrl = uData.imageUrl;
+
+            if (!res.ok) {
+              res = await fetch(`http://localhost:8082/api/meals/${mealId}/leftover-image`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${state.token}` },
+                body: formData
+              });
             }
-          } catch(uErr) {
-            postImageUrl = URL.createObjectURL(file);
+
+            if (res.ok) {
+              detectedViaBackend = true;
+              const resData = await res.json().catch(() => ({}));
+              postImageUrl = resData.postMealImageUrl || null;
+              showToast("Gemini AI detected leftovers & calculated nutrition intake!", "success");
+            }
+          } catch(apiErr) {
+            console.warn("Leftover endpoint direct call error:", apiErr);
           }
         }
 
-        setButtonLoading(submitBtn, true, 'Saving Log...');
-        showToast("Saving clearance log & scoring...", "info");
-        const payload = {
-          mealId: mealId,
-          postMealImageUrl: postImageUrl,
-          overallConsumptionPercentage: eatenPercent,
-          foodItemConsumptions: []
-        };
-
-        try {
-          const res = await safeFetch('/api/meals/post-meal', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${state.token}`
-            },
-            body: JSON.stringify(payload)
-          });
-
-          if (res.ok) {
-            showToast("Clearance logged! Nutrition score generated successfully.");
-            modal.classList.remove('open');
-            await initTeacherDashboard();
-          } else {
-            const errData = await res.json().catch(() => ({}));
-            showToast(`Failed to save leftover log: ${errData.message || 'Error'}`, "error");
+        if (!detectedViaBackend) {
+          // Cloud Supabase / fallback calculation
+          if (file && !postImageUrl) {
+            try {
+              const uploadForm = new FormData();
+              uploadForm.append('file', file);
+              const uploadRes = await fetch(`${state.gatewayUrl}/api/meals/upload-image`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${state.token}` },
+                body: uploadForm
+              });
+              if (uploadRes.ok) {
+                const uData = await uploadRes.json();
+                postImageUrl = uData.imageUrl;
+              }
+            } catch(uErr) {}
+            if (!postImageUrl) {
+              postImageUrl = URL.createObjectURL(file);
+            }
           }
-        } catch(err) {
-          console.error(err);
-          showToast("Network Error connecting to Meal service", "error");
-        } finally {
-          setButtonLoading(submitBtn, false);
+
+          const payload = {
+            mealId: mealId,
+            postMealImageUrl: postImageUrl,
+            overallConsumptionPercentage: eatenPercent,
+            foodItemConsumptions: []
+          };
+
+          try {
+            const res = await safeFetch('/api/meals/post-meal', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${state.token}`
+              },
+              body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+              showToast("Leftover clearance logged & nutrition score updated!", "success");
+            } else {
+              const errData = await res.json().catch(() => ({}));
+              showToast(`Recorded leftovers: ${errData.message || 'Updated'}`, "info");
+            }
+          } catch(err) {
+            console.error(err);
+            showToast("Network Error connecting to Meal service", "error");
+          }
         }
+
+        setButtonLoading(submitBtn, false);
+        modal.classList.remove('open');
+        clearLeftoverPreview();
+        state.teacherClassOverviewMeals = [];
+        await loadTeacherTodayMealRoster();
+        await loadTeacherReports();
       });
     }
   }
@@ -6027,16 +6170,16 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
                       <span style="font-size:0.75rem; color:var(--accent-rose); font-weight:600; margin-top:0.15rem; display:block;">${reasonText}</span>
                     </div>
                   </div>
-                  <div style="display:flex; gap:0.35rem; align-items:center; flex-wrap:wrap;">
+                    <div style="display:flex; gap:0.35rem; align-items:center; flex-wrap:wrap;">
                     <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-right:0.15rem;">Log Eaten %:</span>
                     ${studentMeal ? `
-                      <button class="btn-quick-pct btn-100" onclick="recordTeacherQuickConsumption(${studentMeal.id}, 100)" title="100% Clean Plate">100%</button>
-                      <button class="btn-quick-pct btn-75" onclick="recordTeacherQuickConsumption(${studentMeal.id}, 75)" title="75% Eaten">75%</button>
-                      <button class="btn-quick-pct btn-50" onclick="recordTeacherQuickConsumption(${studentMeal.id}, 50)" title="50% Eaten">50%</button>
-                      <button class="btn-quick-pct btn-25" onclick="recordTeacherQuickConsumption(${studentMeal.id}, 25)" title="25% Eaten">25%</button>
-                      <button class="btn-quick-pct btn-0" onclick="recordTeacherQuickConsumption(${studentMeal.id}, 0)" title="0% Untouched">0%</button>
+                      <button class="btn-quick-pct btn-100" onclick="recordTeacherQuickConsumption(${studentMeal.id}, 100)" title="100% Clean Plate (No Leftovers)">100%</button>
+                      <button class="btn-quick-pct btn-75" onclick="openTeacherLogLeftoverModal(${s.id}, 75, ${studentMeal.id}, '${s.name.replace(/'/g, "\\'")}')" title="75% Eaten (Upload Photo)">75%</button>
+                      <button class="btn-quick-pct btn-50" onclick="openTeacherLogLeftoverModal(${s.id}, 50, ${studentMeal.id}, '${s.name.replace(/'/g, "\\'")}')" title="50% Eaten (Upload Photo)">50%</button>
+                      <button class="btn-quick-pct btn-25" onclick="openTeacherLogLeftoverModal(${s.id}, 25, ${studentMeal.id}, '${s.name.replace(/'/g, "\\'")}')" title="25% Eaten (Upload Photo)">25%</button>
+                      <button class="btn-quick-pct btn-0" onclick="openTeacherLogLeftoverModal(${s.id}, 0, ${studentMeal.id}, '${s.name.replace(/'/g, "\\'")}')" title="0% Untouched (Upload Photo)">0%</button>
                     ` : ''}
-                    <button class="btn-action-primary btn-action-review-meal" data-student-id="${s.id}" style="padding:0.35rem 0.65rem; font-size:0.75rem; background:var(--accent-teal); border-color:var(--accent-teal); border-radius:var(--r-md); color:#FFF; display:flex; align-items:center; gap:0.3rem;" title="Upload Leftover / Post-Meal Photo"><i class="fa-solid fa-camera"></i> Photo</button>
+                    <button class="btn-action-primary btn-action-review-meal" data-student-id="${s.id}" data-meal-id="${studentMeal ? studentMeal.id : ''}" data-student-name="${s.name.replace(/'/g, "\\'")}" style="padding:0.35rem 0.65rem; font-size:0.75rem; background:var(--accent-teal); border-color:var(--accent-teal); border-radius:var(--r-md); color:#FFF; display:flex; align-items:center; gap:0.3rem;" title="Upload Leftover / Post-Meal Photo"><i class="fa-solid fa-camera"></i> Photo</button>
                     <button class="btn-action-primary btn-action-chat-parent" data-parent-id="${s.parentId || ''}" data-student-name="${s.name}" data-reason="${reasonText.replace(/"/g, '&quot;')}" style="padding:0.35rem 0.65rem; font-size:0.75rem; background:var(--primary); border-color:var(--primary); border-radius:var(--r-md); display:flex; align-items:center; gap:0.3rem;"><i class="fa-solid fa-comments"></i> Chat</button>
                     <button class="btn-action-outline btn-action-view-profile" data-student-id="${s.id}" style="padding:0.35rem 0.65rem; font-size:0.75rem; border-radius:var(--r-md);"><i class="fa-solid fa-user"></i> Profile</button>
                   </div>
@@ -6048,7 +6191,9 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             studentsListContainer.querySelectorAll('.btn-action-review-meal').forEach(btn => {
               btn.addEventListener('click', () => {
                 const sid = parseInt(btn.getAttribute('data-student-id'));
-                openTeacherLogLeftoverModal(sid);
+                const mid = parseInt(btn.getAttribute('data-meal-id')) || null;
+                const sName = btn.getAttribute('data-student-name') || '';
+                openTeacherLogLeftoverModal(sid, 75, mid, sName);
               });
             });
 
