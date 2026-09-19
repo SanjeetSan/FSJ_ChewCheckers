@@ -18,6 +18,7 @@ import {
   supabaseSetDefaultPreset,
   supabaseGetMealsForStudent,
   supabaseSaveMeal,
+  supabaseSavePostMeal,
   supabaseGetTeacherClasses,
   supabaseGetUsers,
   supabaseGetHolidays,
@@ -3338,6 +3339,16 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           const updated = await supabaseUpdateChild(childId, body);
           return new Response(JSON.stringify(updated), { status: 200, headers: { 'Content-Type': 'application/json' } });
         }
+      } else if (path === '/api/meals/pre-meal' && options.method === 'POST') {
+        const body = typeof options.body === 'string' ? JSON.parse(options.body) : (options.body || {});
+        if (!body.studentId && state.selectedChild) body.studentId = state.selectedChild.id;
+        body.uploadedByParent = state.user?.id || null;
+        const saved = await supabaseSaveMeal(body);
+        return new Response(JSON.stringify(saved), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if ((path === '/api/meals/post-meal' || path === '/api/meals/consumption-quick') && options.method === 'POST') {
+        const body = typeof options.body === 'string' ? JSON.parse(options.body) : (options.body || {});
+        const saved = await supabaseSavePostMeal(body);
+        return new Response(JSON.stringify(saved), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if (path.startsWith('/api/meals/student/')) {
         const studentId = path.split('/').pop();
         const meals = await supabaseGetMealsForStudent(studentId);

@@ -2,11 +2,11 @@ import { createClient } from '@supabase/supabase-js';
 import bcrypt from 'bcryptjs';
 
 export const SUPABASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SUPABASE_URL)
-  || localStorage.getItem('chewchecker_supabase_url')
+  || (typeof localStorage !== 'undefined' ? localStorage.getItem('chewchecker_supabase_url') : null)
   || 'https://zktnnwlkkmamzctuzano.supabase.co';
 
 export const SUPABASE_ANON_KEY = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SUPABASE_ANON_KEY)
-  || localStorage.getItem('chewchecker_supabase_anon_key')
+  || (typeof localStorage !== 'undefined' ? localStorage.getItem('chewchecker_supabase_anon_key') : null)
   || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InprdG5ud2xra21hbXpjdHV6YW5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3ODU5NDEsImV4cCI6MjEwNTM2MTk0MX0.iETlSKThgYvfNNIxTurOk8FlcC8h6d1RdwEWLY9devg';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -709,6 +709,11 @@ export async function supabaseSaveMeal(mealData) {
       if (mealData.preMealImageUrl) updateObj.pre_meal_image_url = mealData.preMealImageUrl;
       if (mealData.uploadedByParent) updateObj.uploaded_by_parent = mealData.uploadedByParent;
       if (mealData.uploadedByTeacher) updateObj.uploaded_by_teacher = mealData.uploadedByTeacher;
+      if (mealData.boxLength) updateObj.box_length = mealData.boxLength;
+      if (mealData.boxWidth) updateObj.box_width = mealData.boxWidth;
+      if (mealData.boxHeight) updateObj.box_height = mealData.boxHeight;
+      if (mealData.lunchboxPresetId) updateObj.lunchbox_preset_id = mealData.lunchboxPresetId;
+      if (mealData.lunchboxPresetName) updateObj.lunchbox_preset_name = mealData.lunchboxPresetName;
 
       const { data, error } = await supabase
         .from('meals')
@@ -751,21 +756,127 @@ export async function supabaseSaveMeal(mealData) {
         meal_id: mealRecord.id,
         food_name: item.foodName || 'Home-packed meal',
         quantity: item.quantity || '1 portion',
-        calories: item.calories || 300,
-        protein_g: item.proteinG || 10,
-        carbs_g: item.carbsG || 40,
-        fat_g: item.fatG || 8,
-        fiber_g: item.fiberG || 4,
-        leftover_percentage: item.leftoverPercentage || 0,
-        confidence_score: 0.95
+        calories: parseFloat(item.calories) || 300,
+        protein_g: parseFloat(item.proteinG) || 10,
+        carbs_g: parseFloat(item.carbsG) || 40,
+        fat_g: parseFloat(item.fatG) || 8,
+        fiber_g: parseFloat(item.fiberG) || 4,
+        consumption_percentage: item.consumptionPercentage !== undefined ? parseFloat(item.consumptionPercentage) : 0,
+        cooking_note: item.cookingNote || null,
+        source: item.source || 'AI_DETECTED'
       }));
 
-      await supabase.from('meal_food_items').insert(itemsToInsert);
+      const { error: itemsErr } = await supabase.from('meal_food_items').insert(itemsToInsert);
+      if (itemsErr) console.warn("Supabase meal_food_items insert error:", itemsErr);
     }
 
     return mealRecord;
   } catch (err) {
     console.error('Supabase save meal error:', err);
+    throw err;
+  }
+}
+
+/**
+ * Save Post-Meal Clearance / Leftover evaluation
+ */
+export async function supabaseSavePostMeal(postMealData) {
+  try {
+    const mealId = postMealData.mealId;
+    const consPct = parseFloat(postMealData.overallConsumptionPercentage) || 0;
+    const status = consPct >= 90 ? 'FULLY_CONSUMED' : (consPct >= 20 ? 'PARTIALLY_CONSUMED' : 'NOT_CONSUMED');
+
+    // Update meal status and post meal photo
+    const { data: updatedMeal, error: mErr } = await supabase
+      .from('meals')
+      .update({
+        status: status,
+        post_meal_image_url: postMealData.postMealImageUrl || null
+      })
+      .eq('id', mealId)
+      .select('*, student:students (*)')
+      .single();
+    if (mErr) throw mErr;
+
+    // Fetch existing food items for this meal to calculate consumed macros
+    const { data: foodItems } = await supabase
+      .from('meal_food_items')
+      .select('*')
+      .eq('meal_id', mealId);
+
+    let totalConsCal = 0;
+    let totalConsProt = 0;
+    let totalConsCarb = 0;
+    let totalConsFat = 0;
+    let totalConsFib = 0;
+
+    if (foodItems && foodItems.length > 0) {
+      for (const item of foodItems) {
+        const itemCons = (item.consumption_percentage !== null && item.consumption_percentage > 0) ? item.consumption_percentage : consPct;
+        const ratio = itemCons / 100;
+        const cCal = parseFloat((item.calories * ratio).toFixed(2));
+        const cProt = parseFloat((item.protein_g * ratio).toFixed(2));
+        const cCarb = parseFloat((item.carbs_g * ratio).toFixed(2));
+        const cFat = parseFloat((item.fat_g * ratio).toFixed(2));
+        const cFib = parseFloat((item.fiber_g * ratio).toFixed(2));
+
+        totalConsCal += cCal;
+        totalConsProt += cProt;
+        totalConsCarb += cCarb;
+        totalConsFat += cFat;
+        totalConsFib += cFib;
+
+        await supabase
+          .from('meal_food_items')
+          .update({
+            consumption_percentage: itemCons,
+            consumed_calories: cCal,
+            consumed_protein_g: cProt,
+            consumed_carbs_g: cCarb,
+            consumed_fat_g: cFat,
+            consumed_fiber_g: cFib
+          })
+          .eq('id', item.id);
+      }
+    }
+
+    // Insert or update nutrition score
+    const student = updatedMeal?.student || {};
+    const calTarget = student.lunch_calories || 500;
+    const protTarget = student.lunch_protein || 20;
+    const score = Math.min(100, Math.round((Math.min(1, totalConsProt / Math.max(1, protTarget)) * 50) + (Math.min(1, totalConsCal / Math.max(1, calTarget)) * 50)));
+    const classification = score >= 80 ? 'BALANCED' : (score >= 60 ? 'ACCEPTABLE' : 'NEEDS_IMPROVEMENT');
+
+    await supabase
+      .from('nutrition_scores')
+      .delete()
+      .eq('meal_id', mealId);
+
+    await supabase
+      .from('nutrition_scores')
+      .insert([{
+        meal_id: mealId,
+        student_id: updatedMeal.student_id,
+        score: score,
+        classification: classification,
+        lunch_calorie_target: calTarget,
+        lunch_protein_target: protTarget,
+        total_consumed_calories: totalConsCal,
+        total_consumed_protein_g: totalConsProt,
+        total_consumed_carbs_g: totalConsCarb,
+        total_consumed_fat_g: totalConsFat,
+        total_consumed_fiber_g: totalConsFib,
+        calculated_at: new Date().toISOString()
+      }]);
+
+    return {
+      mealId: mealId,
+      status: status,
+      overallConsumptionPercentage: consPct,
+      nutritionScore: score
+    };
+  } catch(err) {
+    console.error('Supabase save post meal error:', err);
     throw err;
   }
 }
