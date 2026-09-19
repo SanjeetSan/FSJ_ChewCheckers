@@ -1529,7 +1529,7 @@
           <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
               <div>
-                <h3 style="font-size:1.15rem; margin:0;"><i class="fa-solid fa-server" style="color:var(--primary)"></i> Microservices Health Diagnostics</h3>
+                <h3 style="font-size:1.15rem; margin:0;"><i class="fa-solid fa-cloud-bolt" style="color:var(--primary)"></i> Cloud Services Health Diagnostics</h3>
                 <span id="healthLastChecked" style="font-size:0.775rem; color:var(--text-muted);">Last checked: just now</span>
               </div>
               <button class="btn-action-primary" id="btnRecheckHealth" style="padding:0.45rem 0.85rem; font-size:0.8rem;"><i class="fa-solid fa-arrows-rotate"></i> Re-run Diagnostics</button>
@@ -1537,24 +1537,39 @@
             
             <div style="display:flex; flex-direction:column; gap:0.75rem;" id="health-check-container">
               <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1rem; background:var(--bg-page); border-radius:var(--r-md); border: 1px solid var(--border-subtle);">
-                <strong>API Gateway Service (Port 8088)</strong>
+                <div>
+                  <strong>Supabase Cloud Database (PostgreSQL)</strong>
+                  <div style="font-size:0.75rem; color:var(--text-muted);">Primary high-availability transactional cloud database</div>
+                </div>
                 <span class="badge-status" id="health-gateway" style="background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-muted); font-size:0.75rem;"><i class="fa-solid fa-spinner fa-spin" style="margin-right:0.25rem;"></i> Checking...</span>
               </div>
               <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1rem; background:var(--bg-page); border-radius:var(--r-md); border: 1px solid var(--border-subtle);">
-                <strong>Eureka Discovery Server (Port 8761)</strong>
-                <span class="badge-status" id="health-eureka" style="background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-muted); font-size:0.75rem;"><i class="fa-solid fa-spinner fa-spin" style="margin-right:0.25rem;"></i> Checking...</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1rem; background:var(--bg-page); border-radius:var(--r-md); border: 1px solid var(--border-subtle);">
-                <strong>Auth Admin Service (Port 8081)</strong>
+                <div>
+                  <strong>Supabase Authentication Engine</strong>
+                  <div style="font-size:0.75rem; color:var(--text-muted);">Cloud JWT session & role-based access security</div>
+                </div>
                 <span class="badge-status" id="health-auth" style="background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-muted); font-size:0.75rem;"><i class="fa-solid fa-spinner fa-spin" style="margin-right:0.25rem;"></i> Checking...</span>
               </div>
               <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1rem; background:var(--bg-page); border-radius:var(--r-md); border: 1px solid var(--border-subtle);">
-                <strong>School Report Service (Port 8083)</strong>
+                <div>
+                  <strong>Google Gemini AI Vision & Nutrition Engine</strong>
+                  <div style="font-size:0.75rem; color:var(--text-muted);">Multimodal food recognition, calorie estimation & leftover tracking</div>
+                </div>
+                <span class="badge-status" id="health-meal" style="background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-muted); font-size:0.75rem;"><i class="fa-solid fa-spinner fa-spin" style="margin-right:0.25rem;"></i> Checking...</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1rem; background:var(--bg-page); border-radius:var(--r-md); border: 1px solid var(--border-subtle);">
+                <div>
+                  <strong>School & Classroom Roster Service</strong>
+                  <div style="font-size:0.75rem; color:var(--text-muted);">Live homeroom classes, student profiles & calendar closures</div>
+                </div>
                 <span class="badge-status" id="health-school" style="background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-muted); font-size:0.75rem;"><i class="fa-solid fa-spinner fa-spin" style="margin-right:0.25rem;"></i> Checking...</span>
               </div>
               <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1rem; background:var(--bg-page); border-radius:var(--r-md); border: 1px solid var(--border-subtle);">
-                <strong>AI Meal Vision Service (Port 8082)</strong>
-                <span class="badge-status" id="health-meal" style="background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-muted); font-size:0.75rem;"><i class="fa-solid fa-spinner fa-spin" style="margin-right:0.25rem;"></i> Checking...</span>
+                <div>
+                  <strong>Vercel Global Edge & Cloud CDN</strong>
+                  <div style="font-size:0.75rem; color:var(--text-muted);">High-speed global content delivery network</div>
+                </div>
+                <span class="badge-status" id="health-eureka" style="background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-muted); font-size:0.75rem;"><i class="fa-solid fa-spinner fa-spin" style="margin-right:0.25rem;"></i> Checking...</span>
               </div>
             </div>
           </div>

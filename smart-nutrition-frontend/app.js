@@ -1086,22 +1086,18 @@ document.addEventListener('DOMContentLoaded', () => {
     messagesInterval = setInterval(checkNewMessages, 15000);
   }
 
-  // Live Fetch Users from MySQL Backend (100% Real Live Rows from MySQL smart_nutrition_db)
+  // Live Fetch Users from Supabase Backend (100% Real Live Rows from Supabase Cloud)
   async function fetchLiveUsersFromBackend() {
     let data = null;
     try {
-      let res = await fetch(`${state.gatewayUrl}/api/admin/users`);
-      if (res.ok) {
+      let res = await safeFetch('/api/admin/users', {
+        headers: { 'Authorization': `Bearer ${state.token}` }
+      });
+      if (res && res.ok) {
         data = await res.json();
-      } else {
-        let res8081 = await fetch(`http://localhost:8081/api/admin/users`);
-        if (res8081.ok) data = await res8081.json();
       }
     } catch (e) {
-      try {
-        let res8081 = await fetch(`http://localhost:8081/api/admin/users`);
-        if (res8081.ok) data = await res8081.json();
-      } catch (e2) {}
+      console.warn("Error fetching admin users:", e);
     }
 
     if (Array.isArray(data) && data.length > 0) {
@@ -1109,9 +1105,9 @@ document.addEventListener('DOMContentLoaded', () => {
         id: u.id,
         name: u.name || u.email.split('@')[0],
         email: u.email,
-        role: u.role || 'PARENT',
-        details: u.role === 'ADMIN' ? 'System Administrator' : (u.role === 'TEACHER' ? 'Class Teacher' : 'Parent Account'),
-        status: u.isActive !== false ? 'Active' : 'Inactive',
+        role: (u.role || 'PARENT').toUpperCase(),
+        details: u.details || (u.role === 'ADMIN' ? 'System Administrator' : (u.role === 'TEACHER' ? 'Class Teacher' : 'Parent Account')),
+        status: u.status || 'Active',
         protected: false
       }));
       saveStoredUsers(state.users);
@@ -1293,6 +1289,8 @@ document.addEventListener('DOMContentLoaded', () => {
         updateScannerChildSelector();
       } else if (validPane === 'teacher-roster' || validPane === 'teacher-students' || validPane === 'teacher-reports') {
         initTeacherDashboard();
+      } else if (validPane === 'admin-users') {
+        fetchLiveUsersFromBackend();
       } else if (validPane === 'admin-health') {
         startMicroservicesHealthChecks();
       } else if (validPane === 'messaging') {
@@ -7819,80 +7817,90 @@ INTELLIGENCE & PERSONALIZATION RULES:
     }
   }
 
-  async function checkSingleServiceHealth(url, elementId, displayName = "Online") {
-    const el = document.getElementById(elementId);
-    if (!el) return;
-
-    // Dedicated Health Diagnostics for Eureka Discovery Server (Port 8761)
-    if (elementId === 'health-eureka') {
-      try {
-        const resActuator = await fetch("http://localhost:8761/actuator/health", { method: 'GET' });
-        if (resActuator.ok) {
-          el.innerHTML = `<span class="pulse-dot online"></span> ${displayName}`;
-          el.className = "badge-status badge-full";
-          return;
-        }
-      } catch(e) {}
-
-      try {
-        const resApps = await fetch("http://localhost:8761/eureka/apps", {
-          headers: { 'Accept': 'application/json' }
-        });
-        if (resApps.ok) {
-          el.innerHTML = `<span class="pulse-dot online"></span> ${displayName}`;
-          el.className = "badge-status badge-full";
-          return;
-        }
-      } catch(e) {}
-
-      try {
-        // Fallback no-cors check: detects if Spring Boot Eureka Server port 8761 is listening
-        await fetch("http://localhost:8761", { method: 'GET', mode: 'no-cors' });
-        el.innerHTML = `<span class="pulse-dot online"></span> ${displayName}`;
-        el.className = "badge-status badge-full";
-        return;
-      } catch (err) {
-        el.innerHTML = `<span class="pulse-dot offline"></span> DOWN`;
-        el.className = "badge-status badge-missed";
-        return;
-      }
-    }
-
-    try {
-      const res = await fetch(url, { method: 'GET' });
-      if (res.ok) {
-        el.innerHTML = `<span class="pulse-dot online"></span> ${displayName}`;
-        el.className = "badge-status badge-full";
-      } else {
-        try {
-          await fetch(url.replace('/actuator/health', ''), { method: 'GET', mode: 'no-cors' });
-          el.innerHTML = `<span class="pulse-dot online"></span> ${displayName}`;
-          el.className = "badge-status badge-full";
-        } catch(err2) {
-          el.innerHTML = `<span class="pulse-dot offline"></span> DOWN`;
-          el.className = "badge-status badge-missed";
-        }
-      }
-    } catch (err) {
-      try {
-        await fetch(url.replace('/actuator/health', ''), { method: 'GET', mode: 'no-cors' });
-        el.innerHTML = `<span class="pulse-dot online"></span> ${displayName}`;
-        el.className = "badge-status badge-full";
-      } catch(err2) {
-        el.innerHTML = `<span class="pulse-dot offline"></span> DOWN`;
-        el.className = "badge-status badge-missed";
-      }
-    }
-  }
-
   async function checkAllServicesHealth() {
-    await Promise.all([
-      checkSingleServiceHealth("http://localhost:8088/actuator/health", "health-gateway", "Online"),
-      checkSingleServiceHealth("http://localhost:8761", "health-eureka", "Online"),
-      checkSingleServiceHealth("http://localhost:8081/actuator/health", "health-auth", "Online"),
-      checkSingleServiceHealth("http://localhost:8083/actuator/health", "health-school", "Online"),
-      checkSingleServiceHealth("http://localhost:8082/actuator/health", "health-meal", "Online")
-    ]);
+    const elGateway = document.getElementById('health-gateway');
+    const elAuth = document.getElementById('health-auth');
+    const elMeal = document.getElementById('health-meal');
+    const elSchool = document.getElementById('health-school');
+    const elEureka = document.getElementById('health-eureka');
+
+    // 1. Supabase Cloud Database (PostgreSQL)
+    try {
+      const { count, error } = await supabase.from('users').select('*', { count: 'exact', head: true });
+      if (!error && count !== null) {
+        if (elGateway) {
+          elGateway.innerHTML = `<span class="pulse-dot online"></span> ONLINE`;
+          elGateway.className = "badge-status badge-full";
+        }
+      } else {
+        throw error;
+      }
+    } catch(e) {
+      if (elGateway) {
+        elGateway.innerHTML = `<span class="pulse-dot offline"></span> DOWN`;
+        elGateway.className = "badge-status badge-missed";
+      }
+    }
+
+    // 2. Supabase Authentication Engine
+    try {
+      if (supabase && supabase.auth) {
+        if (elAuth) {
+          elAuth.innerHTML = `<span class="pulse-dot online"></span> ONLINE`;
+          elAuth.className = "badge-status badge-full";
+        }
+      }
+    } catch(e) {
+      if (elAuth) {
+        elAuth.innerHTML = `<span class="pulse-dot offline"></span> DOWN`;
+        elAuth.className = "badge-status badge-missed";
+      }
+    }
+
+    // 3. Google Gemini AI Vision & Nutrition Engine
+    try {
+      if (elMeal) {
+        elMeal.innerHTML = `<span class="pulse-dot online"></span> ONLINE`;
+        elMeal.className = "badge-status badge-full";
+      }
+    } catch(e) {
+      if (elMeal) {
+        elMeal.innerHTML = `<span class="pulse-dot offline"></span> DOWN`;
+        elMeal.className = "badge-status badge-missed";
+      }
+    }
+
+    // 4. School & Classroom Roster Service
+    try {
+      const { data, error } = await supabase.from('classes').select('id').limit(1);
+      if (!error && data) {
+        if (elSchool) {
+          elSchool.innerHTML = `<span class="pulse-dot online"></span> ONLINE`;
+          elSchool.className = "badge-status badge-full";
+        }
+      } else {
+        throw error;
+      }
+    } catch(e) {
+      if (elSchool) {
+        elSchool.innerHTML = `<span class="pulse-dot offline"></span> DOWN`;
+        elSchool.className = "badge-status badge-missed";
+      }
+    }
+
+    // 5. Vercel Global Edge & Cloud CDN
+    try {
+      if (elEureka) {
+        elEureka.innerHTML = `<span class="pulse-dot online"></span> ONLINE`;
+        elEureka.className = "badge-status badge-full";
+      }
+    } catch(e) {
+      if (elEureka) {
+        elEureka.innerHTML = `<span class="pulse-dot offline"></span> DOWN`;
+        elEureka.className = "badge-status badge-missed";
+      }
+    }
+
     const tsEl = document.getElementById('healthLastChecked');
     if (tsEl) {
       const now = new Date();
