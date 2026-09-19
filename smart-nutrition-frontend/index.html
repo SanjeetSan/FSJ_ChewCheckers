@@ -796,89 +796,118 @@
             </div>
           </div>
 
-          <!-- Detection Result Card -->
-          <div class="card hidden" id="detectionCard">
-            <h3 style="font-size:1.15rem; margin-bottom:1rem;"><i class="fa-solid fa-sparkles" style="color:var(--primary)"></i> Extracted Nutrition Facts</h3>
+          <!-- Redesigned Clean Lunch Analysis Card (Parent-First Chatbot Style) -->
+          <div class="card scanner-clean-card hidden" id="detectionCard">
+            <!-- Header -->
+            <div class="scanner-card-header">
+              <div class="scanner-header-left">
+                <span class="scanner-status-dot"></span>
+                <h3 class="scanner-main-title">Lunch Analysis Complete</h3>
+              </div>
+              <span id="detectionTargetChildBadge" class="scanner-child-badge">
+                <i class="fa-solid fa-user"></i> <span id="detectionTargetChildName">Selected Child</span>
+              </span>
+            </div>
 
-            <div>
-              <div>
-                <h3 id="detectedMealTitle" style="font-size:1.2rem; margin-bottom:0.35rem;">Indian Roti & Curry</h3>
-                <p id="detectedFoodList" style="color:var(--text-secondary); font-size:0.875rem; margin-bottom:0.85rem;">
-                  • 2x Whole Wheat Roti<br>• 1x Mixed Veg Sabzi (150g)<br>• 1x Fresh Side Salad
-                </p>
-
-                <!-- AI Auto-Detected Container Chip -->
-                <div id="detectedContainerBadge" class="detected-container-badge" style="display:flex; align-items:center; gap:0.6rem; background:rgba(16, 185, 129, 0.08); border:1px solid rgba(16, 185, 129, 0.22); border-radius:var(--r-md); padding:0.5rem 0.85rem; margin-bottom:0.85rem; font-size:0.82rem; color:var(--text-secondary);">
-                  <div style="width:28px; height:28px; border-radius:6px; background:rgba(16, 185, 129, 0.15); color:#059669; display:flex; align-items:center; justify-content:center; font-size:0.85rem; flex-shrink:0;">
-                    <i class="fa-solid fa-cube"></i>
-                  </div>
-                  <div style="flex:1; min-width:0;">
-                    <span style="display:block; font-size:0.68rem; text-transform:uppercase; font-weight:700; color:#059669; letter-spacing:0.5px;">Auto-Detected Container</span>
-                    <strong id="detectedContainerText" style="color:var(--text-primary); font-weight:600; font-size:0.85rem;">Stainless Steel Tiffin with Katori (~750 ml)</strong>
-                  </div>
-                  <span style="background:var(--accent-green); color:#fff; font-size:0.65rem; font-weight:700; padding:2px 7px; border-radius:10px; text-transform:uppercase; letter-spacing:0.4px;">AI Calibrated</span>
-                </div>
-
-                <!-- Lunchbox Accuracy Guidance Notification for Parents -->
-                <div id="lunchboxAccuracyTip" style="display:flex; align-items:flex-start; gap:0.75rem; padding:0.75rem 1rem; border-radius:var(--r-md); background:rgba(99, 102, 241, 0.08); border:1px solid rgba(99, 102, 241, 0.22); margin-bottom:1.15rem;">
-                  <i class="fa-solid fa-circle-info" style="color:var(--primary); font-size:1.15rem; margin-top:2px; flex-shrink:0;"></i>
-                  <div style="font-size:0.825rem; color:var(--text-secondary); line-height:1.45;">
-                    <strong style="color:var(--text-primary); display:block; margin-bottom:0.15rem;">Container Auto-Detected:</strong>
-                    For even higher accuracy in portion and protein tracking, you can enter or fine-tune the exact manual dimensions of your lunchbox anytime in <a href="javascript:void(0)" id="linkConfigureLunchboxPresets" style="color:var(--primary); font-weight:700; text-decoration:underline;">Children &gt; Lunchbox Presets</a>.
+            <!-- 1. Scan Summary (Primary Section) -->
+            <div class="scanner-summary-section">
+              <div class="scanner-summary-grid">
+                <div class="scanner-summary-col">
+                  <span class="scanner-col-label">Detected Foods</span>
+                  <div id="detectedFoodList" class="scanner-bullet-list">
+                    <!-- Dynamic bullets: • Vegetable Pulao -->
                   </div>
                 </div>
-
-                <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.5rem; margin-bottom:1.25rem;">
-                  <div style="background:var(--bg-page); padding:0.6rem 0.4rem; border-radius:var(--r-md); text-align:center;">
-                    <span style="font-size:0.7rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Calories</span>
-                    <strong id="detCal" style="display:block; font-size:1.05rem; margin-top:0.15rem;">540 kcal</strong>
+                <div class="scanner-summary-col">
+                  <span class="scanner-col-label">Nutrition Summary</span>
+                  <div id="scannerNutritionSummaryList" class="scanner-bullet-list">
+                    <!-- Dynamic bullets: • 530 kcal, • 20.5 g Protein, etc. -->
                   </div>
-                  <div style="background:var(--bg-page); padding:0.6rem 0.4rem; border-radius:var(--r-md); text-align:center;">
-                    <span style="font-size:0.7rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Protein</span>
-                    <strong id="detProtein" style="display:block; font-size:1.05rem; color:var(--accent-green); margin-top:0.15rem;">18.5 g</strong>
-                  </div>
-                  <div style="background:var(--bg-page); padding:0.6rem 0.4rem; border-radius:var(--r-md); text-align:center;">
-                    <span style="font-size:0.7rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Carbs</span>
-                    <strong id="detCarbs" style="display:block; font-size:1.05rem; color:var(--accent-teal); margin-top:0.15rem;">65.0 g</strong>
-                  </div>
-                  <div style="background:var(--bg-page); padding:0.6rem 0.4rem; border-radius:var(--r-md); text-align:center;">
-                    <span style="font-size:0.7rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Fiber</span>
-                    <strong id="detFiber" style="display:block; font-size:1.05rem; color:var(--accent-amber); margin-top:0.15rem;">6.0 g</strong>
-                  </div>
-                </div>
-
-                <div id="detFoodBreakdownBox" style="background:var(--bg-page); border:1px solid var(--border-subtle); border-radius:var(--r-md); padding:0.75rem 0.9rem; margin-bottom:1.25rem;">
-                  <div style="font-size:0.8rem; font-weight:800; color:var(--text-primary); margin-bottom:0.4rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.4rem;">
-                    <span style="display:flex; align-items:center; gap:0.4rem;"><i class="fa-solid fa-list-check" style="color:var(--primary)"></i> Extracted Food Verification List</span>
-                    <button class="btn-action-outline" id="btnEditExtractedFoodItems" style="padding:0.2rem 0.55rem; font-size:0.75rem; border-radius:var(--r-sm); color:var(--primary); border-color:var(--primary);"><i class="fa-solid fa-pen-to-square"></i> Edit Items</button>
-                  </div>
-                  <div id="detFoodItemsTable" style="font-size:0.8rem; color:var(--text-secondary);">
-                    <!-- Dynamic verified food item list -->
-                  </div>
-                </div>
-
-                <div style="margin-bottom:1.25rem;" id="parentConsumptionBlock">
-                  <div style="display:flex; justify-content:space-between; font-weight:700; font-size:0.875rem; margin-bottom:0.35rem;">
-                    <span>Child Consumption Adjuster:</span>
-                    <span id="eatenPercentLabel" style="color:var(--primary)">85% Eaten</span>
-                  </div>
-                  <input type="range" id="eatenRange" min="0" max="100" value="85" style="width:100%; accent-color:var(--primary);">
-                </div>
-
-                <div style="margin-bottom:1.25rem; background:rgba(99, 102, 241, 0.05); padding:0.75rem 1rem; border-radius:var(--r-md); border:1px solid rgba(99, 102, 241, 0.15); display:flex; align-items:center; justify-content:space-between;">
-                  <span style="font-size:0.825rem; color:var(--text-muted); font-weight:600;"><i class="fa-solid fa-user-check" style="color:var(--primary);"></i> Logging for Child:</span>
-                  <strong id="detectionTargetChildName" style="color:var(--primary); font-size:0.9rem;">Selected Child Profile</strong>
-                </div>
-
-                <div style="display:flex; gap:0.75rem;">
-                  <button type="button" class="btn-action-outline" id="btnDiscardScanLog" style="padding:0.75rem 1.25rem; font-weight:700; display:inline-flex; align-items:center; gap:0.4rem; cursor:pointer;">
-                    <i class="fa-solid fa-xmark"></i> Discard
-                  </button>
-                  <button class="btn-action-primary" id="btnSaveScanLog" style="flex:1; padding:0.75rem; font-weight:700; display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; cursor:pointer;">
-                    <i class="fa-solid fa-floppy-disk"></i> Log Meal
-                  </button>
                 </div>
               </div>
+            </div>
+
+            <!-- 2. Nutrition Highlights (Minimal Horizontal Row) -->
+            <div class="scanner-metrics-bar">
+              <div class="scanner-metric-cell">
+                <span class="scanner-metric-lbl">Calories</span>
+                <strong id="detCal" class="scanner-metric-val">540 kcal</strong>
+              </div>
+              <div class="scanner-metric-divider"></div>
+              <div class="scanner-metric-cell">
+                <span class="scanner-metric-lbl">Protein</span>
+                <strong id="detProtein" class="scanner-metric-val val-protein">18.5 g</strong>
+              </div>
+              <div class="scanner-metric-divider"></div>
+              <div class="scanner-metric-cell">
+                <span class="scanner-metric-lbl">Carbs</span>
+                <strong id="detCarbs" class="scanner-metric-val">65.0 g</strong>
+              </div>
+              <div class="scanner-metric-divider"></div>
+              <div class="scanner-metric-cell">
+                <span class="scanner-metric-lbl">Fiber</span>
+                <strong id="detFiber" class="scanner-metric-val">6.0 g</strong>
+              </div>
+            </div>
+
+            <!-- 3. Food Breakdown (Clean List) -->
+            <div class="scanner-breakdown-section" id="detFoodBreakdownBox">
+              <div class="scanner-section-header">
+                <span class="scanner-section-title">Food Breakdown</span>
+                <button type="button" class="scanner-btn-text" id="btnEditExtractedFoodItems">
+                  <i class="fa-solid fa-pen-to-square"></i> Edit Items
+                </button>
+              </div>
+              <div id="detFoodItemsTable" class="scanner-breakdown-list">
+                <!-- Dynamic clean rows: Name on line 1, portion • kcal • protein on line 2 -->
+              </div>
+            </div>
+
+            <!-- 4. Smart Insight Box (Chatbot Tip Styling) -->
+            <div id="scannerSmartInsight" class="scanner-insight-box">
+              <i class="fa-regular fa-lightbulb scanner-insight-icon"></i>
+              <div id="scannerSmartInsightText" class="scanner-insight-text">
+                Balanced lunch with good protein and energy distribution.
+              </div>
+            </div>
+
+            <!-- 5. Secondary Information (Collapsed Accordion) -->
+            <details class="scanner-secondary-accordion">
+              <summary class="scanner-secondary-summary">
+                <span><i class="fa-solid fa-sliders"></i> Container Calibration &amp; Adjustments</span>
+                <i class="fa-solid fa-chevron-down scanner-summary-chevron"></i>
+              </summary>
+              <div class="scanner-secondary-content">
+                <!-- Auto-detected container info -->
+                <div id="detectedContainerBadge" class="scanner-container-row">
+                  <div class="scanner-container-info">
+                    <span class="scanner-sub-label">Auto-Detected Container</span>
+                    <strong id="detectedContainerText" class="scanner-container-name">Stainless Steel Bento (~750 ml)</strong>
+                  </div>
+                  <a href="javascript:void(0)" id="linkConfigureLunchboxPresets" class="scanner-link-preset">
+                    Fine-tune Preset <i class="fa-solid fa-arrow-right"></i>
+                  </a>
+                </div>
+
+                <!-- Consumption Slider -->
+                <div id="parentConsumptionBlock" class="scanner-slider-row">
+                  <div class="scanner-slider-header">
+                    <span>Estimated Consumption</span>
+                    <span id="eatenPercentLabel" class="scanner-slider-val">85% Eaten</span>
+                  </div>
+                  <input type="range" id="eatenRange" min="0" max="100" value="85" class="scanner-slider">
+                </div>
+              </div>
+            </details>
+
+            <!-- Actions Deck -->
+            <div class="scanner-actions-deck">
+              <button type="button" class="btn-action-outline scanner-btn-discard" id="btnDiscardScanLog">
+                <i class="fa-solid fa-xmark"></i> Discard
+              </button>
+              <button type="button" class="btn-action-primary scanner-btn-save" id="btnSaveScanLog">
+                <i class="fa-solid fa-check"></i> Log Meal
+              </button>
             </div>
           </div>
         </div>

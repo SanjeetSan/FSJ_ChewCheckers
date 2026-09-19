@@ -3740,7 +3740,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const dropzone = document.getElementById('dropzone');
     const quickBar = document.getElementById('scannerQuickActionBar');
 
-    // 1. Hide the huge upload dropzone and show the compact quick bar above
+    // 1. Hide upload dropzone and show compact quick bar above
     if (dropzone) {
       if (dropzone.dataset.originalHtml) {
         dropzone.innerHTML = dropzone.dataset.originalHtml;
@@ -3771,7 +3771,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       }
     }
 
-    // 2. Wire up the Lunchbox Accuracy Guidance banner link
+    // 2. Wire up Lunchbox Presets navigation link
     const linkPresets = document.getElementById('linkConfigureLunchboxPresets');
     if (linkPresets) {
       linkPresets.onclick = (e) => {
@@ -3790,69 +3790,77 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       };
     }
 
-    const imgPreview = document.getElementById('detectedImgPreview');
-    if (imgPreview && imageUrl) {
-      if (imageUrl.startsWith('/uploads/')) {
-        imgPreview.src = `http://localhost:8082${imageUrl}`;
-      } else {
-        imgPreview.src = imageUrl;
-      }
-    }
-
-    const mealTitle = document.getElementById('detectedMealTitle');
-    const foodList = document.getElementById('detectedFoodList');
-    const detectedContainerText = document.getElementById('detectedContainerText');
-    const detCal = document.getElementById('detCal');
-    const detProtein = document.getElementById('detProtein');
-    const detCarbs = document.getElementById('detCarbs');
-    const detFiber = document.getElementById('detFiber');
-    const detFoodItemsTable = document.getElementById('detFoodItemsTable');
-
-    const containerInfo = state.currentDetectedContainer || inferContainerFromImageAndItems(null, extractedFoodItems);
-    if (detectedContainerText) {
-      detectedContainerText.textContent = containerInfo.label || `${containerInfo.name} (~${containerInfo.volumeMl || 750} ml)`;
-    }
-
-    const firstFoodName = extractedFoodItems[0]?.foodName || "Balanced Lunchbox Meal";
-    if (mealTitle) mealTitle.textContent = firstFoodName;
-
+    // 4. Calculate total nutrition values
     let totalCal = 0;
     let totalProt = 0;
     let totalCarb = 0;
     let totalFib = 0;
 
+    extractedFoodItems.forEach(f => {
+      totalCal += parseFloat(f.calories) || 0;
+      totalProt += parseFloat(f.proteinG) || 0;
+      totalCarb += parseFloat(f.carbsG) || 0;
+      totalFib += parseFloat(f.fiberG) || 0;
+    });
+
+    // 5. Tier 1: Scan Summary (Detected Foods & Nutrition Summary Bullets)
+    const foodList = document.getElementById('detectedFoodList');
     if (foodList) {
-      foodList.innerHTML = extractedFoodItems.map(f => {
-        const cal = parseFloat(f.calories) || 0;
-        const prot = parseFloat(f.proteinG) || 0;
-        const carb = parseFloat(f.carbsG) || 0;
-        const fib = parseFloat(f.fiberG) || 0;
-
-        totalCal += cal;
-        totalProt += prot;
-        totalCarb += carb;
-        totalFib += fib;
-
-        return `• <strong>${f.foodName}</strong>: ${f.quantity || '1 serving'}`;
-      }).join('<br>');
+      foodList.innerHTML = extractedFoodItems.map(f => `
+        <div class="scanner-bullet-item">
+          <span class="scanner-bullet-dot">•</span>
+          <span><strong>${f.foodName}</strong></span>
+        </div>
+      `).join('');
     }
+
+    const nutritionSummaryList = document.getElementById('scannerNutritionSummaryList');
+    if (nutritionSummaryList) {
+      nutritionSummaryList.innerHTML = `
+        <div class="scanner-bullet-item">
+          <span class="scanner-bullet-dot">•</span>
+          <span>${Math.round(totalCal)} kcal</span>
+        </div>
+        <div class="scanner-bullet-item">
+          <span class="scanner-bullet-dot">•</span>
+          <span>${totalProt.toFixed(1)} g Protein</span>
+        </div>
+        <div class="scanner-bullet-item">
+          <span class="scanner-bullet-dot">•</span>
+          <span>${totalCarb.toFixed(1)} g Carbs</span>
+        </div>
+        <div class="scanner-bullet-item">
+          <span class="scanner-bullet-dot">•</span>
+          <span>${totalFib.toFixed(1)} g Fiber</span>
+        </div>
+      `;
+    }
+
+    // 6. Tier 2: Nutrition Highlights (Minimal Horizontal Row)
+    const detCal = document.getElementById('detCal');
+    const detProtein = document.getElementById('detProtein');
+    const detCarbs = document.getElementById('detCarbs');
+    const detFiber = document.getElementById('detFiber');
 
     if (detCal) detCal.textContent = `${Math.round(totalCal)} kcal`;
     if (detProtein) detProtein.textContent = `${totalProt.toFixed(1)} g`;
     if (detCarbs) detCarbs.textContent = `${totalCarb.toFixed(1)} g`;
     if (detFiber) detFiber.textContent = `${totalFib.toFixed(1)} g`;
 
+    // 7. Tier 3: Food Breakdown (Clean 2-line list)
+    const detFoodItemsTable = document.getElementById('detFoodItemsTable');
     if (detFoodItemsTable) {
-      detFoodItemsTable.innerHTML = extractedFoodItems.map((f, idx) => `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:0.35rem 0; border-bottom:1px dashed var(--border-subtle);">
-          <div>
-            <strong>${f.foodName}</strong> <small style="color:var(--text-muted);">(${f.quantity || '1 serving'})</small>
+      detFoodItemsTable.innerHTML = extractedFoodItems.map(f => {
+        const qty = f.quantity || '1 portion';
+        const cal = Math.round(parseFloat(f.calories) || 0);
+        const prot = parseFloat(f.proteinG) || 0;
+        return `
+          <div class="scanner-breakdown-item">
+            <span class="scanner-breakdown-name">${f.foodName}</span>
+            <span class="scanner-breakdown-meta">${qty} • ${cal} kcal • ${prot.toFixed(1)} g protein</span>
           </div>
-          <div style="font-weight:700; font-size:0.75rem;">
-            ${f.calories || 0} kcal | ${f.proteinG || 0}g P | ${f.carbsG || 0}g C | ${f.fiberG || 0}g F
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     const btnEdit = document.getElementById('btnEditExtractedFoodItems');
@@ -3860,16 +3868,49 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       btnEdit.onclick = () => openEditFoodItemsModal();
     }
 
-    const parentConsumptionBlock = document.getElementById('parentConsumptionBlock');
-    if (parentConsumptionBlock) {
-      parentConsumptionBlock.style.display = (state.role === 'PARENT') ? 'none' : 'block';
+    // 8. Tier 4: Smart Insight Box (Chatbot Tip Styling)
+    const insightEl = document.getElementById('scannerSmartInsightText');
+    if (insightEl) {
+      const activeChild = state.selectedChild || (state.children && state.children.length > 0 ? state.children[0] : null);
+      const childName = activeChild ? formatStudentName(activeChild.name) : 'your child';
+      const targetProtein = activeChild?.lunchProtein || activeChild?.targetProtein || 20;
+
+      if (totalProt >= targetProtein) {
+        insightEl.textContent = `Excellent protein balance (${totalProt.toFixed(1)}g), meeting ${childName}'s target lunch requirement.`;
+      } else if (totalProt >= targetProtein * 0.75) {
+        insightEl.textContent = `Protein intake (${totalProt.toFixed(1)}g) is close to ${childName}'s ${targetProtein}g target. Adding a small dairy or boiled egg item can help meet the remaining requirement.`;
+      } else {
+        insightEl.textContent = `Balanced lunch with good protein and energy distribution. Consider a handful of nuts or paneer cubes to raise protein closer to target.`;
+      }
+    }
+
+    // 9. Tier 5: Secondary Information (Container & Preset details)
+    const detectedContainerText = document.getElementById('detectedContainerText');
+    const containerInfo = state.currentDetectedContainer || inferContainerFromImageAndItems(null, extractedFoodItems);
+    if (detectedContainerText) {
+      detectedContainerText.textContent = containerInfo.label || `${containerInfo.name} (~${containerInfo.volumeMl || 750} ml)`;
+    }
+
+    // Consumption Slider
+    const eatenRange = document.getElementById('eatenRange');
+    const eatenPercentLabel = document.getElementById('eatenPercentLabel');
+    if (eatenRange && eatenPercentLabel) {
+      eatenRange.oninput = (e) => {
+        eatenPercentLabel.textContent = `${e.target.value}% Eaten`;
+      };
+    }
+
+    // Active Child Badge
+    const targetChildName = document.getElementById('detectionTargetChildName');
+    if (targetChildName) {
+      const activeChild = state.selectedChild || (state.children && state.children.length > 0 ? state.children[0] : null);
+      targetChildName.textContent = activeChild ? formatStudentName(activeChild.name) : 'Child Profile';
     }
 
     updateScannerChildSelector();
 
     if (card) card.classList.remove('hidden');
     showToast("✨ Food and container detected with Gemini Vision AI!");
-    showToast("💡 Auto-detected container: For highest portion & protein accuracy, you can fine-tune dimensions in Children > Lunchbox Presets.", "info");
   }
 
   function openEditFoodItemsModal() {

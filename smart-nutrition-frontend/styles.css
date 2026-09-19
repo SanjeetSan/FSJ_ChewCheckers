@@ -5502,3 +5502,405 @@ body.dark-theme .preset-ghost-icon {
   max-width: 200px;
   line-height: 1.35;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   CLEAN LUNCH SCANNER RESULTS UI (PARENT-FIRST CHATBOT DESIGN)
+═══════════════════════════════════════════════════════════════════ */
+.scanner-clean-card {
+  background: #182234 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  padding: 1.5rem !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.22) !important;
+  margin-top: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.scanner-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.scanner-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.scanner-status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #34D399;
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.scanner-main-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0;
+  letter-spacing: 0.2px;
+}
+
+.scanner-child-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  color: #C7D2FE;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* 1. Scan Summary (Primary Section) */
+.scanner-summary-section {
+  margin-bottom: 1.25rem;
+}
+
+.scanner-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .scanner-summary-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+.scanner-col-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94A3B8;
+  margin-bottom: 0.65rem;
+}
+
+.scanner-bullet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.scanner-bullet-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  font-size: 0.92rem;
+  color: #F1F5F9;
+  line-height: 1.5;
+}
+
+.scanner-bullet-dot {
+  color: #818CF8;
+  font-size: 1.15rem;
+  line-height: 1;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* 2. Nutrition Highlights (Minimal Horizontal Row) */
+.scanner-metrics-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0.85rem 1rem;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+}
+
+.scanner-metric-cell {
+  text-align: center;
+  flex: 1;
+}
+
+.scanner-metric-lbl {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94A3B8;
+  margin-bottom: 0.2rem;
+}
+
+.scanner-metric-val {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 0.2px;
+}
+
+.scanner-metric-val.val-protein {
+  color: #34D399;
+}
+
+.scanner-metric-divider {
+  width: 1px;
+  height: 26px;
+  background: rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+/* 3. Food Breakdown */
+.scanner-breakdown-section {
+  margin-bottom: 1.25rem;
+}
+
+.scanner-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.scanner-section-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94A3B8;
+}
+
+.scanner-btn-text {
+  background: none;
+  border: none;
+  color: #818CF8;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.scanner-btn-text:hover {
+  color: #A5B4FC;
+  text-decoration: underline;
+}
+
+.scanner-breakdown-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.scanner-breakdown-item {
+  padding: 0.65rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+.scanner-breakdown-item:last-child {
+  border-bottom: none;
+}
+
+.scanner-breakdown-name {
+  font-size: 0.925rem;
+  font-weight: 600;
+  color: #F8FAFC;
+}
+
+.scanner-breakdown-meta {
+  font-size: 0.825rem;
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+/* 4. Smart Insight Box */
+.scanner-insight-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: rgba(99, 102, 241, 0.08);
+  border-left: 3.5px solid #818CF8;
+  border-radius: 4px 10px 10px 4px;
+  margin-bottom: 1.25rem;
+}
+
+.scanner-insight-icon {
+  color: #FBBF24;
+  font-size: 1.1rem;
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+}
+
+.scanner-insight-text {
+  font-size: 0.885rem;
+  color: #E2E8F0;
+  line-height: 1.55;
+}
+
+/* 5. Secondary Information (Collapsed Accordion) */
+.scanner-secondary-accordion {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+}
+
+.scanner-secondary-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: #94A3B8;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s;
+  list-style: none;
+}
+
+.scanner-secondary-summary::-webkit-details-marker {
+  display: none;
+}
+
+.scanner-secondary-summary:hover {
+  background: rgba(255, 255, 255, 0.035);
+  color: #E2E8F0;
+}
+
+.scanner-summary-chevron {
+  font-size: 0.75rem;
+  color: #64748B;
+  transition: transform 0.2s ease;
+}
+
+.scanner-secondary-accordion[open] .scanner-summary-chevron {
+  transform: rotate(180deg);
+}
+
+.scanner-secondary-content {
+  padding: 0.85rem 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.scanner-container-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.scanner-container-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.scanner-sub-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748B;
+}
+
+.scanner-container-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #E2E8F0;
+}
+
+.scanner-link-preset {
+  font-size: 0.785rem;
+  font-weight: 600;
+  color: #818CF8;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.scanner-link-preset:hover {
+  text-decoration: underline;
+  color: #A5B4FC;
+}
+
+.scanner-slider-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.scanner-slider-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #94A3B8;
+}
+
+.scanner-slider-val {
+  color: #818CF8;
+  font-weight: 700;
+}
+
+.scanner-slider {
+  width: 100%;
+  accent-color: #6366F1;
+  cursor: pointer;
+}
+
+/* Action Deck */
+.scanner-actions-deck {
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.scanner-btn-discard {
+  padding: 0.75rem 1.35rem;
+  font-weight: 700;
+  font-size: 0.875rem;
+  border-radius: 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.scanner-btn-save {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-radius: 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
