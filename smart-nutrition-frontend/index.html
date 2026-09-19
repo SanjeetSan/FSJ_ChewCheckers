@@ -527,13 +527,34 @@
               <!-- Hero Footer: Last Updated Time -->
               <div class="hero-status-footer">
                 <span class="hero-last-updated">
-                  <i class="fa-regular fa-clock"></i> Last Updated: <strong id="heroLastUpdatedTime">12:45 PM</strong>
+                  <i class="fa-regular fa-clock"></i> Last Updated: <strong id="heroLastUpdatedTime">Not logged today</strong>
                 </span>
-                <span class="hero-status-note" id="heroStatusNote">Teacher verified: Child finished lunch normally.</span>
+                <span class="hero-status-note" id="heroStatusNote">No lunch logged today. Click "Upload Lunchbox" below to log.</span>
               </div>
             </div>
 
-            <!-- 2. NUTRITION STRENGTHS & NEEDS ATTENTION -->
+            <!-- 2. QUICK ACTIONS (PROMINENT ACTION ROW DIRECTLY ACCESSIBLE) -->
+            <div class="card quick-actions-card">
+              <div class="quick-actions-header">
+                <span class="quick-actions-title"><i class="fa-solid fa-bolt" style="color:var(--primary);"></i> Quick Actions</span>
+              </div>
+              <div class="quick-actions-grid">
+                <button class="btn-quick-primary" id="btnQuickActionUpload">
+                  <i class="fa-solid fa-camera"></i> Upload Lunchbox
+                </button>
+                <button class="btn-quick-secondary" id="btnQuickActionMessage">
+                  <i class="fa-solid fa-comments"></i> Message Teacher
+                </button>
+                <button class="btn-quick-secondary" id="btnQuickActionReports">
+                  <i class="fa-solid fa-chart-pie"></i> View Reports
+                </button>
+                <button class="btn-quick-secondary" id="btnParentRefreshDashboard">
+                  <i class="fa-solid fa-rotate"></i> Refresh Status
+                </button>
+              </div>
+            </div>
+
+            <!-- 3. NUTRITION STRENGTHS & NEEDS ATTENTION -->
             <div class="dashboard-insights-grid">
               <!-- Nutrition Strengths -->
               <div class="card strength-card">
@@ -562,7 +583,7 @@
               </div>
             </div>
 
-            <!-- 3. WEEKLY PROGRESS SNAPSHOT -->
+            <!-- 4. WEEKLY PROGRESS SNAPSHOT -->
             <div class="card weekly-progress-card">
               <div class="weekly-progress-header">
                 <div>
@@ -593,23 +614,23 @@
               <div class="progress-snapshot-grid">
                 <div class="snapshot-metric-card">
                   <span class="snapshot-metric-lbl">Lunches Logged</span>
-                  <strong class="snapshot-metric-val" id="snapLunchesLogged">5/5</strong>
+                  <strong class="snapshot-metric-val" id="snapLunchesLogged">0/5</strong>
                 </div>
                 <div class="snapshot-metric-card">
                   <span class="snapshot-metric-lbl">Average Protein</span>
-                  <strong class="snapshot-metric-val val-protein" id="snapAvgProtein">22g</strong>
+                  <strong class="snapshot-metric-val val-protein" id="snapAvgProtein">—</strong>
                 </div>
                 <div class="snapshot-metric-card">
                   <span class="snapshot-metric-lbl">Average Calories</span>
-                  <strong class="snapshot-metric-val" id="snapAvgCalories">510 kcal</strong>
+                  <strong class="snapshot-metric-val" id="snapAvgCalories">—</strong>
                 </div>
                 <div class="snapshot-metric-card">
                   <span class="snapshot-metric-lbl">Teacher Reviews</span>
-                  <strong class="snapshot-metric-val" id="snapTeacherReviews">5/5</strong>
+                  <strong class="snapshot-metric-val" id="snapTeacherReviews">0/5</strong>
                 </div>
                 <div class="snapshot-metric-card snapshot-score-card">
                   <span class="snapshot-metric-lbl">Nutrition Score</span>
-                  <strong class="snapshot-metric-val val-score" id="snapNutritionScore">87/100</strong>
+                  <strong class="snapshot-metric-val val-score" id="snapNutritionScore">—</strong>
                 </div>
               </div>
 
@@ -619,7 +640,7 @@
               </div>
             </div>
 
-            <!-- 4. RECENT LUNCH ACTIVITY (SIMPLIFIED) -->
+            <!-- 5. RECENT LUNCH ACTIVITY (SIMPLIFIED) -->
             <div class="card recent-activity-card">
               <div class="recent-activity-header">
                 <div>
@@ -641,27 +662,6 @@
               <!-- Simplified Meal Items (Clean compact list, max 3-4 recent meals) -->
               <div id="scanHistoryContainer" class="simplified-recent-list">
                 <!-- Dynamically populated -->
-              </div>
-            </div>
-
-            <!-- 5. QUICK ACTIONS (SECONDARY ACTIONS AT BOTTOM) -->
-            <div class="card quick-actions-card">
-              <div class="quick-actions-header">
-                <span class="quick-actions-title"><i class="fa-solid fa-bolt" style="color:var(--primary);"></i> Quick Actions</span>
-              </div>
-              <div class="quick-actions-grid">
-                <button class="btn-quick-primary" id="btnQuickActionUpload">
-                  <i class="fa-solid fa-camera"></i> Upload Lunchbox
-                </button>
-                <button class="btn-quick-secondary" id="btnQuickActionMessage">
-                  <i class="fa-solid fa-comments"></i> Message Teacher
-                </button>
-                <button class="btn-quick-secondary" id="btnQuickActionReports">
-                  <i class="fa-solid fa-chart-pie"></i> View Reports
-                </button>
-                <button class="btn-quick-secondary" id="btnParentRefreshDashboard">
-                  <i class="fa-solid fa-rotate"></i> Refresh Status
-                </button>
               </div>
             </div>
 

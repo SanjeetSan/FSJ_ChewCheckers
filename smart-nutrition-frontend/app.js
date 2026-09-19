@@ -7030,9 +7030,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const todayStr = getLocalTodayISO();
     const todayReport = reports.find(r => (r.calculatedAt && r.calculatedAt.startsWith(todayStr)) || (r.mealDate && r.mealDate.startsWith(todayStr)));
     
-    // Pick the latest meal uploaded/evaluated for today
-    const todayMeals = meals.filter(m => (m.mealDate && m.mealDate.startsWith(todayStr)) || (m.created_at && m.created_at.startsWith(todayStr))).sort((a, b) => b.id - a.id);
-    const todayMeal = todayMeals.length > 0 ? todayMeals[0] : (meals.length > 0 ? meals[0] : null);
+    // Pick the latest meal uploaded/evaluated for today ONLY
+    const validMeals = Array.isArray(meals) ? meals : [];
+    const todayMeals = validMeals.filter(m => (m.mealDate && m.mealDate.startsWith(todayStr)) || (m.created_at && m.created_at.startsWith(todayStr)) || (m.createdAt && m.createdAt.startsWith(todayStr))).sort((a, b) => (b.id || 0) - (a.id || 0));
+    const todayMeal = todayMeals.length > 0 ? todayMeals[0] : null;
     const isToday = todayMeals.length > 0;
 
     let consumedCal = 0;
@@ -7119,7 +7120,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       }
       if (heroBadgeLunchLogged) {
         heroBadgeLunchLogged.className = 'hero-badge badge-success';
-        if (heroTextLunchLogged) heroTextLunchLogged.textContent = isToday ? 'Lunch Logged' : 'Recent Lunch Logged';
+        if (heroTextLunchLogged) heroTextLunchLogged.textContent = 'Lunch Logged';
       }
       if (heroBadgeTeacherVerified) {
         heroBadgeTeacherVerified.className = isVerified ? 'hero-badge badge-success' : 'hero-badge badge-pending';
@@ -7128,48 +7129,50 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       if (heroStatusNote) {
         heroStatusNote.textContent = isVerified
           ? `Teacher verified: ${completionPct}% meal finished.`
-          : `Lunch uploaded. Awaiting teacher lunchtime review.`;
+          : `Lunch uploaded today. Awaiting teacher lunchtime review.`;
+      }
+      if (heroProteinProgress) heroProteinProgress.textContent = `${effectiveProt}g / ${protTarget}g Protein`;
+      if (heroProteinBar) {
+        const protPct = Math.min(100, Math.round((effectiveProt / Math.max(1, protTarget)) * 100));
+        heroProteinBar.style.width = `${protPct}%`;
+      }
+      if (heroCalProgress) heroCalProgress.textContent = `${effectiveCal} / ${calTarget} kcal`;
+      if (heroCalBar) {
+        const calPct = Math.min(100, Math.round((effectiveCal / Math.max(1, calTarget)) * 100));
+        heroCalBar.style.width = `${calPct}%`;
+      }
+      if (heroMealCompletion) heroMealCompletion.textContent = `${completionPct}% Meal Completion`;
+      if (heroCompletionBar) heroCompletionBar.style.width = `${completionPct}%`;
+
+      if (heroLastUpdatedTime) {
+        const mealTime = todayMeal.created_at || todayMeal.createdAt || todayMeal.mealDate;
+        if (mealTime) {
+          heroLastUpdatedTime.textContent = new Date(mealTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } else {
+          heroLastUpdatedTime.textContent = 'Today';
+        }
       }
     } else {
+      // HONEST EMPTY STATE FOR TODAY: No fake numbers, no fake timestamps!
       if (heroStatusDot) heroStatusDot.className = 'hero-status-dot dot-pending';
       if (heroBadgeLunchLogged) {
         heroBadgeLunchLogged.className = 'hero-badge badge-pending';
-        if (heroTextLunchLogged) heroTextLunchLogged.textContent = 'Awaiting Lunch';
+        if (heroTextLunchLogged) heroTextLunchLogged.textContent = 'Not Logged Today';
       }
       if (heroBadgeTeacherVerified) {
         heroBadgeTeacherVerified.className = 'hero-badge badge-pending';
-        if (heroTextTeacherVerified) heroTextTeacherVerified.textContent = 'Pending Review';
+        if (heroTextTeacherVerified) heroTextTeacherVerified.textContent = 'Pending Upload';
       }
       if (heroStatusNote) {
-        heroStatusNote.textContent = `No lunch logged today. Click "Upload Lunchbox" below to log.`;
+        heroStatusNote.textContent = `No lunch logged today. Click "Upload Lunchbox" above to log today's meal.`;
       }
-    }
-
-    // Protein & Calorie numbers
-    if (heroProteinProgress) heroProteinProgress.textContent = `${effectiveProt}g / ${protTarget}g Protein`;
-    if (heroProteinBar) {
-      const protPct = Math.min(100, Math.round((effectiveProt / Math.max(1, protTarget)) * 100));
-      heroProteinBar.style.width = `${protPct}%`;
-    }
-
-    if (heroCalProgress) heroCalProgress.textContent = `${effectiveCal} / ${calTarget} kcal`;
-    if (heroCalBar) {
-      const calPct = Math.min(100, Math.round((effectiveCal / Math.max(1, calTarget)) * 100));
-      heroCalBar.style.width = `${calPct}%`;
-    }
-
-    if (heroMealCompletion) heroMealCompletion.textContent = `${completionPct}% Meal Completion`;
-    if (heroCompletionBar) heroCompletionBar.style.width = `${completionPct}%`;
-
-    // Last updated time
-    if (heroLastUpdatedTime) {
-      if (todayMeal && todayMeal.created_at) {
-        heroLastUpdatedTime.textContent = new Date(todayMeal.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      } else if (todayMeal && todayMeal.createdAt) {
-        heroLastUpdatedTime.textContent = new Date(todayMeal.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      } else {
-        heroLastUpdatedTime.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      }
+      if (heroProteinProgress) heroProteinProgress.textContent = `0g / ${protTarget}g Protein`;
+      if (heroProteinBar) heroProteinBar.style.width = '0%';
+      if (heroCalProgress) heroCalProgress.textContent = `0 / ${calTarget} kcal`;
+      if (heroCalBar) heroCalBar.style.width = '0%';
+      if (heroMealCompletion) heroMealCompletion.textContent = `— Not Eaten Yet`;
+      if (heroCompletionBar) heroCompletionBar.style.width = '0%';
+      if (heroLastUpdatedTime) heroLastUpdatedTime.textContent = 'Not logged today';
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -7181,35 +7184,46 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const snapTeacherReviews = document.getElementById('snapTeacherReviews');
     const snapNutritionScore = document.getElementById('snapNutritionScore');
 
-    const recent7Meals = meals.slice(0, 7);
-    const loggedCount = Math.min(5, recent7Meals.length);
-    const reviewedCount = recent7Meals.filter(m => m.status === 'FULLY_CONSUMED' || m.status === 'PARTIALLY_CONSUMED' || (m.overallConsumptionPercentage !== null && m.overallConsumptionPercentage > 0)).length;
+    const recent7Meals = validMeals.slice(0, 7);
 
-    let weekProtSum = 0;
-    let weekCalSum = 0;
-    recent7Meals.forEach(m => {
-      (m.foodItems || []).forEach(f => {
-        weekProtSum += (parseFloat(f.proteinG) || 0);
-        weekCalSum += (parseFloat(f.calories) || 0);
+    if (recent7Meals.length === 0) {
+      // HONEST ZERO DATA STATE — NO FAKE HARDCODED DEFAULTS!
+      if (snapLunchesLogged) snapLunchesLogged.textContent = `0/5`;
+      if (snapAvgProtein) snapAvgProtein.textContent = `—`;
+      if (snapAvgCalories) snapAvgCalories.textContent = `—`;
+      if (snapTeacherReviews) snapTeacherReviews.textContent = `0/5`;
+      if (snapNutritionScore) snapNutritionScore.textContent = `—`;
+    } else {
+      const loggedCount = Math.min(5, recent7Meals.length);
+      const reviewedCount = recent7Meals.filter(m => m.status === 'FULLY_CONSUMED' || m.status === 'PARTIALLY_CONSUMED' || (m.overallConsumptionPercentage !== null && m.overallConsumptionPercentage > 0)).length;
+
+      let weekProtSum = 0;
+      let weekCalSum = 0;
+      recent7Meals.forEach(m => {
+        (m.foodItems || []).forEach(f => {
+          weekProtSum += (parseFloat(f.proteinG) || 0);
+          weekCalSum += (parseFloat(f.calories) || 0);
+        });
       });
-    });
 
-    const avgProtNum = recent7Meals.length > 0 ? Math.round(weekProtSum / recent7Meals.length) : (effectiveProt || 22);
-    const avgCalNum = recent7Meals.length > 0 ? Math.round(weekCalSum / recent7Meals.length) : (effectiveCal || 510);
+      const avgProtNum = Math.round(weekProtSum / recent7Meals.length);
+      const avgCalNum = Math.round(weekCalSum / recent7Meals.length);
 
-    // Latest score or average score
-    let scoreNum = 85;
-    if (reports && reports.length > 0 && reports[0].score) {
-      scoreNum = Math.round(parseFloat(reports[0].score));
-    } else if (todayMeal && todayMeal.nutritionScore) {
-      scoreNum = Math.round(parseFloat(todayMeal.nutritionScore));
+      let scoreNum = null;
+      if (reports && reports.length > 0 && reports[0].score) {
+        scoreNum = Math.round(parseFloat(reports[0].score));
+      } else if (todayMeal && todayMeal.nutritionScore) {
+        scoreNum = Math.round(parseFloat(todayMeal.nutritionScore));
+      } else if (avgProtNum > 0 && avgCalNum > 0) {
+        scoreNum = Math.min(100, Math.round((Math.min(1, avgProtNum / protTarget) * 50) + (Math.min(1, avgCalNum / calTarget) * 50)));
+      }
+
+      if (snapLunchesLogged) snapLunchesLogged.textContent = `${loggedCount}/5`;
+      if (snapAvgProtein) snapAvgProtein.textContent = `${avgProtNum}g`;
+      if (snapAvgCalories) snapAvgCalories.textContent = `${avgCalNum} kcal`;
+      if (snapTeacherReviews) snapTeacherReviews.textContent = `${Math.min(loggedCount, reviewedCount)}/${loggedCount}`;
+      if (snapNutritionScore) snapNutritionScore.textContent = scoreNum !== null ? `${scoreNum}/100` : `—`;
     }
-
-    if (snapLunchesLogged) snapLunchesLogged.textContent = `${loggedCount}/5`;
-    if (snapAvgProtein) snapAvgProtein.textContent = `${avgProtNum}g`;
-    if (snapAvgCalories) snapAvgCalories.textContent = `${avgCalNum} kcal`;
-    if (snapTeacherReviews) snapTeacherReviews.textContent = `${Math.min(loggedCount, reviewedCount)}/${loggedCount || 5}`;
-    if (snapNutritionScore) snapNutritionScore.textContent = `${scoreNum}/100`;
   }
 
   function getLocalISOForDate(dateObj) {
@@ -8099,16 +8113,41 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const attentionEl = document.getElementById('needsAttentionList');
     if (!strengthsEl || !attentionEl) return;
 
+    const validMeals = Array.isArray(meals) ? meals : [];
+    const childName = child ? formatStudentName(child.name) : 'Child';
+
+    if (validMeals.length === 0) {
+      strengthsEl.innerHTML = `
+        <div class="insight-bullet-row" style="color:var(--text-muted);">
+          <span class="bullet-icon" style="color:var(--text-muted); font-size:0.8rem;">ℹ</span>
+          <span>No meals logged yet. Upload lunch to see nutrition strengths.</span>
+        </div>
+      `;
+      attentionEl.innerHTML = `
+        <div class="insight-bullet-row" style="color:var(--text-muted);">
+          <span class="bullet-icon" style="color:var(--text-muted); font-size:0.8rem;">ℹ</span>
+          <span>No observations yet. Insights will generate automatically once meals are recorded.</span>
+        </div>
+      `;
+
+      const btnAskSummary = document.getElementById('btnAskAiInsightsSummary');
+      if (btnAskSummary) {
+        btnAskSummary.onclick = () => {
+          switchPane('ai-assistant');
+          sendSmartAiChatMsg(`How can I plan a balanced lunchbox for ${childName}?`);
+        };
+      }
+      return;
+    }
+
     const targetCal = targets ? targets.lunchCalTarget || 500 : 500;
     const targetProt = targets ? targets.lunchProteinTarget || 16 : 16;
 
     // Real data metrics across past meals
     const strengths = [];
     const attentions = [];
-
-    const validMeals = meals && meals.length > 0 ? meals : [];
     
-    // 1. Protein analysis
+    // 1. Protein analysis from actual meals
     let totalProtConsumed = 0;
     let mealsWithProt = 0;
     validMeals.forEach(m => {
@@ -8122,9 +8161,9 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const avgProt = mealsWithProt > 0 ? Math.round(totalProtConsumed / mealsWithProt) : 0;
 
     if (avgProt >= targetProt * 0.85) {
-      strengths.push("Protein goal consistently achieved");
+      strengths.push(`Protein target consistently achieved (~${avgProt}g / ${targetProt}g)`);
     } else if (avgProt > 0 && avgProt < targetProt * 0.75) {
-      attentions.push(`Protein intake slightly below ${targetProt}g target`);
+      attentions.push(`Average protein (~${avgProt}g) is below the ${targetProt}g lunchtime target`);
     }
 
     // 2. Meal completion rate
@@ -8134,58 +8173,58 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         consValues.push(Number(m.overallConsumptionPercentage));
       } else if (m.status === 'FULLY_CONSUMED') {
         consValues.push(100);
+      } else if (m.status === 'PARTIALLY_CONSUMED') {
+        consValues.push(50);
       }
     });
     const avgCompletion = consValues.length > 0 ? Math.round(consValues.reduce((a, b) => a + b, 0) / consValues.length) : 0;
 
     if (avgCompletion >= 75) {
-      strengths.push("Good meal completion rate");
-    } else if (avgCompletion > 0 && avgCompletion < 65) {
-      attentions.push("Plate clearance lower than expected");
+      strengths.push(`High meal clearance (~${avgCompletion}% finished on average)`);
+    } else if (avgCompletion > 0 && avgCompletion < 60) {
+      attentions.push(`Plate clearance is lower than target (~${avgCompletion}% finished)`);
     }
 
     // 3. Food diversity & variety check
     const allFoodText = validMeals.flatMap(m => (m.foodItems || []).map(f => (f.foodName || '').toLowerCase())).join(' ');
-    const distinctFoods = new Set(validMeals.flatMap(m => (m.foodItems || []).map(f => (f.foodName || '').toLowerCase())));
+    const distinctFoods = new Set(validMeals.flatMap(m => (m.foodItems || []).map(f => (f.foodName || '').toLowerCase())).filter(n => n && n !== 'custom school lunch' && n !== 'lunchbox meal'));
 
     if (distinctFoods.size >= 4) {
-      strengths.push("Balanced lunch variety");
+      strengths.push(`Good meal variety with ${distinctFoods.size} distinct food items recorded`);
     } else if (distinctFoods.size > 0 && distinctFoods.size < 3) {
-      attentions.push("Meal variety could be expanded");
+      attentions.push(`Meal variety could be expanded (only ${distinctFoods.size} food items recorded)`);
     }
 
-    // Check specific food groups
-    const hasFruit = /fruit|apple|banana|orange|berry|grape|melon|papaya|pear/i.test(allFoodText);
-    const hasVeg = /veg|spinach|carrot|broccoli|peas|salad|beans|pulao|sabzi|curry|cucumber|tomato/i.test(allFoodText);
-    const hasHydration = /cucumber|watermelon|celery|orange|curd|buttermilk|soup|salad/i.test(allFoodText);
+    // 4. Food groups check (only if foods exist)
+    if (allFoodText.length > 0) {
+      const hasFruit = /fruit|apple|banana|orange|berry|grape|melon|papaya|pear/i.test(allFoodText);
+      const hasHydration = /cucumber|watermelon|celery|orange|curd|buttermilk|soup|salad/i.test(allFoodText);
+      const hasVeg = /veg|spinach|carrot|broccoli|peas|salad|beans|pulao|sabzi|curry|cucumber|tomato/i.test(allFoodText);
 
-    if (!hasFruit) {
-      attentions.push("Fruit intake below target");
-    } else {
-      strengths.push("Regular fruit servings included");
+      if (hasFruit) {
+        strengths.push("Fresh fruit servings included regularly");
+      } else if (validMeals.length >= 2) {
+        attentions.push("Consider adding one fresh fruit serving to lunchboxes");
+      }
+
+      if (hasHydration) {
+        strengths.push("Hydrating foods included in lunchboxes");
+      } else if (validMeals.length >= 2) {
+        attentions.push("Include water-rich sides like cucumber or watermelon");
+      }
+
+      if (hasVeg) {
+        strengths.push("Vegetables consistently packed in meals");
+      } else if (validMeals.length >= 2) {
+        attentions.push("Vegetable intake could be increased");
+      }
     }
 
-    if (!hasHydration) {
-      attentions.push("Hydration foods packed infrequently");
-    } else {
-      strengths.push("Hydrating foods included");
-    }
-
-    if (!hasVeg) {
-      attentions.push("Vegetable intake inconsistent");
-    }
-
-    // Fallbacks if fewer than 2 items
     if (strengths.length === 0) {
-      strengths.push("Balanced lunch composition");
-      strengths.push("Suitable school lunch portions");
-    } else if (strengths.length === 1) {
-      strengths.push("Steady meal routine maintained");
+      strengths.push("Lunches logged in database for school tracking");
     }
-
     if (attentions.length === 0) {
-      attentions.push("Consider adding one extra fruit serving");
-      attentions.push("Keep water intake consistent throughout school hours");
+      attentions.push("Maintain current balanced packing routine");
     }
 
     // Render top 3 of each
@@ -8208,7 +8247,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     if (btnAskSummary) {
       btnAskSummary.onclick = () => {
         switchPane('ai-assistant');
-        const prompt = `Provide a concise 3-bullet executive nutrition summary for ${childName} (Lunch Target: ${targetCal} kcal, ${targetProt}g protein; Clearance: ${avgClearance}%). Include 2 quick enhancements for tomorrow's lunchbox.`;
+        const prompt = `Provide a concise 3-bullet executive nutrition summary for ${childName} (Lunch Target: ${targetCal} kcal, ${targetProt}g protein; Clearance: ${avgCompletion}%). Include 2 quick enhancements for tomorrow's lunchbox.`;
         sendSmartAiChatMsg(prompt);
       };
     }
