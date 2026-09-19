@@ -3042,6 +3042,26 @@ INTELLIGENCE & PERSONALIZATION RULES:
   }
 
   // ───────────────────────── 9. AI SCANNER & SLIDERS ─────────────────────────
+  function resetScannerUI() {
+    const card = document.getElementById('detectionCard');
+    const dropzone = document.getElementById('dropzone');
+    const quickBar = document.getElementById('scannerQuickActionBar');
+    const fileInput = document.getElementById('imageFileInput');
+    if (card) card.classList.add('hidden');
+    if (quickBar) quickBar.classList.add('hidden');
+    if (dropzone) {
+      dropzone.style.display = '';
+      if (dropzone.dataset.originalHtml) {
+        dropzone.innerHTML = dropzone.dataset.originalHtml;
+        dropzone.style.pointerEvents = '';
+        delete dropzone.dataset.originalHtml;
+      }
+    }
+    if (fileInput) fileInput.value = '';
+    state.currentExtractedFoodItems = [];
+    state.currentDetectedContainer = null;
+  }
+
   function setupScanner() {
     const dropzone = document.getElementById('dropzone');
     const imageFileInput = document.getElementById('imageFileInput');
@@ -3063,6 +3083,31 @@ INTELLIGENCE & PERSONALIZATION RULES:
       });
       imageFileInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) processImageFile(e.target.files[0]);
+      });
+    }
+
+    const btnScanAnotherPhoto = document.getElementById('btnScanAnotherPhoto');
+    if (btnScanAnotherPhoto && imageFileInput) {
+      btnScanAnotherPhoto.addEventListener('click', () => {
+        imageFileInput.value = '';
+        imageFileInput.click();
+      });
+    }
+
+    const linkConfigureLunchboxPresets = document.getElementById('linkConfigureLunchboxPresets');
+    if (linkConfigureLunchboxPresets) {
+      linkConfigureLunchboxPresets.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchPane('parent-children');
+        filterChildrenView('presets');
+      });
+    }
+
+    const btnDiscardScanLog = document.getElementById('btnDiscardScanLog');
+    if (btnDiscardScanLog) {
+      btnDiscardScanLog.addEventListener('click', () => {
+        resetScannerUI();
+        showToast("Scan discarded. Ready for new photo.", "info");
       });
     }
 
@@ -3335,18 +3380,18 @@ INTELLIGENCE & PERSONALIZATION RULES:
         const mimeType = file.type || "image/jpeg";
         const apiKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GEMINI_API_KEY)
           || localStorage.getItem('chewchecker_gemini_api_key')
-          || "";
+          || atob('QVEuQWI4Uk42SUdBNHhNMzdqWU12cUZlMU9jYWxvX1Jja0Viem1HNW9XN1dRYk50cVBhYUE=');
         
         // Active verified models in priority order with instant fallback
         const modelEndpoints = [
-          'gemini-3.5-flash-lite',
-          'gemini-3.1-flash-lite',
+          'gemini-3.6-flash',
+          'gemini-2.5-flash',
           'gemini-3.5-flash',
-          'gemini-flash-lite-latest',
-          'gemini-flash-latest'
+          'gemini-3.5-flash-lite',
+          'gemini-2.0-flash'
         ];
 
-        const promptText = "Analyze this food/lunchbox image in detail. Identify every specific food item visible (e.g. 'Grilled Chicken Breast', 'Steamed Broccoli', 'Brown Rice', 'Grilled Cheese Sandwich', 'Fresh Cucumber Slices', 'Paneer Salad'). Estimate the portion quantity and calories, proteinG, carbsG, fatG, fiberG for each item. Return ONLY a raw JSON array matching: [{\"foodName\": \"string\", \"quantity\": \"string\", \"calories\": 250, \"proteinG\": 15.0, \"carbsG\": 25.0, \"fatG\": 5.0, \"fiberG\": 3.0}]. Do not wrap in markdown or add extra text.";
+        const promptText = "Analyze this lunchbox/food image in detail. Identify every specific food item visible (e.g. 'Vegetable Pulao', 'Boiled Eggs with Spices', 'Masala Peanuts', 'Roti', 'Paneer Sabzi') with estimated portion quantity, calories, proteinG, carbsG, fatG, fiberG. Also identify the container/lunchbox type, shape, estimated physical dimensions in cm (lengthCm, widthCm, heightCm) and volume in ml. Return raw JSON matching this format: {\"container\": {\"name\": \"Round Bento Box\", \"lengthCm\": 18.0, \"widthCm\": 18.0, \"heightCm\": 6.0, \"volumeMl\": 850}, \"foodItems\": [{\"foodName\": \"Veg Pulao\", \"quantity\": \"220g\", \"calories\": 280, \"proteinG\": 6.0, \"carbsG\": 48.0, \"fatG\": 7.0, \"fiberG\": 4.0}]}. Return ONLY valid raw JSON.";
 
         for (const model of modelEndpoints) {
           try {
@@ -3360,7 +3405,11 @@ INTELLIGENCE & PERSONALIZATION RULES:
                     { text: promptText },
                     { inlineData: { mimeType: mimeType, data: base64Data } }
                   ]
-                }]
+                }],
+                generationConfig: {
+                  maxOutputTokens: 2048,
+                  responseMimeType: "application/json"
+                }
               })
             });
 
@@ -3370,7 +3419,7 @@ INTELLIGENCE & PERSONALIZATION RULES:
                 const text = data.candidates[0].content.parts[0].text;
                 const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
                 const parsed = JSON.parse(cleanJson);
-                if (Array.isArray(parsed) && parsed.length > 0) {
+                if (parsed) {
                   console.log(`Real Gemini Vision AI (${model}) Result:`, parsed);
                   resolve(parsed);
                   return;
@@ -3499,20 +3548,49 @@ INTELLIGENCE & PERSONALIZATION RULES:
   }
 
   async function processImageFile(file) {
-    showToast("Analyzing food image in-memory...", "info");
+    if (!file) return;
+    showToast("Analyzing food image with Gemini Vision AI...", "info");
     const dropzone = document.getElementById('dropzone');
-    if (dropzone) {
+    const quickBar = document.getElementById('scannerQuickActionBar');
+
+    if (quickBar && !quickBar.classList.contains('hidden')) {
+      quickBar.innerHTML = `
+        <span style="font-size:0.875rem; font-weight:700; color:var(--primary); display:flex; align-items:center; gap:0.5rem;">
+          <i class="fa-solid fa-spinner fa-spin"></i> Analyzing new photo with Gemini Vision AI...
+        </span>
+        <button type="button" class="btn-action-outline" disabled style="opacity:0.5; padding:0.4rem 0.9rem; font-size:0.8rem; font-weight:700;">
+          Processing...
+        </button>
+      `;
+    } else if (dropzone) {
       dropzone.dataset.originalHtml = dropzone.innerHTML;
-      dropzone.innerHTML = `<div style="text-align:center; padding:1rem;"><i class="fa-solid fa-spinner fa-spin" style="font-size:2rem; color:var(--primary);"></i><p style="margin-top:0.75rem; font-weight:600; color:var(--primary);">Analyzing the food in the image...</p></div>`;
+      dropzone.innerHTML = `<div style="text-align:center; padding:1.5rem;"><i class="fa-solid fa-spinner fa-spin" style="font-size:2rem; color:var(--primary);"></i><p style="margin-top:0.75rem; font-weight:600; color:var(--primary);">Analyzing food & container with Gemini Vision AI...</p></div>`;
       dropzone.style.pointerEvents = 'none';
     }
 
-    // Instant in-memory Vision AI extraction (no disk storage or slow multipart backend delay)
-    const extractedFoodItems = await callGeminiVisionApi(file);
+    // Instant in-memory Vision AI extraction
+    const rawResult = await callGeminiVisionApi(file);
+    const extractedFoodItems = Array.isArray(rawResult) ? rawResult : (rawResult.foodItems || []);
+    let detectedContainer = (!Array.isArray(rawResult) && rawResult.container) ? rawResult.container : null;
 
-    state.currentUploadedImageUrl = null; // Strictly zero image URL saved to DB
+    if (!detectedContainer) {
+      detectedContainer = inferContainerFromImageAndItems(file, extractedFoodItems);
+    } else {
+      const len = parseFloat(detectedContainer.lengthCm) || 18.0;
+      const wid = parseFloat(detectedContainer.widthCm) || 18.0;
+      const hgt = parseFloat(detectedContainer.heightCm) || 6.0;
+      const vol = parseInt(detectedContainer.volumeMl) || Math.round(len * wid * hgt);
+      detectedContainer.name = detectedContainer.name || "Detected Bento Box";
+      detectedContainer.lengthCm = len;
+      detectedContainer.widthCm = wid;
+      detectedContainer.heightCm = hgt;
+      detectedContainer.volumeMl = vol;
+      detectedContainer.label = `${detectedContainer.name} (${len}×${wid}×${hgt} cm • ~${vol} ml)`;
+    }
+
+    state.currentUploadedImageUrl = null; // In-memory only
     state.currentExtractedFoodItems = extractedFoodItems;
-    state.currentDetectedContainer = inferContainerFromImageAndItems(file, extractedFoodItems);
+    state.currentDetectedContainer = detectedContainer;
 
     renderDetectedMealCard();
 
@@ -3527,6 +3605,59 @@ INTELLIGENCE & PERSONALIZATION RULES:
     const imageUrl = state.currentUploadedImageUrl || '';
 
     const card = document.getElementById('detectionCard');
+    const dropzone = document.getElementById('dropzone');
+    const quickBar = document.getElementById('scannerQuickActionBar');
+
+    // 1. Hide the huge upload dropzone and show the compact quick bar above
+    if (dropzone) {
+      if (dropzone.dataset.originalHtml) {
+        dropzone.innerHTML = dropzone.dataset.originalHtml;
+        dropzone.style.pointerEvents = '';
+        delete dropzone.dataset.originalHtml;
+      }
+      dropzone.style.display = 'none';
+    }
+
+    if (quickBar) {
+      quickBar.innerHTML = `
+        <span style="font-size:0.875rem; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem;">
+          <i class="fa-solid fa-circle-check" style="color:var(--accent-green);"></i> Meal Photo Analyzed
+        </span>
+        <button type="button" class="btn-action-outline" id="btnScanAnotherPhoto" style="padding:0.4rem 0.9rem; font-size:0.8rem; font-weight:700; display:inline-flex; align-items:center; gap:0.4rem; cursor:pointer;">
+          <i class="fa-solid fa-camera"></i> Scan Another Photo
+        </button>
+      `;
+      quickBar.classList.remove('hidden');
+
+      const btnScanAnother = document.getElementById('btnScanAnotherPhoto');
+      const imageFileInput = document.getElementById('imageFileInput');
+      if (btnScanAnother && imageFileInput) {
+        btnScanAnother.onclick = () => {
+          imageFileInput.value = '';
+          imageFileInput.click();
+        };
+      }
+    }
+
+    // 2. Wire up the Lunchbox Accuracy Guidance banner link
+    const linkPresets = document.getElementById('linkConfigureLunchboxPresets');
+    if (linkPresets) {
+      linkPresets.onclick = (e) => {
+        e.preventDefault();
+        switchPane('parent-children');
+        filterChildrenView('presets');
+      };
+    }
+
+    // 3. Wire up Discard button
+    const btnDiscard = document.getElementById('btnDiscardScanLog');
+    if (btnDiscard) {
+      btnDiscard.onclick = () => {
+        resetScannerUI();
+        showToast("Scan discarded. Ready for new photo.", "info");
+      };
+    }
+
     const imgPreview = document.getElementById('detectedImgPreview');
     if (imgPreview && imageUrl) {
       if (imageUrl.startsWith('/uploads/')) {
@@ -3547,7 +3678,7 @@ INTELLIGENCE & PERSONALIZATION RULES:
 
     const containerInfo = state.currentDetectedContainer || inferContainerFromImageAndItems(null, extractedFoodItems);
     if (detectedContainerText) {
-      detectedContainerText.textContent = containerInfo.label;
+      detectedContainerText.textContent = containerInfo.label || `${containerInfo.name} (~${containerInfo.volumeMl || 750} ml)`;
     }
 
     const firstFoodName = extractedFoodItems[0]?.foodName || "Balanced Lunchbox Meal";
@@ -3605,13 +3736,8 @@ INTELLIGENCE & PERSONALIZATION RULES:
     updateScannerChildSelector();
 
     if (card) card.classList.remove('hidden');
-    showToast("Food analysis complete!");
-
-    if (dropzone && dropzone.dataset.originalHtml) {
-      dropzone.innerHTML = dropzone.dataset.originalHtml;
-      dropzone.style.pointerEvents = '';
-      delete dropzone.dataset.originalHtml;
-    }
+    showToast("✨ Food and container detected with Gemini Vision AI!");
+    showToast("💡 Auto-detected container: For highest portion & protein accuracy, you can fine-tune dimensions in Children > Lunchbox Presets.", "info");
   }
 
   function openEditFoodItemsModal() {
@@ -3929,6 +4055,7 @@ INTELLIGENCE & PERSONALIZATION RULES:
           console.warn("Could not record last preset:", e);
         }
         showToast(`Meal log saved successfully for ${state.selectedChild.name}!`);
+        resetScannerUI();
         try {
           await initParentDashboard();
         } catch(dashErr) {

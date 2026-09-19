@@ -784,6 +784,16 @@
               </label>
               <input type="file" id="imageFileInput" accept="image/*" class="hidden">
             </div>
+
+            <!-- Sleek Compact Quick Rescan Bar (Replaces huge dropzone when meal is analyzed) -->
+            <div id="scannerQuickActionBar" class="hidden" style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--r-lg); padding:0.75rem 1.25rem; margin-top:0.5rem; margin-bottom:0.75rem; box-shadow:var(--shadow-sm);">
+              <span style="font-size:0.875rem; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem;">
+                <i class="fa-solid fa-circle-check" style="color:var(--accent-green);"></i> Meal Photo Analyzed
+              </span>
+              <button type="button" class="btn-action-outline" id="btnScanAnotherPhoto" style="padding:0.4rem 0.9rem; font-size:0.8rem; font-weight:700; display:inline-flex; align-items:center; gap:0.4rem;">
+                <i class="fa-solid fa-camera"></i> Scan Another Photo
+              </button>
+            </div>
           </div>
 
           <!-- Detection Result Card -->
@@ -798,7 +808,7 @@
                 </p>
 
                 <!-- AI Auto-Detected Container Chip -->
-                <div id="detectedContainerBadge" class="detected-container-badge" style="display:flex; align-items:center; gap:0.6rem; background:rgba(16, 185, 129, 0.08); border:1px solid rgba(16, 185, 129, 0.22); border-radius:var(--r-md); padding:0.5rem 0.85rem; margin-bottom:1.15rem; font-size:0.82rem; color:var(--text-secondary);">
+                <div id="detectedContainerBadge" class="detected-container-badge" style="display:flex; align-items:center; gap:0.6rem; background:rgba(16, 185, 129, 0.08); border:1px solid rgba(16, 185, 129, 0.22); border-radius:var(--r-md); padding:0.5rem 0.85rem; margin-bottom:0.85rem; font-size:0.82rem; color:var(--text-secondary);">
                   <div style="width:28px; height:28px; border-radius:6px; background:rgba(16, 185, 129, 0.15); color:#059669; display:flex; align-items:center; justify-content:center; font-size:0.85rem; flex-shrink:0;">
                     <i class="fa-solid fa-cube"></i>
                   </div>
@@ -807,6 +817,15 @@
                     <strong id="detectedContainerText" style="color:var(--text-primary); font-weight:600; font-size:0.85rem;">Stainless Steel Tiffin with Katori (~750 ml)</strong>
                   </div>
                   <span style="background:var(--accent-green); color:#fff; font-size:0.65rem; font-weight:700; padding:2px 7px; border-radius:10px; text-transform:uppercase; letter-spacing:0.4px;">AI Calibrated</span>
+                </div>
+
+                <!-- Lunchbox Accuracy Guidance Notification for Parents -->
+                <div id="lunchboxAccuracyTip" style="display:flex; align-items:flex-start; gap:0.75rem; padding:0.75rem 1rem; border-radius:var(--r-md); background:rgba(99, 102, 241, 0.08); border:1px solid rgba(99, 102, 241, 0.22); margin-bottom:1.15rem;">
+                  <i class="fa-solid fa-circle-info" style="color:var(--primary); font-size:1.15rem; margin-top:2px; flex-shrink:0;"></i>
+                  <div style="font-size:0.825rem; color:var(--text-secondary); line-height:1.45;">
+                    <strong style="color:var(--text-primary); display:block; margin-bottom:0.15rem;">Container Auto-Detected:</strong>
+                    For even higher accuracy in portion and protein tracking, you can enter or fine-tune the exact manual dimensions of your lunchbox anytime in <a href="javascript:void(0)" id="linkConfigureLunchboxPresets" style="color:var(--primary); font-weight:700; text-decoration:underline;">Children &gt; Lunchbox Presets</a>.
+                  </div>
                 </div>
 
                 <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.5rem; margin-bottom:1.25rem;">
@@ -851,9 +870,14 @@
                   <strong id="detectionTargetChildName" style="color:var(--primary); font-size:0.9rem;">Selected Child Profile</strong>
                 </div>
 
-                <button class="btn-action-primary" id="btnSaveScanLog" style="width:100%; padding:0.75rem;">
-                  <i class="fa-solid fa-floppy-disk"></i> Log Meal
-                </button>
+                <div style="display:flex; gap:0.75rem;">
+                  <button type="button" class="btn-action-outline" id="btnDiscardScanLog" style="padding:0.75rem 1.25rem; font-weight:700; display:inline-flex; align-items:center; gap:0.4rem; cursor:pointer;">
+                    <i class="fa-solid fa-xmark"></i> Discard
+                  </button>
+                  <button class="btn-action-primary" id="btnSaveScanLog" style="flex:1; padding:0.75rem; font-weight:700; display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; cursor:pointer;">
+                    <i class="fa-solid fa-floppy-disk"></i> Log Meal
+                  </button>
+                </div>
               </div>
             </div>
           </div>
