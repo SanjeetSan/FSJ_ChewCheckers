@@ -140,7 +140,7 @@ public class MealService {
             nutritionScoringService.calculateAndSaveScore(meal.getStudent(), meal, items);
             return mapToMealResponse(meal, items);
         } else {
-            meal.setStatus(MealStatus.PENDING_LEFTOVER_ANALYSIS);
+            meal.setStatus(MealStatus.PARTIALLY_CONSUMED);
             List<MealFoodItem> items = mealFoodItemRepository.findByMealId(meal.getId());
             BigDecimal ratio = pct.divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
             for (MealFoodItem item : items) {
@@ -152,8 +152,9 @@ public class MealService {
                 item.setConsumedFiberG(item.getFiberG() != null ? item.getFiberG().multiply(ratio).setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO);
             }
             mealFoodItemRepository.saveAll(items);
-            mealRepository.save(meal);
-            return mapToMealResponse(meal, items);
+            Meal savedMeal = mealRepository.save(meal);
+            nutritionScoringService.calculateAndSaveScore(savedMeal.getStudent(), savedMeal, items);
+            return mapToMealResponse(savedMeal, items);
         }
     }
 
