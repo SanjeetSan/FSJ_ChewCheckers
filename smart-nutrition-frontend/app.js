@@ -10939,7 +10939,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           return `
             <button type="button" class="preset-segmented-item ${isActive ? 'active' : ''}" data-student-id="${s.id}">
               <span class="preset-segmented-avatar">${sInit}</span>
-              <span>${formatStudentName(s.name)}</span>
+              <span class="preset-segmented-name">${formatStudentName(s.name)}</span>
             </button>
           `;
         }).join('');
@@ -10966,7 +10966,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         childTabsContainer.innerHTML = `
           <div class="preset-segmented-item active" style="cursor:default; pointer-events:none;">
             <span class="preset-segmented-avatar">${sInit}</span>
-            <span>${formatStudentName(s.name)}</span>
+            <span class="preset-segmented-name">${formatStudentName(s.name)}</span>
           </div>
         `;
       } else {

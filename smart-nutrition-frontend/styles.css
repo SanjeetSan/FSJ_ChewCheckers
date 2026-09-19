@@ -5848,68 +5848,146 @@ body.dark-theme .presets-count-badge {
 
 /* 2. Unified Segmented Child Switcher */
 .presets-child-segmented-bar {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: var(--bg-page);
-  padding: 5px;
-  border-radius: 12px;
-  border: 1px solid var(--border-subtle);
-  margin-bottom: 16px;
+  gap: 3px;
+  background: rgba(15, 23, 42, 0.7);
+  padding: 3px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
+  margin-bottom: 0;
   width: fit-content;
   max-width: 100%;
   overflow-x: auto;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .preset-segmented-item {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  border-radius: 9px;
+  gap: 7px;
+  padding: 5px 14px 5px 6px;
+  border-radius: 9999px;
   font-size: 0.825rem;
-  font-weight: 700;
-  color: var(--text-secondary);
+  font-weight: 600;
+  color: #94A3B8;
   background: transparent;
   border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
+  user-select: none;
+  font-family: inherit;
+  line-height: 1;
+}
+
+.preset-segmented-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #94A3B8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.preset-segmented-name {
+  font-size: 0.825rem;
+  font-weight: 600;
+  line-height: 1;
 }
 
 .preset-segmented-item:hover {
-  color: var(--text-primary);
-  background: rgba(99, 102, 241, 0.08);
+  color: #F8FAFC;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.preset-segmented-item:hover .preset-segmented-avatar {
+  background: rgba(255, 255, 255, 0.14);
+  color: #FFFFFF;
 }
 
 .preset-segmented-item.active {
-  background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%) !important;
+  background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%) !important;
   color: #FFFFFF !important;
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
 }
 
 .preset-segmented-item.active .preset-segmented-avatar {
+  background: rgba(255, 255, 255, 0.22) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.preset-segmented-item.active .preset-segmented-name {
+  color: #FFFFFF;
+}
+
+/* Light Mode Overrides */
+body:not(.dark-theme) .presets-child-segmented-bar {
+  background: #F1F5F9;
+  border-color: #E2E8F0;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+body:not(.dark-theme) .preset-segmented-item {
+  color: #64748B;
+}
+
+body:not(.dark-theme) .preset-segmented-item .preset-segmented-avatar {
+  background: #E2E8F0;
+  color: #64748B;
+}
+
+body:not(.dark-theme) .preset-segmented-item:hover {
+  color: #0F172A;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+body:not(.dark-theme) .preset-segmented-item:hover .preset-segmented-avatar {
+  background: #CBD5E1;
+  color: #0F172A;
+}
+
+body:not(.dark-theme) .preset-segmented-item.active {
+  background: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+body:not(.dark-theme) .preset-segmented-item.active .preset-segmented-avatar {
   background: rgba(255, 255, 255, 0.25) !important;
   color: #FFFFFF !important;
 }
 
+/* Dark Theme Specific Safety Cleanups */
 body.dark-theme .preset-segmented-item:not(.active) {
   color: #94A3B8;
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.06);
+  background: transparent;
+  border-color: transparent;
 }
 
 body.dark-theme .preset-segmented-item:not(.active):hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.06);
+  color: #F8FAFC;
 }
 
 body.dark-theme .preset-segmented-item.active {
-  background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%) !important;
+  background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%) !important;
   color: #FFFFFF !important;
-  border-color: rgba(255, 255, 255, 0.25) !important;
-  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.5) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
 }
 
 /* Primary Action Buttons High-Contrast Visibility in Dark Theme */
@@ -5925,19 +6003,6 @@ body.dark-theme .btn-action-primary:hover {
   background: var(--primary-hover) !important;
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
   transform: translateY(-1px);
-}
-
-.preset-segmented-avatar {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #4F46E5, #6366F1);
-  color: #FFFFFF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  font-weight: 800;
 }
 
 /* 3. Compact, Non-Intrusive AI Smart Tip Strip */
