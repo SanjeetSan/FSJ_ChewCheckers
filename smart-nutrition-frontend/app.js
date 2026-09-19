@@ -22,7 +22,9 @@ import {
   supabaseGetUsers,
   supabaseGetHolidays,
   supabaseGetMessages,
-  supabaseSendMessage
+  supabaseSendMessage,
+  supabaseGetAllUserMessages,
+  supabaseGetStudentsByClassCode
 } from './supabaseClient.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -3166,6 +3168,25 @@ INTELLIGENCE & PERSONALIZATION RULES:
         const tId = state.user?.id || 2;
         const classes = await supabaseGetTeacherClasses(tId);
         return new Response(JSON.stringify(classes || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path.startsWith('/api/messages/history/')) {
+        const contactId = parseInt(path.split('/').pop());
+        const currentUserId = state.user?.id || (state.user?.email === 'pradeep@gmail.com' ? 83 : (state.user?.email === 'dharun@gmail.com' ? 4 : 2));
+        const messages = await supabaseGetMessages(currentUserId, contactId);
+        return new Response(JSON.stringify(messages || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path === '/api/messages' && options.method === 'POST') {
+        const currentUserId = state.user?.id || (state.user?.email === 'pradeep@gmail.com' ? 83 : (state.user?.email === 'dharun@gmail.com' ? 4 : 2));
+        const body = typeof options.body === 'string' ? JSON.parse(options.body) : (options.body || {});
+        const sent = await supabaseSendMessage(currentUserId, body.receiverId, body.messageText);
+        return new Response(JSON.stringify(sent), { status: 201, headers: { 'Content-Type': 'application/json' } });
+      } else if (path === '/api/messages') {
+        const currentUserId = state.user?.id || (state.user?.email === 'pradeep@gmail.com' ? 83 : (state.user?.email === 'dharun@gmail.com' ? 4 : 2));
+        const messages = await supabaseGetAllUserMessages(currentUserId);
+        return new Response(JSON.stringify(messages || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path.startsWith('/api/teacher/students')) {
+        const urlObj = new URL('http://dummy.com' + path);
+        const classCode = urlObj.searchParams.get('classCode') || (state.activeClass?.classCode || 'CLS-3214');
+        const students = await supabaseGetStudentsByClassCode(classCode);
+        return new Response(JSON.stringify(students || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
     } catch (sbErr) {
       console.warn("Supabase query attempt:", sbErr);

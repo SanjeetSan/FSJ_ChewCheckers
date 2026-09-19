@@ -906,3 +906,75 @@ export async function supabaseSendMessage(senderId, receiverId, messageText) {
     throw err;
   }
 }
+
+/**
+ * Messaging: Fetch All Messages for User
+ */
+export async function supabaseGetAllUserMessages(userId) {
+  try {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+      .order('sent_at', { ascending: true });
+
+    if (error) throw error;
+    return (data || []).map(m => ({
+      id: m.id,
+      senderId: m.sender_id,
+      receiverId: m.receiver_id,
+      messageText: m.message_text,
+      sentAt: m.sent_at,
+      isRead: true
+    }));
+  } catch (err) {
+    console.error('Supabase get all messages error:', err);
+    return [];
+  }
+}
+
+/**
+ * Fetch Students in Class with Parent Info
+ */
+export async function supabaseGetStudentsByClassCode(classCode) {
+  try {
+    const { data: cls } = await supabase
+      .from('classes')
+      .select('id, class_name, section, class_code')
+      .eq('class_code', (classCode || 'CLS-3214').trim().toUpperCase())
+      .maybeSingle();
+
+    if (!cls) return [];
+
+    const { data: stus, error } = await supabase
+      .from('students')
+      .select('id, name, student_code, roll_number, gender, date_of_birth, blood_group, parent_student(parent_id, user:users(id, name, email, mobile_number))')
+      .eq('class_id', cls.id)
+      .eq('is_active', true);
+
+    if (error) throw error;
+
+    return (stus || []).map(s => {
+      const ps = s.parent_student?.[0] || {};
+      const u = ps.user || {};
+      return {
+        id: s.id,
+        name: s.name,
+        studentCode: s.student_code,
+        rollNumber: s.roll_number,
+        gender: s.gender,
+        dateOfBirth: s.date_of_birth,
+        bloodGroup: s.blood_group,
+        parentId: ps.parent_id || null,
+        parentName: u.name || (ps.parent_id ? `Parent of ${s.name}` : null),
+        parentEmail: u.email || null,
+        parentPhone: u.mobile_number || null,
+        className: `${cls.class_name} - ${cls.section}`,
+        classCode: cls.class_code
+      };
+    });
+  } catch (err) {
+    console.error('Supabase get students by class code error:', err);
+    return [];
+  }
+}
