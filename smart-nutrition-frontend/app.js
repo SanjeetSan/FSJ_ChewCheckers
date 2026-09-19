@@ -3013,7 +3013,17 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     }
 
     setupTeacherLeftoverModal();
+    setupTeacherStudentManagementModals();
     renderUserTable();
+
+    // Wire Meal Detail Modal Close Globally
+    const btnCloseDetail = document.getElementById('btnCloseMealDetailModal');
+    const detailModal = document.getElementById('mealDetailModal');
+    if (btnCloseDetail && detailModal) {
+      btnCloseDetail.addEventListener('click', () => {
+        detailModal.classList.remove('open');
+      });
+    }
 
     // Wire Student Profile Close Actions Globally
     const studentProfileModal = document.getElementById('studentProfileModal');
@@ -3030,6 +3040,23 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         studentProfileModal.classList.remove('open');
       });
     }
+
+    // Global Modal Dismissal: clicking on any .modal-close-btn closes its parent .modal-backdrop
+    document.querySelectorAll('.modal-close-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const modal = btn.closest('.modal-backdrop');
+        if (modal) modal.classList.remove('open');
+      });
+    });
+
+    // Global Backdrop Dismissal: clicking outside modal content dismisses modal
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop) {
+          backdrop.classList.remove('open');
+        }
+      });
+    });
   }
 
   // DEFAULT ROLE SORTING HELPER
@@ -4704,6 +4731,8 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     if (btnTeacherScan) {
       btnTeacherScan.onclick = () => switchPane('ai-scanner');
     }
+
+    setupTeacherStudentManagementModals();
   }
 
   function formatFoodItemList(items, mealId) {
@@ -6021,6 +6050,131 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     }
   }
 
+  function setupTeacherStudentManagementModals() {
+    const linkStudentModal = document.getElementById('linkStudentModal');
+    const btnOpenLinkStudentModal = document.getElementById('btnOpenLinkStudentModal');
+    const btnCloseLinkStudentModal = document.getElementById('btnCloseLinkStudentModal');
+    const btnCancelLinkStudent = document.getElementById('btnCancelLinkStudent');
+    const btnSearchEligibleStudents = document.getElementById('btnSearchEligibleStudents');
+    const linkStudentSearch = document.getElementById('linkStudentSearch');
+
+    if (btnOpenLinkStudentModal && !btnOpenLinkStudentModal.dataset.listener) {
+      btnOpenLinkStudentModal.dataset.listener = "true";
+      btnOpenLinkStudentModal.addEventListener('click', async () => {
+        await ensureTeacherActiveClassLoaded();
+        if (!state.activeClass || !state.activeClass.classCode) {
+          showToast("No active class code available.", "error");
+          return;
+        }
+        if (linkStudentModal) linkStudentModal.classList.add('open');
+        if (linkStudentSearch) linkStudentSearch.value = '';
+        await loadEligibleStudents('');
+      });
+    }
+
+    if (btnCloseLinkStudentModal && !btnCloseLinkStudentModal.dataset.listener) {
+      btnCloseLinkStudentModal.dataset.listener = "true";
+      btnCloseLinkStudentModal.addEventListener('click', () => linkStudentModal?.classList.remove('open'));
+    }
+    if (btnCancelLinkStudent && !btnCancelLinkStudent.dataset.listener) {
+      btnCancelLinkStudent.dataset.listener = "true";
+      btnCancelLinkStudent.addEventListener('click', () => linkStudentModal?.classList.remove('open'));
+    }
+
+    if (btnSearchEligibleStudents && !btnSearchEligibleStudents.dataset.listener) {
+      btnSearchEligibleStudents.dataset.listener = "true";
+      btnSearchEligibleStudents.addEventListener('click', () => {
+        const query = linkStudentSearch ? linkStudentSearch.value.trim() : '';
+        loadEligibleStudents(query);
+      });
+    }
+
+    if (linkStudentSearch && !linkStudentSearch.dataset.listener) {
+      linkStudentSearch.dataset.listener = "true";
+      linkStudentSearch.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const query = linkStudentSearch.value.trim();
+          loadEligibleStudents(query);
+        }
+      });
+    }
+  }
+
+  async function loadEligibleStudents(query) {
+    const tbody = document.getElementById('eligibleStudentsList');
+    if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:1.5rem; color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Loading eligible students...</td></tr>`;
+
+    try {
+      const classCode = (state.activeClass && state.activeClass.classCode) ? state.activeClass.classCode : (state.currentTeacherClassCode || "CLS-6070");
+      const res = await safeFetch(`/api/teacher/students/eligible?query=${encodeURIComponent(query)}&classCode=${encodeURIComponent(classCode)}`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${state.token}` }
+      });
+
+      if (res.ok) {
+        const students = await res.json() || [];
+        if (students.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No eligible students found matching query.</td></tr>`;
+        } else {
+          tbody.innerHTML = students.map(s => {
+            return `
+              <tr>
+                <td style="padding:0.75rem;"><strong>${s.name}</strong><div style="font-size:0.75rem; color:var(--text-muted)">Roll: ${s.rollNumber || 'N/A'}</div></td>
+                <td style="padding:0.75rem;"><code style="font-size:0.8rem;">${s.studentCode}</code></td>
+                <td style="padding:0.75rem; text-align:right;">
+                  <button class="btn-action-primary btn-link-student-confirm" data-student-id="${s.id}" data-student-name="${s.name}" style="padding:0.25rem 0.65rem; font-size:0.75rem;">
+                    <i class="fa-solid fa-link"></i> Link
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+
+          tbody.querySelectorAll('.btn-link-student-confirm').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const studentId = btn.getAttribute('data-student-id');
+              const studentName = btn.getAttribute('data-student-name');
+              const currentClassCode = (state.activeClass && state.activeClass.classCode) ? state.activeClass.classCode : (state.currentTeacherClassCode || "CLS-6070");
+
+              setButtonLoading(btn, true, 'Linking...');
+              try {
+                const linkRes = await safeFetch(`/api/teacher/students/${studentId}/link?classCode=${encodeURIComponent(currentClassCode)}`, {
+                  method: 'POST',
+                  headers: { 'Authorization': `Bearer ${state.token}` }
+                });
+
+                if (linkRes.ok) {
+                  showToast(`Linked student ${studentName} successfully!`);
+                  const linkStudentModal = document.getElementById('linkStudentModal');
+                  if (linkStudentModal) linkStudentModal.classList.remove('open');
+                  state.activeClassStudents = [];
+                  state.teacherClassOverviewMeals = [];
+                  await loadTeacherTodayMealRoster();
+                  await loadTeacherReports();
+                } else {
+                  const errData = await linkRes.json().catch(() => ({}));
+                  showToast(`Link failed: ${errData.message || 'Error'}`, "error");
+                }
+              } catch(err) {
+                showToast("Error linking student", "error");
+              } finally {
+                setButtonLoading(btn, false);
+              }
+            });
+          });
+        }
+      } else {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:1.5rem; color:var(--accent-rose);">Failed to retrieve eligible students.</td></tr>`;
+      }
+    } catch(e) {
+      console.error(e);
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:1.5rem; color:var(--accent-rose);">Network error loading eligible students.</td></tr>`;
+    }
+  }
+
   async function loadTeacherReports() {
     if (state.role !== 'TEACHER' || !state.activeClass) return;
     const filterType = state.teacherReportFilter || 'weekly';
@@ -6998,134 +7152,6 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     if (btnScanLb) {
       btnScanLb.addEventListener('click', () => switchPane('ai-scanner'));
     }
-
-    const btnCloseDetail = document.getElementById('btnCloseMealDetailModal');
-    const detailModal = document.getElementById('mealDetailModal');
-    if (btnCloseDetail && detailModal) {
-      btnCloseDetail.addEventListener('click', () => detailModal.classList.remove('open'));
-    }
-
-    // === TEACHER STUDENT MANAGEMENT: LINK STUDENT MODAL ===
-    const linkStudentModal = document.getElementById('linkStudentModal');
-    const btnOpenLinkStudentModal = document.getElementById('btnOpenLinkStudentModal');
-    const btnCloseLinkStudentModal = document.getElementById('btnCloseLinkStudentModal');
-    const btnCancelLinkStudent = document.getElementById('btnCancelLinkStudent');
-    const btnSearchEligibleStudents = document.getElementById('btnSearchEligibleStudents');
-    const linkStudentSearch = document.getElementById('linkStudentSearch');
-
-    if (btnOpenLinkStudentModal) {
-      btnOpenLinkStudentModal.addEventListener('click', async () => {
-        await ensureTeacherActiveClassLoaded();
-        if (!state.activeClass || !state.activeClass.classCode) {
-          showToast("No active class code available.", "error");
-          return;
-        }
-        linkStudentModal.classList.add('open');
-        if (linkStudentSearch) linkStudentSearch.value = '';
-        await loadEligibleStudents('');
-      });
-    }
-
-    if (btnCloseLinkStudentModal) btnCloseLinkStudentModal.addEventListener('click', () => linkStudentModal.classList.remove('open'));
-    if (btnCancelLinkStudent) btnCancelLinkStudent.addEventListener('click', () => linkStudentModal.classList.remove('open'));
-
-    if (btnSearchEligibleStudents) {
-      btnSearchEligibleStudents.addEventListener('click', () => {
-        const query = linkStudentSearch ? linkStudentSearch.value.trim() : '';
-        loadEligibleStudents(query);
-      });
-    }
-
-    if (linkStudentSearch) {
-      linkStudentSearch.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          const query = linkStudentSearch.value.trim();
-          loadEligibleStudents(query);
-        }
-      });
-    }
-
-    async function loadEligibleStudents(query) {
-      const tbody = document.getElementById('eligibleStudentsList');
-      if (!tbody) return;
-
-      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:1.5rem; color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Loading eligible students...</td></tr>`;
-
-      try {
-        const classCode = (state.activeClass && state.activeClass.classCode) ? state.activeClass.classCode : (state.currentTeacherClassCode || "CLS-6070");
-        const res = await safeFetch(`/api/teacher/students/eligible?query=${encodeURIComponent(query)}&classCode=${encodeURIComponent(classCode)}`, {
-          method: 'GET',
-          headers: { 'Authorization': `Bearer ${state.token}` }
-        });
-
-        if (res.ok) {
-          const students = await res.json() || [];
-          if (students.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No eligible students found matching query.</td></tr>`;
-          } else {
-            tbody.innerHTML = students.map(s => {
-              return `
-                <tr>
-                  <td style="padding:0.75rem;"><strong>${s.name}</strong><div style="font-size:0.75rem; color:var(--text-muted)">Roll: ${s.rollNumber || 'N/A'}</div></td>
-                  <td style="padding:0.75rem;"><code style="font-size:0.8rem;">${s.studentCode}</code></td>
-                  <td style="padding:0.75rem; text-align:right;">
-                    <button class="btn-action-primary btn-link-student-confirm" data-student-id="${s.id}" data-student-name="${s.name}" style="padding:0.25rem 0.65rem; font-size:0.75rem;">
-                      <i class="fa-solid fa-link"></i> Link
-                    </button>
-                  </td>
-                </tr>
-              `;
-            }).join('');
-
-            tbody.querySelectorAll('.btn-link-student-confirm').forEach(btn => {
-              btn.addEventListener('click', async () => {
-                const studentId = btn.getAttribute('data-student-id');
-                const studentName = btn.getAttribute('data-student-name');
-                const currentClassCode = (state.activeClass && state.activeClass.classCode) ? state.activeClass.classCode : (state.currentTeacherClassCode || "CLS-6070");
-
-                setButtonLoading(btn, true, 'Linking...');
-                try {
-                  const linkRes = await safeFetch(`/api/teacher/students/${studentId}/link?classCode=${encodeURIComponent(currentClassCode)}`, {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${state.token}` }
-                  });
-
-                  if (linkRes.ok) {
-                    showToast(`Linked student ${studentName} successfully!`);
-                    linkStudentModal.classList.remove('open');
-                    state.activeClassStudents = [];
-                    state.teacherClassOverviewMeals = [];
-                    await loadTeacherTodayMealRoster();
-                    await loadTeacherReports();
-                  } else {
-                    const errData = await linkRes.json().catch(() => ({}));
-                    showToast(`Link failed: ${errData.message || 'Error'}`, "error");
-                  }
-                } catch(err) {
-                  showToast("Error linking student", "error");
-                } finally {
-                  setButtonLoading(btn, false);
-                }
-              });
-            });
-          }
-        } else {
-          tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:1.5rem; color:var(--accent-rose);">Failed to retrieve eligible students.</td></tr>`;
-        }
-      } catch(e) {
-        console.error(e);
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:1.5rem; color:var(--accent-rose);">Network error loading eligible students.</td></tr>`;
-      }
-    }
-
-    // === STUDENT PROFILE DETAILS ===
-    const studentProfileModal = document.getElementById('studentProfileModal');
-    const btnCloseStudentProfileModal = document.getElementById('btnCloseStudentProfileModal');
-    const btnCloseProfileDetail = document.getElementById('btnCloseProfileDetail');
-
-    if (btnCloseStudentProfileModal) btnCloseStudentProfileModal.addEventListener('click', () => studentProfileModal.classList.remove('open'));
-    if (btnCloseProfileDetail) btnCloseProfileDetail.addEventListener('click', () => studentProfileModal.classList.remove('open'));
   }
 
   async function refreshParentChildren() {
