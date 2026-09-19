@@ -530,11 +530,19 @@
                 </div>
               </div>
 
-              <!-- Hero Footer: Last Updated Time -->
+              <!-- Hero Footer: Dual Timestamps & Status -->
               <div class="hero-status-footer">
-                <span class="hero-last-updated">
-                  <i class="fa-regular fa-clock"></i> Last Updated: <strong id="heroLastUpdatedTime">Not logged today</strong>
-                </span>
+                <div class="hero-timing-group">
+                  <span class="hero-time-chip" id="heroParentUploadWrap" title="When the lunchbox was packed and uploaded">
+                    <i class="fa-solid fa-box-archive"></i> Packed: <strong id="heroParentUploadTime">Not logged today</strong>
+                  </span>
+                  <span class="hero-time-chip is-pending" id="heroTeacherVerifyWrap" title="When the teacher audited and cleared the meal">
+                    <i class="fa-solid fa-clipboard-check"></i> Teacher Audit: <strong id="heroTeacherVerifyTime">Awaiting Lunchbox</strong>
+                  </span>
+                  <span class="hero-last-updated" style="display:none;" id="heroLastUpdatedWrap">
+                    Last Updated: <strong id="heroLastUpdatedTime">Not logged today</strong>
+                  </span>
+                </div>
                 <span class="hero-status-note" id="heroStatusNote">No lunch logged today. Click "Upload Lunchbox" below to log.</span>
               </div>
             </div>
@@ -2491,6 +2499,28 @@
         </div>
         <div id="detailMealStatusBadge">
           <span class="badge-status-consumed"><i class="fa-solid fa-check"></i> Clean Plate</span>
+        </div>
+      </div>
+
+      <!-- Meal Timings & Teacher Audit Card -->
+      <div class="meal-detail-timing-card" id="detailTimingCard">
+        <div style="display:flex; align-items:center; gap:0.65rem;">
+          <div style="width:32px; height:32px; border-radius:8px; background:rgba(99,102,241,0.1); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:0.85rem;">
+            <i class="fa-solid fa-box-archive"></i>
+          </div>
+          <div>
+            <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted);">Packed & Uploaded</div>
+            <div id="detailUploadTimestamp" style="font-size:0.85rem; font-weight:600; color:var(--text-primary);">—</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.65rem;">
+          <div id="detailTeacherAuditIcon" style="width:32px; height:32px; border-radius:8px; background:rgba(16,185,129,0.12); color:var(--accent-green); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:0.85rem;">
+            <i class="fa-solid fa-clipboard-check"></i>
+          </div>
+          <div>
+            <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted);">Teacher Clearance Audit</div>
+            <div id="detailTeacherAuditTimestamp" style="font-size:0.85rem; font-weight:600; color:var(--text-primary);">—</div>
+          </div>
         </div>
       </div>
 

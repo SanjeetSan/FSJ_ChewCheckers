@@ -735,7 +735,15 @@ export async function supabaseGetMealsForStudent(studentId) {
         totalConsumedProteinG: scoreObj.total_consumed_protein_g || (items.reduce((sum, it) => sum + (it.consumedProteinG || 0), 0) || 0),
         totalConsumedCarbsG: scoreObj.total_consumed_carbs_g || (items.reduce((sum, it) => sum + (it.consumedCarbsG || 0), 0) || 0),
         totalConsumedFatG: scoreObj.total_consumed_fat_g || (items.reduce((sum, it) => sum + (it.consumedFatG || 0), 0) || 0),
-        totalConsumedFiberG: scoreObj.total_consumed_fiber_g || (items.reduce((sum, it) => sum + (it.consumedFiberG || 0), 0) || 0)
+        totalConsumedFiberG: scoreObj.total_consumed_fiber_g || (items.reduce((sum, it) => sum + (it.consumedFiberG || 0), 0) || 0),
+        createdAt: m.created_at || null,
+        created_at: m.created_at || null,
+        uploadedAt: m.created_at || null,
+        uploadedByParent: m.uploaded_by_parent || null,
+        uploadedByTeacher: m.uploaded_by_teacher || null,
+        teacherVerifiedAt: scoreObj.calculated_at || m.teacher_verified_at || null,
+        teacher_verified_at: scoreObj.calculated_at || m.teacher_verified_at || null,
+        verifiedAt: scoreObj.calculated_at || null
       };
     });
   } catch (err) {
@@ -846,6 +854,7 @@ export async function supabaseSavePostMeal(postMealData) {
       ? parseFloat(postMealData.overallConsumptionPercentage)
       : 0;
     const status = consPct >= 90 ? 'FULLY_CONSUMED' : 'PARTIALLY_CONSUMED';
+    const verifiedIso = postMealData.teacherVerifiedAt || new Date().toISOString();
 
     // Update meal status and post meal photo
     const updatePayload = {
@@ -853,6 +862,9 @@ export async function supabaseSavePostMeal(postMealData) {
     };
     if (postMealData.postMealImageUrl) {
       updatePayload.post_meal_image_url = postMealData.postMealImageUrl;
+    }
+    if (postMealData.teacherId) {
+      updatePayload.uploaded_by_teacher = postMealData.teacherId;
     }
 
     const { data: updatedMeal, error: mErr } = await supabase
@@ -937,14 +949,17 @@ export async function supabaseSavePostMeal(postMealData) {
         total_consumed_carbs_g: totalConsCarb,
         total_consumed_fat_g: totalConsFat,
         total_consumed_fiber_g: totalConsFib,
-        calculated_at: new Date().toISOString()
+        calculated_at: verifiedIso
       }]);
 
     return {
       mealId: mealId,
       status: status,
       overallConsumptionPercentage: consPct,
-      nutritionScore: score
+      nutritionScore: score,
+      teacherVerifiedAt: verifiedIso,
+      teacher_verified_at: verifiedIso,
+      calculated_at: verifiedIso
     };
   } catch(err) {
     console.error('Supabase save post meal error:', err);
@@ -1364,6 +1379,14 @@ export async function supabaseGetClassMeals(classCode) {
         totalConsumedCalories: m.total_consumed_calories,
         totalConsumedProteinG: m.total_consumed_protein_g,
         packedCalories: m.packed_calories,
+        createdAt: m.created_at || null,
+        created_at: m.created_at || null,
+        uploadedAt: m.created_at || null,
+        uploadedByParent: m.uploaded_by_parent || null,
+        uploadedByTeacher: m.uploaded_by_teacher || null,
+        teacherVerifiedAt: scoreObj.calculated_at || m.teacher_verified_at || null,
+        teacher_verified_at: scoreObj.calculated_at || m.teacher_verified_at || null,
+        verifiedAt: scoreObj.calculated_at || null,
         foodItems: items.map(it => ({
           id: it.id,
           foodName: it.food_name,

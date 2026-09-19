@@ -7072,6 +7072,65 @@ body.dark-theme .preset-ghost-icon {
   color: #94A3B8;
 }
 
+.hero-timing-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.hero-time-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.76rem;
+  color: #94A3B8;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.hero-time-chip strong {
+  color: #F1F5F9;
+  font-weight: 600;
+}
+
+.hero-time-chip i {
+  font-size: 0.76rem;
+  color: #818CF8;
+}
+
+.hero-time-chip.is-verified {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.25);
+  color: #A7F3D0;
+}
+
+.hero-time-chip.is-verified strong {
+  color: #34D399;
+}
+
+.hero-time-chip.is-verified i {
+  color: #34D399;
+}
+
+.hero-time-chip.is-pending {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.25);
+  color: #FDE68A;
+}
+
+.hero-time-chip.is-pending strong {
+  color: #FBBF24;
+}
+
+.hero-time-chip.is-pending i {
+  color: #FBBF24;
+}
+
 .hero-last-updated strong {
   color: #F1F5F9;
 }
@@ -7079,6 +7138,25 @@ body.dark-theme .preset-ghost-icon {
 .hero-status-note {
   color: #CBD5E1;
   font-weight: 500;
+}
+
+/* Meal Detail Timing & Audit Card */
+.meal-detail-timing-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  background: var(--bg-page);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  padding: 0.85rem 1rem;
+  margin-bottom: 1.15rem;
+}
+
+@media (max-width: 540px) {
+  .meal-detail-timing-card {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
 }
 
 /* 2. NUTRITION STRENGTHS & NEEDS ATTENTION */

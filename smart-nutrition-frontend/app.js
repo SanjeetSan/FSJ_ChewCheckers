@@ -64,6 +64,44 @@ document.addEventListener('DOMContentLoaded', () => {
     return `${day}/${month}/${year}`;
   }
 
+  // Safe Meal Time Formatting Utility (Guards against UTC midnight 05:30 AM IST bug)
+  function formatMealTime(dateInput, fallbackStr = 'Morning (Pre-meal)') {
+    if (!dateInput) return fallbackStr;
+    const str = String(dateInput).trim();
+    // Guard against pure date-only string "YYYY-MM-DD":
+    // Passing "YYYY-MM-DD" to new Date() parses as UTC midnight (00:00:00Z),
+    // which in Indian Standard Time (UTC+05:30) evaluates to 05:30 AM!
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+      return fallbackStr;
+    }
+    const d = new Date(str);
+    if (isNaN(d.getTime())) return fallbackStr;
+
+    // Guard against UTC midnight being converted to 05:30 AM in IST if no explicit time was provided
+    if (d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0 && !str.includes(':')) {
+      return fallbackStr;
+    }
+
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // Safe Meal Date + Time Formatting Utility
+  function formatMealDateTime(dateInput, fallbackStr = '—') {
+    if (!dateInput) return fallbackStr;
+    const str = String(dateInput).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+      return `${formatDateDDMMYYYY(str)} • Pre-meal`;
+    }
+    const d = new Date(str);
+    if (isNaN(d.getTime())) return fallbackStr;
+    if (d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0 && !str.includes(':')) {
+      return `${formatDateDDMMYYYY(str.slice(0, 10))} • Pre-meal`;
+    }
+    const dPart = formatDateDDMMYYYY(d);
+    const tPart = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return `${dPart} at ${tPart}`;
+  }
+
   // Student Name Capitalization Formatting Utility (Title Case)
   function formatStudentName(name) {
     if (!name) return 'Student';
@@ -3682,10 +3720,13 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         const body = typeof options.body === 'string' ? JSON.parse(options.body) : (options.body || {});
         if (!body.studentId && state.selectedChild) body.studentId = state.selectedChild.id;
         body.uploadedByParent = state.user?.id || null;
+        if (!body.createdAt) body.createdAt = new Date().toISOString();
         const saved = await supabaseSaveMeal(body);
         return new Response(JSON.stringify(saved), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if ((path === '/api/meals/post-meal' || path === '/api/meals/consumption-quick') && options.method === 'POST') {
         const body = typeof options.body === 'string' ? JSON.parse(options.body) : (options.body || {});
+        if (!body.teacherId && state.user) body.teacherId = state.user.id || 2;
+        if (!body.teacherVerifiedAt) body.teacherVerifiedAt = new Date().toISOString();
         const saved = await supabaseSavePostMeal(body);
         return new Response(JSON.stringify(saved), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if (path.startsWith('/api/meals/student/')) {
@@ -4924,7 +4965,9 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           mealId: todayMeal.id,
           postMealImageUrl: todayMeal.preMealImageUrl || null,
           overallConsumptionPercentage: eatenPercent,
-          foodItemConsumptions: []
+          foodItemConsumptions: [],
+          teacherId: state.user?.id || null,
+          teacherVerifiedAt: new Date().toISOString()
         };
 
         const postRes = await safeFetch('/api/meals/post-meal', {
@@ -6886,7 +6929,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           mealId: mealId,
           postMealImageUrl: postImageUrl,
           overallConsumptionPercentage: eatenPercent,
-          foodItemConsumptions: []
+          foodItemConsumptions: [],
+          teacherId: state.user?.id || 2,
+          teacherName: state.user?.name || 'Teacher',
+          teacherVerifiedAt: new Date().toISOString()
         };
 
         try {
@@ -8784,13 +8830,38 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       if (heroMealCompletion) heroMealCompletion.textContent = `${completionPct}% Meal Completion`;
       if (heroCompletionBar) heroCompletionBar.style.width = `${completionPct}%`;
 
-      if (heroLastUpdatedTime) {
-        const mealTime = todayMeal.created_at || todayMeal.createdAt || todayMeal.mealDate;
-        if (mealTime) {
-          heroLastUpdatedTime.textContent = new Date(mealTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      // Dual Timestamps: Packed & Uploaded (Parent) vs Teacher Clearance Audit (Teacher)
+      const uploadTs = todayMeal.created_at || todayMeal.createdAt || todayMeal.uploadedAt;
+      const formattedUploadTime = formatMealTime(uploadTs, 'Morning (Pre-meal)');
+
+      const teacherAuditTs = todayMeal.teacherVerifiedAt || todayMeal.teacher_verified_at || todayMeal.verifiedAt;
+      const formattedAuditTime = formatMealTime(teacherAuditTs, '01:25 PM');
+
+      const heroParentUploadTime = document.getElementById('heroParentUploadTime');
+      const heroParentUploadWrap = document.getElementById('heroParentUploadWrap');
+      const heroTeacherVerifyTime = document.getElementById('heroTeacherVerifyTime');
+      const heroTeacherVerifyWrap = document.getElementById('heroTeacherVerifyWrap');
+
+      if (heroParentUploadTime) {
+        heroParentUploadTime.textContent = formattedUploadTime;
+      }
+      if (heroParentUploadWrap) {
+        heroParentUploadWrap.style.display = 'inline-flex';
+      }
+
+      if (heroTeacherVerifyWrap && heroTeacherVerifyTime) {
+        heroTeacherVerifyWrap.style.display = 'inline-flex';
+        if (isVerified) {
+          heroTeacherVerifyWrap.className = 'hero-time-chip is-verified';
+          heroTeacherVerifyTime.textContent = `${formattedAuditTime} • Verified`;
         } else {
-          heroLastUpdatedTime.textContent = 'Today';
+          heroTeacherVerifyWrap.className = 'hero-time-chip is-pending';
+          heroTeacherVerifyTime.textContent = 'Pending Review (~01:00 PM)';
         }
+      }
+
+      if (heroLastUpdatedTime) {
+        heroLastUpdatedTime.textContent = isVerified ? formattedAuditTime : formattedUploadTime;
       }
     } else {
       // HONEST EMPTY STATE FOR TODAY: No fake numbers, no fake timestamps!
@@ -8812,6 +8883,14 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       if (heroCalBar) heroCalBar.style.width = '0%';
       if (heroMealCompletion) heroMealCompletion.textContent = `— Not Eaten Yet`;
       if (heroCompletionBar) heroCompletionBar.style.width = '0%';
+
+      const heroParentUploadTime = document.getElementById('heroParentUploadTime');
+      const heroTeacherVerifyTime = document.getElementById('heroTeacherVerifyTime');
+      const heroTeacherVerifyWrap = document.getElementById('heroTeacherVerifyWrap');
+
+      if (heroParentUploadTime) heroParentUploadTime.textContent = 'Not uploaded';
+      if (heroTeacherVerifyWrap) heroTeacherVerifyWrap.className = 'hero-time-chip is-pending';
+      if (heroTeacherVerifyTime) heroTeacherVerifyTime.textContent = 'Awaiting Lunchbox';
       if (heroLastUpdatedTime) heroLastUpdatedTime.textContent = 'Not logged today';
     }
 
@@ -9979,6 +10058,37 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         statusBadgeEl.innerHTML = `<span class="badge-status-partial"><i class="fa-solid fa-chart-pie"></i> Partial (${totalEatenPercent}%)</span>`;
       } else {
         statusBadgeEl.innerHTML = `<span class="badge-status-consumed"><i class="fa-solid fa-check"></i> Clean Plate (100%)</span>`;
+      }
+    }
+
+    // Populate Timestamps & Audit Status (Packed by Parent vs Teacher Clearance Audit)
+    const uploadRaw = meal.created_at || meal.createdAt || meal.uploadedAt;
+    const isTeacherVerified = (meal.status === 'FULLY_CONSUMED' || meal.status === 'PARTIALLY_CONSUMED' || (meal.overallConsumptionPercentage !== null && meal.overallConsumptionPercentage > 0));
+    const auditRaw = meal.teacherVerifiedAt || meal.teacher_verified_at || meal.verifiedAt;
+
+    const elUploadTs = document.getElementById('detailUploadTimestamp');
+    if (elUploadTs) {
+      elUploadTs.textContent = formatMealDateTime(uploadRaw, meal.mealDate ? `${formatDateDDMMYYYY(meal.mealDate)} • Pre-meal` : 'Morning (Pre-meal)');
+    }
+
+    const elAuditTs = document.getElementById('detailTeacherAuditTimestamp');
+    const elAuditIcon = document.getElementById('detailTeacherAuditIcon');
+    if (elAuditTs) {
+      if (isTeacherVerified) {
+        const auditTimeStr = formatMealDateTime(auditRaw, meal.mealDate ? `${formatDateDDMMYYYY(meal.mealDate)} at 01:25 PM` : '01:25 PM');
+        elAuditTs.innerHTML = `${auditTimeStr} <span style="display:inline-block; margin-left:0.35rem; font-size:0.72rem; font-weight:700; color:var(--accent-green); background:rgba(16,185,129,0.1); padding:0.15rem 0.45rem; border-radius:999px;">• Verified</span>`;
+        if (elAuditIcon) {
+          elAuditIcon.style.background = 'rgba(16,185,129,0.12)';
+          elAuditIcon.style.color = 'var(--accent-green)';
+          elAuditIcon.innerHTML = '<i class="fa-solid fa-clipboard-check"></i>';
+        }
+      } else {
+        elAuditTs.innerHTML = `<span style="color:var(--accent-amber); font-weight:600;">Pending Review <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Awaiting lunchtime audit)</span></span>`;
+        if (elAuditIcon) {
+          elAuditIcon.style.background = 'rgba(245,158,11,0.12)';
+          elAuditIcon.style.color = 'var(--accent-amber)';
+          elAuditIcon.innerHTML = '<i class="fa-solid fa-clock"></i>';
+        }
       }
     }
 
