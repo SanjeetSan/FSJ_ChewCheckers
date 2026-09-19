@@ -8579,6 +8579,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       const isVeg = dietaryText.toLowerCase().includes('veg');
       const targetCal = student.targetCalories || (student.weightKg ? Math.round(student.weightKg * 42) : 1800);
       const targetProt = student.targetProtein || (student.weightKg ? Math.round(student.weightKg * 1.1) : 45);
+      const resolvedCode = student.studentCode || (student.id ? (String(student.id).startsWith('STU') ? student.id : `STU-${student.id}`) : (student.studentId ? `STU-${student.studentId}` : '--'));
 
       return `
         <div class="child-profile-card-item ${isActive ? 'active-profile' : ''}" data-student-id="${student.id}">
@@ -8591,6 +8592,9 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
               </div>
               <div class="child-name-row">
                 <h3 class="child-name">${student.name}</h3>
+                <span class="child-id-badge" title="Student ID: ${resolvedCode}">
+                  <i class="fa-solid fa-id-card"></i> ${resolvedCode}
+                </span>
                 ${isActive ? `
                   <span class="child-active-badge">
                     <i class="fa-solid fa-check"></i> Active Child
@@ -8626,6 +8630,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
                 <span class="child-level-grade">${classInfo}</span>
                 <span class="child-meta-dot">•</span>
                 <span class="child-level-school">${schoolName}</span>
+                <span class="child-meta-dot">•</span>
+                <span class="child-level-id" style="display:inline-flex; align-items:center; gap:4px; font-weight:600; color:var(--text-muted); font-size:0.8rem;">
+                  Student ID: <strong style="color:var(--text-primary); font-family:monospace; letter-spacing:0.5px;">${resolvedCode}</strong>
+                </span>
               </div>
               <div class="child-level-teacher">
                 <i class="fa-solid fa-chalkboard-user"></i> Class Teacher: <span class="teacher-name-val">${teacherName}</span>
@@ -9298,6 +9306,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     document.getElementById('editChildId').value = student.id;
     document.getElementById('editChildName').value = student.name || '';
     
+    const resolvedCode = student.studentCode || (student.id ? (String(student.id).startsWith('STU') ? student.id : `STU-${student.id}`) : (student.studentId ? `STU-${student.studentId}` : '--'));
+    const idBadge = document.getElementById('editChildStudentIdBadge');
+    if (idBadge) idBadge.innerHTML = `<i class="fa-solid fa-id-card"></i> Student ID: <strong>${resolvedCode}</strong>`;
+
     const activeGender = student.gender || 'Male';
     const genderInput = document.getElementById('editChildGender');
     if (genderInput) genderInput.value = activeGender;
