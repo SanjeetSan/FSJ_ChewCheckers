@@ -4642,6 +4642,32 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     }
   }
 
+  function formatFoodItemList(items, mealId) {
+    if (!items || items.length === 0) return `<span style="color:var(--text-muted); font-size:0.78rem;">Lunchbox</span>`;
+    const names = items.map(i => i.foodName);
+    if (names.length <= 2) {
+      return `<span style="color:var(--text-secondary); font-size:0.78rem;">${names.join(', ')}</span>`;
+    }
+    const firstTwo = names.slice(0, 2).join(', ');
+    const moreCount = names.length - 2;
+    const allTooltip = names.join(', ').replace(/"/g, '&quot;');
+    return `
+      <span style="color:var(--text-secondary); font-size:0.78rem;" title="${allTooltip}">
+        ${firstTwo}
+        <button type="button" class="btn-food-more" onclick="event.stopPropagation(); window.openMealDetailModalById(${mealId})" title="View all food items details">+${moreCount} more</button>
+      </span>
+    `;
+  }
+
+  window.openMealDetailModalById = function(mealId) {
+    const meal = (state.currentMeals || []).find(m => m.id == mealId);
+    if (meal && typeof openMealDetailModal === 'function') {
+      openMealDetailModal(meal);
+    } else {
+      showToast("Meal details not available.", "info");
+    }
+  };
+
   async function loadTeacherTodayMealRoster(selectedDateStr) {
     const classCode = (state.activeClass && state.activeClass.classCode) ? state.activeClass.classCode : "CLS-6070";
     state.currentTeacherClassCode = classCode;
@@ -4722,19 +4748,21 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       const cardPending = document.getElementById('teacherPendingQueueCard');
       const badgePendingCount = document.getElementById('badgePendingQueueCount');
       if (badgePendingCount) {
-        badgePendingCount.textContent = `${pendingCount} Meal${pendingCount === 1 ? '' : 's'} Pending`;
+        badgePendingCount.textContent = `${pendingCount} Pending`;
         if (pendingCount > 0) {
-          badgePendingCount.className = 'badge-status badge-missed';
-          if (cardPending) cardPending.style.borderTopColor = 'var(--accent-rose)';
+          badgePendingCount.className = 'teacher-count-badge';
+          if (cardPending) cardPending.style.borderLeftColor = 'var(--accent-amber)';
         } else {
-          badgePendingCount.className = 'badge-status badge-full';
-          if (cardPending) cardPending.style.borderTopColor = 'var(--accent-green)';
+          badgePendingCount.className = 'teacher-count-badge badge-done';
+          badgePendingCount.textContent = 'All Caught Up';
+          if (cardPending) cardPending.style.borderLeftColor = 'var(--accent-green)';
         }
       }
 
       // Wire Header Action Buttons: Bulk Mark & Refresh
       const btnBulkMark = document.getElementById('btnBulkMarkFullEaten');
       if (btnBulkMark) {
+        btnBulkMark.style.display = pendingCount > 0 ? 'inline-flex' : 'none';
         btnBulkMark.onclick = async () => {
           const pendingMeals = meals.filter(m => m.status === 'PRE_MEAL_UPLOADED' || m.status === 'PENDING_LEFTOVER_ANALYSIS');
           if (pendingMeals.length === 0) {
@@ -4784,12 +4812,9 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       if (pendingBody) {
         if (pendingStudents.length === 0) {
           pendingBody.innerHTML = `
-            <tr><td colspan="4">
-              <div class="empty-state" style="padding:1.75rem; text-align:center;">
-                <div style="font-size:2rem; margin-bottom:0.35rem;"></div>
-                <p style="font-weight:700; font-size:1.05rem; margin:0 0 0.2rem 0; color:var(--accent-green);">You're all caught up!</p>
-                <p style="color:var(--text-muted); font-size:0.85rem; margin:0;">No pending meal reviews or leftover photo actions required for ${targetDate === todayISO ? 'today' : targetDate}.</p>
-              </div>
+            <tr><td colspan="4" style="text-align:center; padding:1.25rem 1rem; color:var(--text-muted); font-size:0.875rem;">
+              <i class="fa-solid fa-circle-check" style="color:var(--accent-green); margin-right:0.4rem;"></i>
+              All meals reviewed for ${targetDate === todayISO ? 'today' : targetDate}. No pending actions required.
             </td></tr>
           `;
         } else {
@@ -4797,51 +4822,38 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             const meal = meals.find(m => m.studentId === s.id && m.status !== 'MEAL_NOT_PACKED');
             const items = meal.foodItems || [];
             const totalCal = items.reduce((acc, i) => acc + (i.calories || 0), 0);
-            const itemListStr = items.map(i => i.foodName).join(', ');
-            
-            const mealSummary = `
-              <div style="font-weight:700; color:var(--text-primary); font-size:0.9rem;">${totalCal > 0 ? totalCal + ' kcal' : 'Packed Baseline'}</div>
-              <div style="color:var(--text-secondary); font-size:0.8rem; margin-top:0.15rem;">${itemListStr || 'Custom Lunchbox'}</div>
-            `;
+            const escapedName = (s.name || 'Student').replace(/'/g, "\\'");
 
-            let statusBadge = `<span class="badge-status badge-violet"><i class="fa-solid fa-box"></i> Meal Submitted</span>`;
-            let actionRequiredCell = `
-              <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
-                <div style="display:flex; gap:0.25rem;">
-                  <button class="btn-quick-pct btn-100" onclick="recordTeacherQuickConsumption(${meal.id}, 100)">100%</button>
-                  <button class="btn-quick-pct btn-75" onclick="recordTeacherQuickConsumption(${meal.id}, 75)">75%</button>
-                  <button class="btn-quick-pct btn-50" onclick="recordTeacherQuickConsumption(${meal.id}, 50)">50%</button>
-                  <button class="btn-quick-pct btn-25" onclick="recordTeacherQuickConsumption(${meal.id}, 25)">25%</button>
-                  <button class="btn-quick-pct btn-0" onclick="recordTeacherQuickConsumption(${meal.id}, 0)">0%</button>
-                </div>
+            let statusBadge = `<span class="badge-erp-pending"><i class="fa-solid fa-clock"></i> Pending Review</span>`;
+            let actionCell = `
+              <div style="display:flex; justify-content:flex-end; gap:0.4rem; align-items:center;">
+                <button class="btn-action-primary" onclick="openPortionChangeModal(${meal.id}, '${escapedName}')" style="padding:0.32rem 0.75rem; font-size:0.775rem; font-weight:600;"><i class="fa-solid fa-clipboard-check"></i> Review Meal</button>
+                <button class="btn-action-subtle" onclick="recordTeacherQuickConsumption(${meal.id}, 100)" title="Quick mark as 100% clean plate" style="padding:0.32rem 0.6rem; font-size:0.775rem;"><i class="fa-solid fa-check"></i> 100% Eaten</button>
               </div>
             `;
 
             if (meal.status === 'PENDING_LEFTOVER_ANALYSIS') {
-              statusBadge = `<span class="badge-status badge-rose"><i class="fa-solid fa-triangle-exclamation"></i> Photo Required (${meal.overallConsumptionPercentage || 50}%)</span>`;
-              actionRequiredCell = `
-                <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
-                  <button class="btn-action-primary" onclick="openLeftoverModalForMeal(${meal.id})" style="padding:0.35rem 0.75rem; font-size:0.8rem; background:var(--accent-rose); border-color:var(--accent-rose);">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload Leftover Photo
-                  </button>
-                  <div style="display:flex; gap:0.2rem; align-items:center; background:var(--bg-page); padding:0.2rem 0.45rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);" title="Accidentally clicked wrong %? Click to correct">
-                    <span style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">Re-select %:</span>
-                    <button class="btn-quick-pct btn-100" onclick="recordTeacherQuickConsumption(${meal.id}, 100)" title="Correct to 100% Clean Plate">100%</button>
-                    <button class="btn-quick-pct btn-75" onclick="recordTeacherQuickConsumption(${meal.id}, 75)" title="Correct to 75%">75%</button>
-                    <button class="btn-quick-pct btn-50" onclick="recordTeacherQuickConsumption(${meal.id}, 50)" title="Correct to 50%">50%</button>
-                    <button class="btn-quick-pct btn-25" onclick="recordTeacherQuickConsumption(${meal.id}, 25)" title="Correct to 25%">25%</button>
-                    <button class="btn-quick-pct btn-0" onclick="recordTeacherQuickConsumption(${meal.id}, 0)" title="Correct to 0%">0%</button>
-                  </div>
+              statusBadge = `<span class="badge-erp-pending"><i class="fa-solid fa-camera"></i> Photo Needed</span>`;
+              actionCell = `
+                <div style="display:flex; justify-content:flex-end; gap:0.4rem; align-items:center;">
+                  <button class="btn-action-primary" onclick="openLeftoverModalForMeal(${meal.id})" style="padding:0.32rem 0.75rem; font-size:0.775rem; font-weight:600;"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Leftovers</button>
+                  <button class="btn-subtle-ghost" onclick="openPortionChangeModal(${meal.id}, '${escapedName}')" style="font-size:0.75rem;">Change %</button>
                 </div>
               `;
             }
 
             return `
               <tr>
-                <td><strong>${s.name}</strong><div style="font-size:0.75rem; color:var(--text-muted);">${s.studentCode}</div></td>
-                <td>${mealSummary}</td>
+                <td>
+                  <strong style="color:var(--text-primary); font-size:0.875rem;">${s.name}</strong>
+                  <div style="font-size:0.75rem; color:var(--text-muted);">${s.studentCode}</div>
+                </td>
+                <td>
+                  <div style="font-weight:600; color:var(--text-primary); font-size:0.825rem;">${totalCal > 0 ? totalCal + ' kcal' : 'Packed Baseline'}</div>
+                  <div style="font-size:0.75rem; margin-top:0.15rem;">${formatFoodItemList(items, meal.id)}</div>
+                </td>
                 <td>${statusBadge}</td>
-                <td>${actionRequiredCell}</td>
+                <td style="text-align:right;">${actionCell}</td>
               </tr>
             `;
           });
@@ -5098,13 +5110,13 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       const meal = meals.find(m => m.studentId === s.id && m.status !== 'MEAL_NOT_PACKED');
       const initials = (s.name || 'S').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
-      let mealSummaryHTML = `<div style="color:var(--text-muted); font-size:0.85rem; font-style:italic;"><i class="fa-solid fa-cookie-bite" style="margin-right:0.35rem; color:var(--border-subtle);"></i> Meal not packed by parent</div>`;
-      let statusBadgeHTML = `<span class="badge-status badge-missed"><i class="fa-solid fa-circle-xmark"></i> Not Packed</span>`;
+      let mealSummaryHTML = `<div style="color:var(--text-muted); font-size:0.825rem; font-style:italic;">Meal not packed</div>`;
+      let statusBadgeHTML = `<span class="badge-erp-muted"><i class="fa-regular fa-circle"></i> Not Packed</span>`;
 
       const isActionable = meal && (meal.status === 'PRE_MEAL_UPLOADED' || meal.status === 'PENDING_LEFTOVER_ANALYSIS');
 
       if (isAbsent) {
-        statusBadgeHTML = `<span class="badge-status badge-missed" style="background:rgba(245, 158, 11, 0.12); color:var(--accent-amber); border-color:rgba(245, 158, 11, 0.3);"><i class="fa-solid fa-user-slash"></i> Absent Today</span>`;
+        statusBadgeHTML = `<span class="badge-erp-muted"><i class="fa-solid fa-user-slash"></i> Absent</span>`;
       } else if (meal) {
         const items = meal.foodItems || [];
         const calcPacked = meal.packedCalories || (items.reduce((acc, i) => acc + (i.calories || 0), 0)) || 400;
@@ -5117,76 +5129,69 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         if (meal.status === 'PARTIALLY_CONSUMED' && pct === 100) pct = 75;
 
         const calcConsumed = Math.round(calcPacked * (pct / 100));
-        const itemListStr = items.map(i => i.foodName).join(', ');
 
         if (meal.status === 'FULLY_CONSUMED' || pct === 100) {
           mealSummaryHTML = `
-            <div style="font-weight:800; color:var(--text-primary); font-size:0.875rem;">
-              ${calcPacked} kcal packed → <span style="color:var(--accent-green); font-weight:800;">${calcConsumed} kcal eaten (100%)</span>
+            <div style="font-weight:600; color:var(--text-primary); font-size:0.825rem;">
+              ${calcPacked} kcal <span style="color:var(--text-muted); font-weight:400;">→</span> <span style="color:var(--accent-green); font-weight:700;">${calcConsumed} kcal (100%)</span>
             </div>
-            <div style="width:100%; max-width:180px; height:5px; background:var(--border-subtle); border-radius:3px; overflow:hidden; margin:0.3rem 0;">
-              <div style="width:100%; height:100%; background:var(--accent-green); border-radius:3px;"></div>
-            </div>
-            <div style="font-size:0.775rem; color:var(--text-muted);"><i class="fa-solid fa-utensils" style="font-size:0.7rem; color:var(--primary);"></i> ${itemListStr || 'Custom Lunchbox'}</div>
+            <div style="font-size:0.75rem; margin-top:0.15rem;">${formatFoodItemList(items, meal.id)}</div>
           `;
-          statusBadgeHTML = `<span class="badge-status badge-full"><i class="fa-solid fa-circle-check"></i> Fully Consumed</span>`;
+          statusBadgeHTML = `<span class="badge-erp-verified"><i class="fa-solid fa-check"></i> Fully Consumed</span>`;
         } else if (meal.status === 'PARTIALLY_CONSUMED' || (pct > 0 && pct < 100)) {
           mealSummaryHTML = `
-            <div style="font-weight:800; color:var(--text-primary); font-size:0.875rem;">
-              ${calcPacked} kcal packed → <span style="color:var(--accent-amber); font-weight:800;">${calcConsumed} kcal eaten (${pct}%)</span>
+            <div style="font-weight:600; color:var(--text-primary); font-size:0.825rem;">
+              ${calcPacked} kcal <span style="color:var(--text-muted); font-weight:400;">→</span> <span style="color:var(--accent-amber); font-weight:700;">${calcConsumed} kcal (${pct}%)</span>
             </div>
-            <div style="width:100%; max-width:180px; height:5px; background:var(--border-subtle); border-radius:3px; overflow:hidden; margin:0.3rem 0;">
-              <div style="width:${pct}%; height:100%; background:var(--accent-amber); border-radius:3px;"></div>
-            </div>
-            <div style="font-size:0.775rem; color:var(--text-muted);"><i class="fa-solid fa-utensils" style="font-size:0.7rem; color:var(--primary);"></i> ${itemListStr || 'Custom Lunchbox'}</div>
+            <div style="font-size:0.75rem; margin-top:0.15rem;">${formatFoodItemList(items, meal.id)}</div>
           `;
-          statusBadgeHTML = `<span class="badge-status badge-partial"><i class="fa-solid fa-chart-pie"></i> Partially Consumed</span>`;
+          statusBadgeHTML = `<span class="badge-erp-partial"><i class="fa-solid fa-chart-pie"></i> ${pct}% Consumed</span>`;
         } else if (meal.status === 'PENDING_LEFTOVER_ANALYSIS') {
           mealSummaryHTML = `
-            <div style="font-weight:800; color:var(--text-primary); font-size:0.875rem;">${calcPacked} kcal baseline packed</div>
-            <div style="font-size:0.775rem; color:var(--text-muted); margin-top:0.2rem;"><i class="fa-solid fa-utensils" style="font-size:0.7rem; color:var(--primary);"></i> ${itemListStr || 'Custom Lunchbox'}</div>
+            <div style="font-weight:600; color:var(--text-primary); font-size:0.825rem;">${calcPacked} kcal packed</div>
+            <div style="font-size:0.75rem; margin-top:0.15rem;">${formatFoodItemList(items, meal.id)}</div>
           `;
-          statusBadgeHTML = `<span class="badge-status badge-rose"><i class="fa-solid fa-triangle-exclamation"></i> Verification Required</span>`;
+          statusBadgeHTML = `<span class="badge-erp-pending"><i class="fa-solid fa-camera"></i> Photo Needed</span>`;
         } else {
           mealSummaryHTML = `
-            <div style="font-weight:800; color:var(--text-primary); font-size:0.875rem;">${calcPacked} kcal pre-meal packed</div>
-            <div style="font-size:0.775rem; color:var(--text-muted); margin-top:0.2rem;"><i class="fa-solid fa-utensils" style="font-size:0.7rem; color:var(--primary);"></i> ${itemListStr || 'Custom Lunchbox'}</div>
+            <div style="font-weight:600; color:var(--text-primary); font-size:0.825rem;">${calcPacked} kcal packed</div>
+            <div style="font-size:0.75rem; margin-top:0.15rem;">${formatFoodItemList(items, meal.id)}</div>
           `;
-          statusBadgeHTML = `<span class="badge-status badge-violet"><i class="fa-solid fa-box"></i> Pre-Meal Packed</span>`;
+          statusBadgeHTML = `<span class="badge-erp-pending"><i class="fa-solid fa-clock"></i> Pending Review</span>`;
         }
       }
 
-      const escapedName = s.name.replace(/'/g, "\\'");
+      const escapedName = (s.name || 'Student').replace(/'/g, "\\'");
       const actionsHTML = `
-        <div style="display:flex; gap:0.4rem; justify-content:flex-end; align-items:center;">
-          ${meal ? `<button class="btn-action-primary btn-change-portion" onclick="openPortionChangeModal(${meal.id}, '${escapedName}')" style="padding:0.35rem 0.75rem; font-size:0.775rem; font-weight:700;" title="Correct or update meal consumption percentage"><i class="fa-solid fa-sliders"></i> Change %</button>` : ''}
-          <button class="btn-action-outline btn-view-profile" data-student-id="${s.id}" style="padding:0.35rem 0.75rem; font-size:0.775rem; font-weight:700;"><i class="fa-solid fa-user"></i> Profile</button>
-          <button class="btn-action-outline btn-mark-absent" data-student-id="${s.id}" data-student-name="${escapedName}" style="padding:0.35rem 0.65rem; font-size:0.775rem; font-weight:700; color:${isAbsent ? 'var(--accent-amber)' : 'var(--text-secondary)'}; border-color:${isAbsent ? 'var(--accent-amber)' : 'var(--border-subtle)'};"><i class="fa-solid fa-user-slash"></i> ${isAbsent ? 'Present' : 'Absent'}</button>
+        <div style="display:flex; gap:0.35rem; justify-content:flex-end; align-items:center;">
+          ${meal ? `<button class="btn-action-primary" onclick="openPortionChangeModal(${meal.id}, '${escapedName}')" style="padding:0.3rem 0.65rem; font-size:0.75rem; font-weight:600;" title="Review or correct meal consumption"><i class="fa-solid fa-clipboard-check"></i> Review Meal</button>` : ''}
+          <button class="btn-subtle-ghost btn-view-profile" data-student-id="${s.id}" title="View Student Profile"><i class="fa-solid fa-user"></i> Profile</button>
+          <button class="btn-subtle-ghost btn-mark-absent" data-student-id="${s.id}" data-student-name="${escapedName}" title="Toggle Attendance" style="color:${isAbsent ? 'var(--accent-amber)' : 'var(--text-muted)'};"><i class="fa-solid ${isAbsent ? 'fa-user-check' : 'fa-user-slash'}"></i> ${isAbsent ? 'Present' : 'Absent'}</button>
         </div>
       `;
 
       return `
-        <tr style="border-bottom:1px solid var(--border-subtle);">
-          <td style="padding:1rem 0.5rem; text-align:center; vertical-align:middle;">
+        <tr>
+          <td style="text-align:center;">
             <input type="checkbox" class="student-select-chk" data-meal-id="${meal ? meal.id : ''}" data-student-id="${s.id}" ${isActionable ? '' : 'disabled style="opacity:0.25; cursor:not-allowed;"'}>
           </td>
-          <td style="padding:1rem 0.85rem; vertical-align:middle;">
-            <div style="display:flex; align-items:center; gap:0.75rem;">
-              <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg, var(--primary) 0%, var(--accent-violet) 100%); color:#fff; font-weight:800; font-size:0.85rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 6px rgba(79, 70, 229, 0.2);">
+          <td>
+            <div style="display:flex; align-items:center; gap:0.6rem;">
+              <div style="width:30px; height:30px; border-radius:50%; background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-secondary); font-weight:700; font-size:0.75rem; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                 ${initials}
               </div>
               <div>
-                <strong style="font-size:0.9rem; color:var(--text-primary); display:block; line-height:1.2;">${s.name}</strong>
-                <span style="font-size:0.725rem; color:var(--text-muted); font-weight:600;">Roll #${s.rollNumber || 'N/A'}</span>
+                <strong style="font-size:0.875rem; color:var(--text-primary); display:block; line-height:1.2;">${s.name}</strong>
+                <span style="font-size:0.725rem; color:var(--text-muted);">Roll #${s.rollNumber || 'N/A'}</span>
               </div>
             </div>
           </td>
-          <td style="padding:1rem 0.85rem; vertical-align:middle;">
-            <code style="font-size:0.8rem; background:var(--primary-light); padding:0.25rem 0.55rem; border-radius:var(--r-md); color:var(--primary); font-weight:800; white-space:nowrap; letter-spacing:0.5px; border:1px solid rgba(99, 102, 241, 0.15);">${s.studentCode}</code>
+          <td>
+            <code style="font-size:0.75rem; background:var(--bg-page); padding:0.2rem 0.45rem; border-radius:var(--r-sm); color:var(--text-secondary); font-weight:700; white-space:nowrap; border:1px solid var(--border-subtle);">${s.studentCode}</code>
           </td>
-          <td style="padding:1rem 0.85rem; vertical-align:middle;">${mealSummaryHTML}</td>
-          <td style="padding:1rem 0.85rem; vertical-align:middle;">${statusBadgeHTML}</td>
-          <td style="padding:1rem 0.85rem; vertical-align:middle; text-align:right;">${actionsHTML}</td>
+          <td>${mealSummaryHTML}</td>
+          <td>${statusBadgeHTML}</td>
+          <td style="text-align:right;">${actionsHTML}</td>
         </tr>
       `;
     });

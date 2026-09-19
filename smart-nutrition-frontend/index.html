@@ -1160,112 +1160,70 @@
           </div>
         </div>
 
-        <!-- PANE 5: TEACHER CLASS OVERVIEW (ACTION-FIRST REDESIGN) -->
+        <!-- PANE 5: TEACHER CLASS OVERVIEW (CLEAN SCHOOL ERP REFINEMENT) -->
         <div class="pane-container" id="pane-teacher-roster">
           
-          <!-- A. COMPACT TEACHER HEADER (SINGLE AUTHORITATIVE SOURCE OF TRUTH) -->
+          <!-- 1. SIMPLIFIED CLASS HEADER (COMPACT HORIZONTAL BAR) -->
           <div class="teacher-header-banner">
-            <div style="display:flex; align-items:center; gap:1.25rem;">
-              <div style="font-size:2rem; color:var(--primary); line-height:1;"><i class="fa-solid fa-school"></i></div>
-              <div>
-                <h2 id="teacherHeaderClassName">Grade 5 Class</h2>
-                <div class="banner-meta">
-                  <span><i class="fa-solid fa-key"></i> Class Code: <strong id="teacherHeaderClassCode">CLS-6070</strong></span>
-                  <span>•</span>
-                  <span><i class="fa-solid fa-user-tie"></i> Teacher: <strong id="teacherHeaderTeacherName">Jothi Prakash V</strong></span>
-                  <span>•</span>
-                  <span><i class="fa-regular fa-envelope"></i> <span id="teacherHeaderTeacherEmail">jothi@gmail.com</span></span>
-                </div>
+            <div class="teacher-header-info">
+              <h2 id="teacherHeaderClassName">Grade 5 Class</h2>
+              <div class="teacher-header-meta">
+                <span>Class Code: <strong id="teacherHeaderClassCode">CLS-6070</strong></span>
+                <span class="meta-dot">•</span>
+                <span>Teacher: <strong id="teacherHeaderTeacherName">Jothi Prakash V</strong></span>
+                <span id="teacherHeaderTeacherEmail" style="display:none;">jothi@gmail.com</span>
               </div>
             </div>
-            <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
-              <!-- Interactive Date Picker for Past/Present Date Inspection -->
-              <div class="banner-date-badge">
+            <div class="teacher-header-actions">
+              <div class="teacher-date-picker-wrap">
                 <i class="fa-regular fa-calendar"></i>
-                <input type="date" id="teacherSelectedDate" title="Select Date to View Meal Records" style="border:none; background:transparent; font-family:inherit; font-weight:600; font-size:0.85rem; color:inherit; cursor:pointer; outline:none;" />
+                <input type="date" id="teacherSelectedDate" title="Select Date to View Meal Records" />
               </div>
+              <button class="btn-action-ghost" id="btnRefreshTeacherMeals" title="Refresh meal records">
+                <i class="fa-solid fa-rotate"></i> Refresh
+              </button>
             </div>
           </div>
 
-          <!-- C. SMALL KPI SUMMARY (COMPACT 4 METRIC STRIP) -->
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
-            <div class="metric-box" style="display:flex; align-items:center; justify-content:space-between; padding:1rem; height:100%;">
-              <div>
-                <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.25rem;">Students In Class</span>
-                <div class="metric-box-val" id="teacherMetricStudents" style="font-size:1.5rem; font-weight:800; color:var(--text-primary);">0</div>
+          <!-- 2. STUDENTS REQUIRING ACTION / PENDING REVIEW QUEUE (FIRST IN HIERARCHY, CLEAN ALERT STYLE) -->
+          <div class="teacher-pending-section" id="teacherPendingQueueCard">
+            <div class="teacher-section-header">
+              <div class="teacher-section-title">
+                <h3><i class="fa-solid fa-clock-rotate-left"></i> Pending Meal Reviews</h3>
+                <span class="teacher-count-badge" id="badgePendingQueueCount">0 Pending</span>
               </div>
-              <div style="font-size:1.5rem; line-height:1; color:var(--text-secondary); opacity:0.9;"><i class="fa-solid fa-user-graduate"></i></div>
-            </div>
-
-            <div class="metric-box" style="display:flex; align-items:center; justify-content:space-between; padding:1rem; height:100%;">
-              <div>
-                <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.25rem;">Meals Submitted</span>
-                <div class="metric-box-val" id="teacherMetricSubmitted" style="font-size:1.5rem; font-weight:800; color:var(--primary);">0</div>
-              </div>
-              <div style="font-size:1.5rem; line-height:1; color:var(--primary); opacity:0.9;"><i class="fa-solid fa-box-archive"></i></div>
-            </div>
-
-            <div class="metric-box" style="display:flex; align-items:center; justify-content:space-between; padding:1rem; height:100%;">
-              <div>
-                <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.25rem;">Pending Reviews</span>
-                <div class="metric-box-val" id="teacherMetricPendingReviews" style="font-size:1.5rem; font-weight:800; color:var(--accent-amber);">0</div>
-              </div>
-              <div style="font-size:1.5rem; line-height:1; color:var(--accent-amber); opacity:0.9;"><i class="fa-solid fa-triangle-exclamation"></i></div>
-            </div>
-
-            <div class="metric-box" style="display:flex; align-items:center; justify-content:space-between; padding:1rem; height:100%;">
-              <div>
-                <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.25rem;">Average Consumption</span>
-                <div class="metric-box-val" id="teacherMetricAvgConsumption" style="font-size:1.5rem; font-weight:800; color:var(--text-primary);">0%</div>
-              </div>
-              <div style="font-size:1.5rem; line-height:1; color:var(--accent-teal); opacity:0.9;"><i class="fa-solid fa-chart-column"></i></div>
-            </div>
-          </div>
-
-          <!-- B. ATTENTION REQUIRED / PENDING MEAL QUEUE (PRIMARY OPERATIONAL SECTION) -->
-          <div class="card" id="teacherPendingQueueCard" style="margin-bottom:1.5rem; border-top:4px solid var(--accent-rose); background:var(--bg-card); transition: border-color 0.3s ease;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
-              <div>
-                <h3 style="font-size:1.15rem; margin:0; display:flex; align-items:center; gap:0.5rem;">
-                  <span style="color:var(--accent-rose);"><i class="fa-solid fa-triangle-exclamation"></i></span> Attention Required – Pending Meal Queue
-                </h3>
-                <small style="color:var(--text-muted)">Meals that need your immediate action (Review Consumption & Upload Leftovers)</small>
-              </div>
-              <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
-                <span class="badge-status badge-violet" id="badgePendingQueueCount" style="font-weight:700;">0 Meals Pending</span>
-                <button class="btn-action-primary" id="btnBulkMarkFullEaten" style="padding:0.4rem 0.85rem; font-size:0.8rem; background:var(--accent-green); border-color:var(--accent-green);">
-                  <i class="fa-solid fa-bolt"></i> Bulk Mark 100% Eaten
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <button class="btn-action-subtle" id="btnBulkMarkFullEaten" style="display:none;">
+                  <i class="fa-solid fa-check-double"></i> Mark All 100% Eaten
                 </button>
-                <button class="btn-action-outline" id="btnRefreshTeacherMeals"><i class="fa-solid fa-rotate"></i> Refresh</button>
               </div>
             </div>
 
-            <div class="table-responsive">
-              <table class="table-chewcheckers">
+            <div class="table-responsive" id="teacherPendingTableWrap">
+              <table class="table-chewcheckers teacher-roster-table">
                 <thead>
                   <tr>
-                    <th>Student</th>
-                    <th>Packed Meal Summary</th>
-                    <th>Current Status</th>
-                    <th>Action Required</th>
+                    <th>STUDENT</th>
+                    <th>PACKED MEAL</th>
+                    <th>STATUS</th>
+                    <th style="text-align:right;">ACTION REQUIRED</th>
                   </tr>
                 </thead>
                 <tbody id="teacherPendingQueueBody">
-                  <tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:1.5rem;">Checking for pending meals...</td></tr>
+                  <tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:1rem;">Checking for pending meals...</td></tr>
                 </tbody>
               </table>
             </div>
           </div>
 
-          <!-- D. UNIFIED CLASSROOM STUDENT ROSTER & DAILY MEAL LOG -->
-          <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.5rem;">
-              <div>
-                <h3 style="font-size:1.1rem; margin:0;"><i class="fa-solid fa-users" style="color:var(--primary)"></i> Classroom Student Roster & Meal Log</h3>
-                <small style="color:var(--text-muted)">Master student roster with real-time daily nutrition & meal clearance status</small>
+          <!-- 3. MASTER CLASSROOM STUDENT ROSTER & DAILY MEAL LOG -->
+          <div class="teacher-roster-section">
+            <div class="teacher-section-header">
+              <div class="teacher-section-title">
+                <h3><i class="fa-solid fa-users"></i> Classroom Student Roster</h3>
               </div>
               <div style="display:flex; gap:0.5rem; align-items:center;">
-                <button class="btn-action-primary" id="btnBulkMarkSelectedFull" style="display:none; padding:0.4rem 0.85rem; font-size:0.8rem; background:var(--accent-green); border-color:var(--accent-green);">
+                <button class="btn-action-primary" id="btnBulkMarkSelectedFull" style="display:none; padding:0.35rem 0.75rem; font-size:0.8rem;">
                   <i class="fa-solid fa-check-double"></i> Mark Selected as Fully Consumed (<span id="bulkSelectedCount">0</span>)
                 </button>
               </div>
@@ -1277,27 +1235,27 @@
                 All Students <span class="chip-count" id="countFilterAll">0</span>
               </button>
               <button type="button" class="teacher-filter-chip" data-filter="attention">
-                <i class="fa-solid fa-triangle-exclamation" style="color:var(--accent-rose);"></i> Needs Attention <span class="chip-count" id="countFilterAttention">0</span>
+                Needs Attention <span class="chip-count" id="countFilterAttention">0</span>
               </button>
               <button type="button" class="teacher-filter-chip" data-filter="pending">
-                <i class="fa-solid fa-clock" style="color:var(--accent-violet);"></i> Pending Review <span class="chip-count" id="countFilterPending">0</span>
+                Pending Review <span class="chip-count" id="countFilterPending">0</span>
               </button>
               <button type="button" class="teacher-filter-chip" data-filter="partial">
-                <i class="fa-solid fa-chart-pie" style="color:var(--accent-amber);"></i> Leftovers Recorded <span class="chip-count" id="countFilterPartial">0</span>
+                Leftovers Recorded <span class="chip-count" id="countFilterPartial">0</span>
               </button>
               <button type="button" class="teacher-filter-chip" data-filter="full">
-                <i class="fa-solid fa-circle-check" style="color:var(--accent-green);"></i> Fully Consumed <span class="chip-count" id="countFilterFull">0</span>
+                Fully Consumed <span class="chip-count" id="countFilterFull">0</span>
               </button>
             </div>
 
-            <!-- Classroom Allergy & Food Alert Banner -->
-            <div id="classAllergyAlertBanner" style="display:none; background:rgba(239, 68, 68, 0.08); border:1px solid rgba(239, 68, 68, 0.25); color:var(--accent-rose); padding:0.75rem 1rem; border-radius:var(--r-md); margin-bottom:1rem; font-size:0.85rem; font-weight:600; align-items:center; gap:0.5rem;">
-              <i class="fa-solid fa-triangle-exclamation" style="font-size:1.1rem;"></i>
+            <!-- Classroom Allergy Alert (Subtle ERP Alert) -->
+            <div id="classAllergyAlertBanner" style="display:none; background:rgba(239, 68, 68, 0.06); border:1px solid rgba(239, 68, 68, 0.2); color:var(--accent-rose); padding:0.6rem 0.9rem; border-radius:var(--r-md); margin-bottom:0.85rem; font-size:0.825rem; font-weight:600; align-items:center; gap:0.5rem;">
+              <i class="fa-solid fa-triangle-exclamation"></i>
               <span id="classAllergyAlertText">Classroom Allergy Alerts</span>
             </div>
 
             <div class="table-responsive">
-              <table class="table-chewcheckers">
+              <table class="table-chewcheckers teacher-roster-table">
                 <thead>
                   <tr>
                     <th style="width:36px; text-align:center;">
@@ -1312,10 +1270,33 @@
                 </thead>
                 <tbody id="teacherRosterBody">
                   <tr>
-                    <td colspan="6" class="text-center" style="padding:1.5rem; color:var(--text-muted);">Loading classroom roster...</td>
+                    <td colspan="6" class="text-center" style="padding:1.25rem; color:var(--text-muted);">Loading classroom roster...</td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+
+          <!-- 4. KPI SUMMARY (PLACED BELOW ROSTER AS COMPACT SUMMARY STRIP) -->
+          <div class="teacher-kpi-strip">
+            <div class="teacher-kpi-card">
+              <span class="teacher-kpi-label">Students In Class</span>
+              <div class="teacher-kpi-val" id="teacherMetricStudents">0</div>
+            </div>
+
+            <div class="teacher-kpi-card">
+              <span class="teacher-kpi-label">Meals Submitted</span>
+              <div class="teacher-kpi-val" id="teacherMetricSubmitted">0</div>
+            </div>
+
+            <div class="teacher-kpi-card">
+              <span class="teacher-kpi-label">Pending Reviews</span>
+              <div class="teacher-kpi-val" id="teacherMetricPendingReviews">0</div>
+            </div>
+
+            <div class="teacher-kpi-card">
+              <span class="teacher-kpi-label">Average Consumption</span>
+              <div class="teacher-kpi-val" id="teacherMetricAvgConsumption">0%</div>
             </div>
           </div>
         </div>
