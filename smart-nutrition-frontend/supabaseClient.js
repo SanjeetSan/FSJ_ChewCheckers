@@ -569,6 +569,58 @@ export async function supabaseSavePreset(preset) {
 }
 
 /**
+ * Update Existing Lunchbox Preset
+ */
+export async function supabaseUpdatePreset(presetId, presetData) {
+  try {
+    const isDefault = Boolean(presetData.isDefault);
+    if (isDefault && presetData.studentId) {
+      await supabase
+        .from('lunchbox_presets')
+        .update({ is_default: false })
+        .eq('student_id', presetData.studentId);
+    }
+
+    const payload = {};
+    if (presetData.presetName !== undefined) payload.preset_name = presetData.presetName;
+    if (presetData.lengthCm !== undefined) payload.length_cm = parseFloat(presetData.lengthCm) || 20;
+    if (presetData.widthCm !== undefined) payload.width_cm = parseFloat(presetData.widthCm) || 15;
+    if (presetData.heightCm !== undefined || presetData.depthCm !== undefined) {
+      payload.height_cm = parseFloat(presetData.heightCm || presetData.depthCm) || 5;
+    }
+    if (presetData.notes !== undefined) payload.notes = presetData.notes || null;
+    if (presetData.isDefault !== undefined) payload.is_default = isDefault;
+
+    const { data, error } = await supabase
+      .from('lunchbox_presets')
+      .update(payload)
+      .eq('id', presetId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return {
+      id: data.id,
+      presetName: data.preset_name,
+      studentId: data.student_id,
+      lengthCm: data.length_cm,
+      widthCm: data.width_cm,
+      heightCm: data.height_cm,
+      depthCm: data.height_cm,
+      notes: data.notes,
+      isDefault: data.is_default,
+      brand: data.notes || 'Custom Box',
+      capacityMl: Math.round(data.length_cm * data.width_cm * data.height_cm * 0.85),
+      volumeCm3: Math.round(data.length_cm * data.width_cm * data.height_cm),
+      compartments: 3
+    };
+  } catch (err) {
+    console.error('Supabase update preset error:', err);
+    throw err;
+  }
+}
+
+/**
  * Delete Lunchbox Preset
  */
 export async function supabaseDeletePreset(presetId) {

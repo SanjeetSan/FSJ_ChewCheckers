@@ -14,6 +14,7 @@ import {
   supabaseLinkClassCode,
   supabaseGetPresetsForStudent,
   supabaseSavePreset,
+  supabaseUpdatePreset,
   supabaseDeletePreset,
   supabaseSetDefaultPreset,
   supabaseGetMealsForStudent,
@@ -3335,12 +3336,22 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         const newChild = await supabaseAddChild(pId, body);
         return new Response(JSON.stringify(newChild), { status: 201, headers: { 'Content-Type': 'application/json' } });
       // 1. Lunchbox Presets endpoints (Evaluated first to prevent /api/parent/student prefix collision)
-      } else if (path.includes('/lunchbox-presets') && path.includes('/set-default') && options.method === 'PUT') {
-        const parts = path.split('/');
-        const studentId = parts[4];
-        const presetId = parts[6];
-        const updated = await supabaseSetDefaultPreset(presetId, studentId);
-        return new Response(JSON.stringify(updated), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path.includes('/lunchbox-presets') && options.method === 'PUT') {
+        if (path.includes('/set-default')) {
+          const parts = path.split('/');
+          const studentId = parts[4];
+          const presetId = parts[6];
+          const updated = await supabaseSetDefaultPreset(presetId, studentId);
+          return new Response(JSON.stringify(updated), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        } else {
+          const presetId = path.split('/').pop();
+          const presetData = typeof options.body === 'string' ? JSON.parse(options.body) : (options.body || {});
+          const parts = path.split('/');
+          const studentId = parts[4];
+          if (studentId && !presetData.studentId) presetData.studentId = studentId;
+          const updated = await supabaseUpdatePreset(presetId, presetData);
+          return new Response(JSON.stringify(updated), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
       } else if (path.includes('/lunchbox-presets') && options.method === 'DELETE') {
         const presetId = path.split('/').pop();
         await supabaseDeletePreset(presetId);
@@ -9474,77 +9485,89 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
       return `
         <div class="lunchbox-card ${isRecent ? 'is-recent' : ''}">
-          <div>
-            <div class="lunchbox-card-header">
-              <div class="lunchbox-card-identity">
-                <div class="lunchbox-card-icon ${isAi ? 'ai' : 'custom'}">
-                  <i class="fa-solid ${isAi ? 'fa-wand-magic-sparkles' : 'fa-box'}"></i>
-                </div>
-                <div class="lunchbox-card-name-group">
-                  <h4 class="lunchbox-card-title">${p.presetName}</h4>
-                  <span class="lunchbox-card-type-tag">${isAi ? 'AI Calibrated' : 'Custom Preset'}</span>
-                </div>
-              </div>
-              ${isRecent ? `
-                <span class="lunchbox-card-recent-badge">
-                  <i class="fa-solid fa-clock-rotate-left"></i> Last Used
-                </span>
-              ` : ''}
+          <!-- Top Category & Status Header -->
+          <div class="preset-card-topbar">
+            <div class="preset-badge-tag ${isAi ? 'ai' : 'custom'}">
+              <i class="fa-solid ${isAi ? 'fa-wand-magic-sparkles' : 'fa-box-archive'}"></i>
+              <span>${isAi ? 'AI Calibrated' : 'Custom Lunchbox'}</span>
             </div>
-
-            <!-- Unified Mathematical Spec Deck (Zero nested boxes!) -->
-            <div class="preset-spec-deck">
-              <div class="preset-dim-cluster">
-                <div class="preset-dim-item">
-                  <span class="preset-dim-label">Length</span>
-                  <span class="preset-dim-value">${p.lengthCm}<small style="font-size:0.7rem; color:var(--text-muted); font-weight:600; margin-left:1px;">cm</small></span>
-                </div>
-                <span class="preset-dim-multiply">×</span>
-                <div class="preset-dim-item">
-                  <span class="preset-dim-label">Width</span>
-                  <span class="preset-dim-value">${p.widthCm}<small style="font-size:0.7rem; color:var(--text-muted); font-weight:600; margin-left:1px;">cm</small></span>
-                </div>
-                <span class="preset-dim-multiply">×</span>
-                <div class="preset-dim-item">
-                  <span class="preset-dim-label">Height</span>
-                  <span class="preset-dim-value">${p.heightCm}<small style="font-size:0.7rem; color:var(--text-muted); font-weight:600; margin-left:1px;">cm</small></span>
-                </div>
-              </div>
-              
-              <div class="preset-spec-divider"></div>
-
-              <div class="preset-capacity-cluster">
-                <span class="preset-capacity-label">Capacity</span>
-                <span class="preset-capacity-value"><i class="fa-solid fa-cube" style="font-size:0.75rem;"></i> ${vol} <small style="font-size:0.7rem; font-weight:700;">ml</small></span>
-              </div>
-            </div>
-
-            ${p.notes ? `
-              <div class="preset-notes-chip" title="${p.notes}">
-                <i class="fa-solid fa-layer-group"></i>
-                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.notes}</span>
-              </div>
+            ${isRecent ? `
+              <span class="preset-badge-active">
+                <i class="fa-solid fa-circle-check"></i> Active for Scans
+              </span>
             ` : ''}
           </div>
 
-          <div class="lunchbox-card-footer">
+          <!-- Main Title & Identification -->
+          <div class="preset-card-main">
+            <div class="preset-card-icon ${isAi ? 'ai' : 'custom'}">
+              <i class="fa-solid ${isAi ? 'fa-wand-magic-sparkles' : 'fa-box'}"></i>
+            </div>
+            <div class="preset-card-title-group">
+              <h4 class="preset-card-title" title="${p.presetName}">${p.presetName}</h4>
+              ${p.notes ? `
+                <div class="preset-card-note" title="${p.notes}">
+                  <i class="fa-solid fa-tag"></i> <span>${p.notes}</span>
+                </div>
+              ` : `
+                <div class="preset-card-note muted">
+                  <span>Standard lunchbox container</span>
+                </div>
+              `}
+            </div>
+          </div>
+
+          <!-- Spacious Dimensions & Capacity Spec Grid -->
+          <div class="preset-metrics-grid">
+            <div class="preset-metric-card">
+              <span class="preset-metric-label">Length</span>
+              <div class="preset-metric-value">
+                <strong>${p.lengthCm}</strong>
+                <span class="preset-metric-unit">cm</span>
+              </div>
+            </div>
+            <div class="preset-metric-card">
+              <span class="preset-metric-label">Width</span>
+              <div class="preset-metric-value">
+                <strong>${p.widthCm}</strong>
+                <span class="preset-metric-unit">cm</span>
+              </div>
+            </div>
+            <div class="preset-metric-card">
+              <span class="preset-metric-label">Height</span>
+              <div class="preset-metric-value">
+                <strong>${p.heightCm}</strong>
+                <span class="preset-metric-unit">cm</span>
+              </div>
+            </div>
+            <div class="preset-metric-card capacity">
+              <span class="preset-metric-label">Capacity</span>
+              <div class="preset-metric-value highlight">
+                <strong>${vol}</strong>
+                <span class="preset-metric-unit">ml</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Action Footer -->
+          <div class="preset-card-footer">
             <div>
               ${isRecent ? `
                 <span class="preset-status-pill active">
-                  <i class="fa-solid fa-circle-check"></i> Active for Scans
+                  <i class="fa-solid fa-check-double"></i> Current Scanner Preset
                 </span>
               ` : `
                 <button type="button" class="btn-use-as-scan-box btn-use-for-scanner" data-id="${p.id}">
-                  <i class="fa-solid fa-check"></i> Use for Scans
+                  <i class="fa-solid fa-crosshairs"></i> Set as Active
                 </button>
               `}
             </div>
 
-            <div class="lunchbox-card-actions">
+            <div class="preset-card-actions">
               <button type="button" class="btn-preset-action btn-edit-preset" data-id="${p.id}">
                 <i class="fa-solid fa-pen-to-square"></i> Edit
               </button>
-              <button type="button" class="btn-preset-action danger btn-delete-preset" data-id="${p.id}" title="Delete lunchbox preset">
+              <button type="button" class="btn-preset-action danger btn-delete-preset" data-id="${p.id}" title="Delete preset">
                 <i class="fa-solid fa-trash-can"></i>
               </button>
             </div>
@@ -9739,6 +9762,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             }
             showToast(isEdit ? "Preset updated successfully!" : "Preset created successfully!");
             presetModal.classList.remove('open');
+            childrenModuleData.presetsMap.delete(studentId);
             await renderChildrenSectionB();
             await updateScannerPresetDropdown(studentId);
           } else {
