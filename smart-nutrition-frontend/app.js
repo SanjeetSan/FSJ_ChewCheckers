@@ -6486,13 +6486,13 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
           insights.push(`
             <div class="nutrition-highlight-item">
-              <div class="nutrition-highlight-icon" style="background:rgba(245,158,11,0.1); color:var(--accent-amber);">
+              <div class="nutrition-highlight-icon" style="background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-secondary);">
                 <i class="fa-solid fa-chart-pie"></i>
               </div>
               <div style="flex:1; min-width:0;">
                 <div style="display:flex; justify-content:space-between; align-items:baseline;">
                   <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Plate Completion</span>
-                  <strong style="font-size:0.95rem; font-weight:800; color:var(--accent-amber);">${completionRate}% Eaten</strong>
+                  <strong style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${completionRate}% Eaten</strong>
                 </div>
                 <div style="font-size:0.775rem; color:var(--text-secondary); margin-top:0.15rem;">
                   Average plate waste is <strong>${cappedWaste}%</strong> across logged meals
@@ -6504,13 +6504,13 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           if (report.topConsumedFoodItems && report.topConsumedFoodItems.length > 0) {
             insights.push(`
               <div class="nutrition-highlight-item">
-                <div class="nutrition-highlight-icon" style="background:rgba(99,102,241,0.1); color:var(--primary);">
+                <div class="nutrition-highlight-icon" style="background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-secondary);">
                   <i class="fa-solid fa-utensils"></i>
                 </div>
                 <div style="flex:1; min-width:0;">
                   <div style="display:flex; justify-content:space-between; align-items:baseline;">
                     <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Top Consumed Item</span>
-                    <strong style="font-size:0.9rem; font-weight:800; color:var(--primary);">${report.topConsumedFoodItems[0]}</strong>
+                    <strong style="font-size:0.9rem; font-weight:800; color:var(--text-primary);">${report.topConsumedFoodItems[0]}</strong>
                   </div>
                   <div style="font-size:0.775rem; color:var(--text-secondary); margin-top:0.15rem;">
                     Highest student consumption rate in this class period
@@ -6522,13 +6522,13 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
           insights.push(`
             <div class="nutrition-highlight-item">
-              <div class="nutrition-highlight-icon" style="background:rgba(16,185,129,0.1); color:var(--accent-green);">
+              <div class="nutrition-highlight-icon" style="background:var(--bg-page); border:1px solid var(--border-subtle); color:var(--text-secondary);">
                 <i class="fa-solid fa-circle-check"></i>
               </div>
               <div style="flex:1; min-width:0;">
                 <div style="display:flex; justify-content:space-between; align-items:baseline;">
                   <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Intake Compliance</span>
-                  <strong style="font-size:0.9rem; font-weight:800; color:var(--accent-green);">${cappedWaste <= 25 ? 'Healthy' : 'Needs Review'}</strong>
+                  <strong style="font-size:0.9rem; font-weight:800; color:var(--text-primary);">${cappedWaste <= 25 ? 'Healthy' : 'Needs Review'}</strong>
                 </div>
                 <div style="font-size:0.775rem; color:var(--text-secondary); margin-top:0.15rem;">
                   ${cappedWaste <= 25 ? 'Most students are meeting daily lunch caloric targets' : 'Portion adjustments recommended for low intake students'}
