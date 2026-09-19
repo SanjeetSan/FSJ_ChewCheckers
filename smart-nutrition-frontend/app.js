@@ -7385,14 +7385,24 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
                     </div>
                   </div>
 
+                  <div class="attention-student-meter">
+                    <div class="attention-student-meter-info">
+                      <span>Meal Clearance Progress</span>
+                      <strong>${currentPct}% Consumed</strong>
+                    </div>
+                    <div class="attention-student-meter-track">
+                      <div class="attention-student-meter-fill" style="width: ${Math.min(100, Math.max(5, currentPct))}%;"></div>
+                    </div>
+                  </div>
+
                   <div class="attention-student-actions">
                     ${studentMeal ? `
                       <button class="btn-action-primary btn-action-review-meal" data-meal-id="${studentMeal.id}" data-student-name="${escapedName}" data-current-pct="${currentPct}">
-                        <i class="fa-solid fa-camera"></i> Review
+                        <i class="fa-solid fa-camera"></i> Review Clearance
                       </button>
                     ` : ''}
                     <button class="btn-action-outline btn-action-chat-parent" data-parent-id="${s.parentId || ''}" data-student-name="${escapedName}" data-reason="${reasonText.replace(/"/g, '&quot;')}">
-                      <i class="fa-solid fa-comments"></i> Message
+                      <i class="fa-solid fa-comments"></i> Message Parent
                     </button>
                     <button class="btn-action-outline btn-action-view-profile" data-student-id="${s.id}">
                       <i class="fa-solid fa-id-card"></i> Profile
@@ -7497,8 +7507,8 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
                   <div style="font-size:0.775rem; color:var(--text-secondary); margin-top:1px;">Highest student clearance rate</div>
                 </div>
               </div>
-              <span style="font-size:0.8rem; font-weight:700; color:#C7D2FE; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.25); padding:4px 11px; border-radius:6px; white-space:nowrap;">
-                ${topFood}
+              <span class="badge-dish-top">
+                <i class="fa-solid fa-star"></i> ${topFood}
               </span>
             </div>
           `);
@@ -7515,9 +7525,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
                   <div style="font-size:0.775rem; color:var(--text-secondary); margin-top:1px;">${needsReview ? `${lowConsStudents.length} student${lowConsStudents.length > 1 ? 's' : ''} with low intake` : 'All students meeting nutrition targets'}</div>
                 </div>
               </div>
-              <span style="font-size:0.75rem; font-weight:700; padding:4px 10px; border-radius:6px; white-space:nowrap; background:${needsReview ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)'}; color:${needsReview ? '#FBBF24' : '#34D399'}; border:1px solid ${needsReview ? 'rgba(245,158,11,0.25)' : 'rgba(16,185,129,0.25)'};">
-                ${needsReview ? 'Needs Review' : 'Optimal'}
-              </span>
+              ${needsReview ? '<span class="badge-compliance-warning"><i class="fa-solid fa-triangle-exclamation"></i> Needs Review</span>' : '<span class="badge-compliance-optimal"><i class="fa-solid fa-circle-check"></i> Optimal Balance</span>'}
             </div>
           `);
 

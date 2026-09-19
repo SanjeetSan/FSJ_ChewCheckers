@@ -8435,48 +8435,21 @@ select option:checked {
 .teacher-kpi-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--r-card);
-  padding: 1.15rem 1.25rem;
+  border-radius: var(--r-xl);
+  padding: 1.25rem 1.35rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: relative;
   overflow: hidden;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .teacher-kpi-card:hover {
   transform: translateY(-2px);
   border-color: rgba(99, 102, 241, 0.35);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35);
-}
-
-.teacher-kpi-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: transparent;
-  transition: opacity 0.2s ease;
-  opacity: 0.85;
-}
-
-.teacher-kpi-card.kpi-primary::before {
-  background: linear-gradient(90deg, #6366F1, #818CF8);
-}
-
-.teacher-kpi-card.kpi-green::before {
-  background: linear-gradient(90deg, #10B981, #34D399);
-}
-
-.teacher-kpi-card.kpi-amber::before {
-  background: linear-gradient(90deg, #F59E0B, #FBBF24);
-}
-
-.teacher-kpi-card.kpi-blue::before {
-  background: linear-gradient(90deg, #3B82F6, #60A5FA);
 }
 
 .teacher-kpi-content {
@@ -8585,16 +8558,215 @@ select option:checked {
 
 /* Nutrition Highlights rows */
 .nutrition-highlight-row {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-md);
-  padding: 0.95rem 1.1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--r-lg);
+  padding: 1.1rem 1.25rem;
   transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .nutrition-highlight-row:hover {
-  border-color: rgba(99, 102, 241, 0.3);
-  background: rgba(99, 102, 241, 0.02);
+  border-color: rgba(99, 102, 241, 0.35);
+  background: rgba(99, 102, 241, 0.03);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.25);
+}
+
+/* Modern KPI Sub-pills */
+.kpi-sub-pill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.kpi-sub-pill.verified {
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.kpi-sub-pill.pending {
+  color: #F59E0B;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.kpi-sub-pill.neutral {
+  color: #94A3B8;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Modern Attention Student Card */
+.attention-student-card {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: var(--r-lg) !important;
+  padding: 1.15rem 1.25rem !important;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.attention-student-card:hover {
+  border-color: rgba(244, 63, 94, 0.35) !important;
+  background: rgba(244, 63, 94, 0.03) !important;
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.25);
+}
+
+.attention-student-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.attention-student-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.attention-student-avatar {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, #F43F5E 0%, #BE123C 100%) !important;
+  color: #FFFFFF !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1rem !important;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.35);
+}
+
+.attention-student-name {
+  font-size: 1rem !important;
+  font-weight: 800;
+  color: #FFFFFF;
+  font-family: 'Outfit', sans-serif;
+}
+
+.attention-student-code {
+  font-size: 0.72rem;
+  color: #94A3B8 !important;
+  font-family: monospace;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.attention-student-badge {
+  padding: 4px 11px !important;
+  font-size: 0.725rem !important;
+  font-weight: 700;
+  border-radius: 999px !important;
+  background: rgba(244, 63, 94, 0.12) !important;
+  color: #FDA4AF !important;
+  border: 1px solid rgba(244, 63, 94, 0.25) !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.attention-student-meter {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+}
+
+.attention-student-meter-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.attention-student-meter-info strong {
+  color: #FBBF24;
+  font-weight: 700;
+}
+
+.attention-student-meter-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.attention-student-meter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #F43F5E 0%, #F59E0B 100%);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.attention-student-actions {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  flex-wrap: wrap;
+}
+
+.badge-dish-top {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #C7D2FE;
+  background: rgba(99, 102, 241, 0.14);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  padding: 4px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.badge-compliance-warning {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  background: rgba(245, 158, 11, 0.12);
+  color: #FBBF24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.badge-compliance-optimal {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  background: rgba(16, 185, 129, 0.12);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 
