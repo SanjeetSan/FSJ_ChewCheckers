@@ -1399,24 +1399,32 @@
           <!-- Class Header Summary -->
           <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--r-xl); padding:1.25rem 1.5rem; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
             <div>
-              <h2 style="font-size:1.25rem; font-weight:800; margin:0 0 0.25rem 0;" id="manageStudentsClassDesc">Manage Class Students</h2>
-              <div style="display:flex; gap:1rem; font-size:0.8rem; color:var(--text-muted); flex-wrap:wrap;">
-                <span><i class="fa-solid fa-key" style="color:var(--primary)"></i> Active Class Code: <strong id="manageStudentsClassCode" style="color:var(--text-primary)">N/A</strong></span>
+              <h2 style="font-size:1.25rem; font-weight:800; margin:0 0 0.35rem 0;" id="manageStudentsClassDesc">Manage Class Students</h2>
+              <div style="display:flex; gap:0.75rem; font-size:0.8rem; color:var(--text-muted); flex-wrap:wrap; align-items:center;">
+                <span><i class="fa-solid fa-key" style="color:var(--primary); margin-right:4px;"></i> Active Class Code: <strong id="manageStudentsClassCode" style="color:var(--text-primary); font-family:monospace; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); padding:2px 7px; border-radius:6px; font-weight:700;">N/A</strong></span>
                 <span>•</span>
-                <span><i class="fa-solid fa-users" style="color:var(--primary)"></i> Total Enrolled: <strong id="manageStudentsTotalCount" style="color:var(--text-primary)">0</strong></span>
+                <span><i class="fa-solid fa-users" style="color:var(--primary); margin-right:4px;"></i> Total Enrolled: <strong id="manageStudentsTotalCount" style="color:var(--text-primary)">0</strong></span>
               </div>
             </div>
-            <button class="btn-action-primary" id="btnOpenLinkStudentModal" style="padding:0.6rem 1.25rem; font-size:0.875rem;">
+            <button class="btn-action-primary" id="btnOpenLinkStudentModal" style="height:38px; padding:0 1.25rem; font-size:0.85rem; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; gap:6px;">
               <i class="fa-solid fa-user-plus"></i> Link Existing Student
             </button>
           </div>
 
           <!-- Class Roster Management Card -->
           <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.5rem;">
-              <div>
-                <h3 style="font-size:1.1rem; margin:0;"><i class="fa-solid fa-address-book" style="color:var(--primary)"></i> Class Members Roster</h3>
-                <small style="color:var(--text-muted)">Manage active class members and linking permissions</small>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.75rem;">
+              <div style="display:flex; align-items:center; gap:0.75rem;">
+                <div style="width:40px; height:40px; border-radius:10px; background:linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0.05) 100%); border:1px solid rgba(99,102,241,0.25); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.15rem; flex-shrink:0;">
+                  <i class="fa-solid fa-address-book"></i>
+                </div>
+                <div>
+                  <h3 style="font-size:1.1rem; margin:0; font-weight:800; display:flex; align-items:center; gap:0.5rem;">
+                    <span>Class Members Roster</span>
+                    <span id="rosterMembersCountBadge" style="font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:999px; background:rgba(99, 102, 241, 0.1); color:var(--primary); border:1px solid rgba(99, 102, 241, 0.2);">0 Students</span>
+                  </h3>
+                  <small style="color:var(--text-muted); font-size:0.8rem;">Manage active class members and linking permissions</small>
+                </div>
               </div>
             </div>
 
@@ -2367,41 +2375,52 @@
 
   <!-- LINK EXISTING STUDENT MODAL -->
   <div class="modal-backdrop" id="linkStudentModal">
-    <div class="modal-container" style="max-width:550px;">
+    <div class="modal-container" style="max-width:560px;">
       <div class="modal-title-row">
-        <h3 style="font-size:1.15rem;"><i class="fa-solid fa-user-plus" style="color:var(--primary)"></i> Link Existing Student</h3>
+        <h3 style="font-size:1.15rem; display:flex; align-items:center; gap:0.6rem;">
+          <div style="width:34px; height:34px; border-radius:8px; background:linear-gradient(135deg, var(--primary), #818CF8); color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0;">
+            <i class="fa-solid fa-user-plus"></i>
+          </div>
+          <span>Link Existing Student</span>
+        </h3>
         <button class="modal-close-btn" id="btnCloseLinkStudentModal">&times;</button>
       </div>
-      <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:1rem;">
-        Search and select an eligible student to link to your class. Eligible students are active and not currently assigned to any class.
+      <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:1.15rem; line-height:1.45;">
+        Search and select an eligible student to link to your class roster. Eligible students are active and not currently assigned to any class.
       </p>
 
-      <div class="form-group" style="margin-bottom:1rem;">
-        <div style="display:flex; gap:0.5rem;">
-          <input type="text" id="linkStudentSearch" class="form-control" placeholder="Search by student name or code (e.g. STU-123456)..." style="flex:1;">
-          <button class="btn-action-primary" id="btnSearchEligibleStudents" style="padding:0 1.25rem;"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+      <div style="display:flex; gap:0.6rem; margin-bottom:1.15rem;">
+        <div style="position:relative; flex:1;">
+          <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:0.85rem; pointer-events:none;"></i>
+          <input type="text" id="linkStudentSearch" class="form-input" placeholder="Search by student name or code (e.g. STU-123456)..." style="width:100%; padding-left:2.4rem; height:40px; font-size:0.85rem;">
         </div>
+        <button class="btn-action-primary" id="btnSearchEligibleStudents" style="height:40px; padding:0 1.25rem; font-size:0.85rem; font-weight:700; border-radius:10px; display:inline-flex; align-items:center; gap:6px; flex-shrink:0;">
+          Search
+        </button>
       </div>
 
-      <div style="max-height:250px; overflow-y:auto; border:1px solid var(--border-subtle); border-radius:var(--r-md); background:var(--bg-page); margin-bottom:1.25rem;" id="eligibleStudentsContainer">
-        <table class="table-chewcheckers" style="margin:0;">
-          <thead>
+      <div style="max-height:280px; overflow-y:auto; border:1px solid var(--border-subtle); border-radius:var(--r-md); background:var(--bg-page); margin-bottom:1.25rem;" id="eligibleStudentsContainer">
+        <table class="table-chewcheckers" style="margin:0; width:100%;">
+          <thead style="position:sticky; top:0; background:var(--bg-card); z-index:2; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
             <tr>
-              <th style="padding:0.5rem 0.75rem;">Name</th>
-              <th style="padding:0.5rem 0.75rem;">Code</th>
-              <th style="padding:0.5rem 0.75rem; text-align:right;">Action</th>
+              <th style="padding:0.65rem 1rem;">STUDENT</th>
+              <th style="padding:0.65rem 1rem;">STUDENT CODE</th>
+              <th style="padding:0.65rem 1rem; text-align:right;">ACTION</th>
             </tr>
           </thead>
           <tbody id="eligibleStudentsList">
             <tr>
-              <td colspan="3" style="text-align:center; padding:1.5rem; color:var(--text-muted);">Enter search or click search to view eligible students</td>
+              <td colspan="3" style="text-align:center; padding:1.75rem; color:var(--text-muted); font-size:0.85rem;">
+                <i class="fa-solid fa-magnifying-glass" style="font-size:1.25rem; margin-bottom:0.4rem; display:block; opacity:0.6;"></i>
+                Enter search query or click Search to view eligible students
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
 
       <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
-        <button class="btn-action-outline" id="btnCancelLinkStudent" style="padding:0.5rem 1rem;">Cancel</button>
+        <button class="btn-action-outline" id="btnCancelLinkStudent" style="padding:0.45rem 1.25rem; font-size:0.85rem; border-radius:8px;">Cancel</button>
       </div>
     </div>
   </div>

@@ -2731,23 +2731,27 @@ body.dark-theme .ai-composer-input {
 
 /* Scrollbars */
 .chat-messages::-webkit-scrollbar,
-#chatContactsList::-webkit-scrollbar {
+#chatContactsList::-webkit-scrollbar,
+#eligibleStudentsContainer::-webkit-scrollbar {
   width: 5px;
 }
 
 .chat-messages::-webkit-scrollbar-track,
-#chatContactsList::-webkit-scrollbar-track {
+#chatContactsList::-webkit-scrollbar-track,
+#eligibleStudentsContainer::-webkit-scrollbar-track {
   background: transparent;
 }
 
 .chat-messages::-webkit-scrollbar-thumb,
-#chatContactsList::-webkit-scrollbar-thumb {
+#chatContactsList::-webkit-scrollbar-thumb,
+#eligibleStudentsContainer::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.12);
   border-radius: 10px;
 }
 
 .chat-messages::-webkit-scrollbar-thumb:hover,
-#chatContactsList::-webkit-scrollbar-thumb:hover {
+#chatContactsList::-webkit-scrollbar-thumb:hover,
+#eligibleStudentsContainer::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.25);
 }
 

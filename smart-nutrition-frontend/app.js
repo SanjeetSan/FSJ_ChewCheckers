@@ -5590,17 +5590,46 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       return;
     }
 
+    const rosterCountBadge = document.getElementById('rosterMembersCountBadge');
+    if (rosterCountBadge) rosterCountBadge.textContent = `${students ? students.length : 0} Students`;
+
     const studentRows = students.map(s => {
+      const initial = (s.name || 'S').trim().charAt(0).toUpperCase();
+      const rollText = (s.rollNumber && s.rollNumber !== 'N/A' && s.rollNumber !== 'ROLL-101') ? s.rollNumber : '';
+      const code = s.studentCode || ('STU-' + s.id);
+
       return `
         <tr>
-          <td><strong>${s.name}</strong><div style="font-size:0.75rem; color:var(--text-muted)">Roll: ${s.rollNumber || 'N/A'}</div></td>
-          <td><code style="font-size:0.8rem; background:var(--bg-page); padding:0.2rem 0.4rem; border-radius:var(--r-sm); color:var(--primary); font-weight:700;">${s.studentCode}</code></td>
-          <td>${s.gender || 'N/A'}</td>
-          <td>${s.dateOfBirth ? formatDateDDMMYYYY(s.dateOfBirth) : 'N/A'}</td>
-          <td>
-            <div style="display:flex; gap:0.35rem; justify-content:flex-end;">
-              <button class="btn-action-outline btn-view-profile" data-student-id="${s.id}" style="padding:0.25rem 0.5rem; font-size:0.75rem;"><i class="fa-solid fa-user"></i> Profile</button>
-              <button class="btn-action-outline btn-unlink-student" data-student-id="${s.id}" data-student-name="${s.name}" style="padding:0.25rem 0.5rem; font-size:0.75rem; color:var(--accent-rose); border-color:var(--accent-rose);"><i class="fa-solid fa-user-minus"></i> Unlink</button>
+          <td style="padding:0.85rem 1rem;">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, var(--primary), #818CF8); color:#FFFFFF; font-weight:700; font-size:0.875rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 6px rgba(99,102,241,0.25);">
+                ${initial}
+              </div>
+              <div>
+                <div style="font-weight:700; color:var(--text-primary); font-size:0.9rem;">${s.name}</div>
+                ${rollText ? `<div style="font-size:0.75rem; color:var(--text-muted); font-weight:500;">Roll: ${rollText}</div>` : ''}
+              </div>
+            </div>
+          </td>
+          <td style="padding:0.85rem 1rem;">
+            <span style="font-family:monospace; font-size:0.8rem; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.22); color:var(--primary); font-weight:700; padding:3px 8px; border-radius:6px;">
+              ${code}
+            </span>
+          </td>
+          <td style="padding:0.85rem 1rem; color:var(--text-secondary); font-weight:500; font-size:0.85rem;">
+            ${s.gender || 'N/A'}
+          </td>
+          <td style="padding:0.85rem 1rem; color:var(--text-secondary); font-weight:500; font-size:0.85rem; font-variant-numeric:tabular-nums;">
+            <i class="fa-regular fa-calendar" style="margin-right:0.35rem; font-size:0.75rem; color:var(--text-muted);"></i>${s.dateOfBirth ? formatDateDDMMYYYY(s.dateOfBirth) : 'N/A'}
+          </td>
+          <td style="padding:0.85rem 1rem; text-align:right;">
+            <div style="display:inline-flex; gap:0.5rem; justify-content:flex-end;">
+              <button class="btn-action-outline btn-view-profile" data-student-id="${s.id}" style="height:32px; padding:0 12px; font-size:0.8rem; font-weight:600; border-radius:8px; display:inline-flex; align-items:center; gap:5px;">
+                <i class="fa-solid fa-id-card"></i> Profile
+              </button>
+              <button class="btn-action-outline btn-unlink-student" data-student-id="${s.id}" data-student-name="${s.name}" style="height:32px; padding:0 12px; font-size:0.8rem; font-weight:600; border-radius:8px; display:inline-flex; align-items:center; gap:5px; color:var(--accent-rose); border-color:rgba(239,68,68,0.3); background:rgba(239,68,68,0.06);">
+                <i class="fa-solid fa-user-xmark"></i> Unlink
+              </button>
             </div>
           </td>
         </tr>
@@ -6194,15 +6223,39 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       if (res.ok) {
         const students = await res.json() || [];
         if (students.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No eligible students found matching query.</td></tr>`;
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="3" style="text-align:center; padding:2rem; color:var(--text-muted);">
+                <i class="fa-solid fa-user-slash" style="font-size:1.5rem; margin-bottom:0.5rem; display:block; opacity:0.5;"></i>
+                No eligible unassigned students found.
+              </td>
+            </tr>
+          `;
         } else {
           tbody.innerHTML = students.map(s => {
+            const initial = (s.name || 'S').trim().charAt(0).toUpperCase();
+            const roll = (s.rollNumber && s.rollNumber !== 'N/A' && s.rollNumber !== 'ROLL-101') ? s.rollNumber : '';
+            const code = s.studentCode || ('STU-' + s.id);
             return `
               <tr>
-                <td style="padding:0.75rem;"><strong>${s.name}</strong><div style="font-size:0.75rem; color:var(--text-muted)">Roll: ${s.rollNumber || 'N/A'}</div></td>
-                <td style="padding:0.75rem;"><code style="font-size:0.8rem;">${s.studentCode}</code></td>
-                <td style="padding:0.75rem; text-align:right;">
-                  <button class="btn-action-primary btn-link-student-confirm" data-student-id="${s.id}" data-student-name="${s.name}" style="padding:0.25rem 0.65rem; font-size:0.75rem;">
+                <td style="padding:0.75rem 1rem;">
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <div style="width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, var(--primary), #818CF8); color:#FFFFFF; font-weight:700; font-size:0.85rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 6px rgba(99,102,241,0.25);">
+                      ${initial}
+                    </div>
+                    <div>
+                      <div style="font-weight:700; color:var(--text-primary); font-size:0.875rem;">${s.name}</div>
+                      ${roll ? `<div style="font-size:0.72rem; color:var(--text-muted); font-weight:500;">Roll: ${roll}</div>` : ''}
+                    </div>
+                  </div>
+                </td>
+                <td style="padding:0.75rem 1rem;">
+                  <span style="font-family:monospace; font-size:0.8rem; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.22); color:var(--primary); font-weight:700; padding:3px 8px; border-radius:6px;">
+                    ${code}
+                  </span>
+                </td>
+                <td style="padding:0.75rem 1rem; text-align:right;">
+                  <button class="btn-action-primary btn-link-student-confirm" data-student-id="${s.id}" data-student-name="${s.name}" style="height:32px; padding:0 14px; font-size:0.8rem; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; gap:5px;">
                     <i class="fa-solid fa-link"></i> Link
                   </button>
                 </td>
