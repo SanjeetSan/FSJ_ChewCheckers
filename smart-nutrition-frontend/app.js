@@ -5746,15 +5746,12 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
   function updateCalendarShortcutPills(isoStr) {
     const todayISO = new Date().toISOString().split('T')[0];
     const yesterdayISO = shiftDateByDays(todayISO, -1);
-    const tomorrowISO = shiftDateByDays(todayISO, 1);
 
     const pillToday = document.getElementById('calShortcutToday');
     const pillYesterday = document.getElementById('calShortcutYesterday');
-    const pillTomorrow = document.getElementById('calShortcutTomorrow');
 
     if (pillToday) pillToday.classList.toggle('active', isoStr === todayISO);
     if (pillYesterday) pillYesterday.classList.toggle('active', isoStr === yesterdayISO);
-    if (pillTomorrow) pillTomorrow.classList.toggle('active', isoStr === tomorrowISO);
   }
 
   function selectCustomCalendarDate(isoStr) {
@@ -5848,7 +5845,6 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
     const shortcutToday = document.getElementById('calShortcutToday');
     const shortcutYesterday = document.getElementById('calShortcutYesterday');
-    const shortcutTomorrow = document.getElementById('calShortcutTomorrow');
 
     const todayISO = new Date().toISOString().split('T')[0];
     const dateInput = document.getElementById('teacherSelectedDate');
@@ -5912,14 +5908,6 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         e.stopPropagation();
         const yesterday = shiftDateByDays(new Date().toISOString().split('T')[0], -1);
         selectCustomCalendarDate(yesterday);
-      };
-    }
-
-    if (shortcutTomorrow) {
-      shortcutTomorrow.onclick = (e) => {
-        e.stopPropagation();
-        const tomorrow = shiftDateByDays(new Date().toISOString().split('T')[0], 1);
-        selectCustomCalendarDate(tomorrow);
       };
     }
 

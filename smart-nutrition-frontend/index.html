@@ -1285,7 +1285,6 @@
                     <div class="cal-shortcuts">
                       <button type="button" class="cal-shortcut-pill active" id="calShortcutToday" data-shortcut="today">Today</button>
                       <button type="button" class="cal-shortcut-pill" id="calShortcutYesterday" data-shortcut="yesterday">Yesterday</button>
-                      <button type="button" class="cal-shortcut-pill" id="calShortcutTomorrow" data-shortcut="tomorrow">Tomorrow</button>
                     </div>
 
                     <!-- Weekdays Header -->
@@ -1519,7 +1518,7 @@
         <div class="pane-container" id="pane-teacher-reports">
           
           <!-- Modern Consistent Class Header Card -->
-          <div class="card mb-3 teacher-reports-hero-card" style="padding:1.25rem 1.6rem; border-top: 3px solid var(--primary); background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%); margin-bottom:1.35rem; border-radius:var(--r-xl); box-shadow:0 4px 20px rgba(0,0,0,0.15);">
+          <div class="card mb-3 teacher-reports-hero-card" style="padding:1.25rem 1.6rem; border-top: 3px solid var(--primary); background: linear-gradient(135deg, var(--bg-card) 0%, rgba(99, 102, 241, 0.03) 100%); margin-bottom:1.35rem; border-radius:var(--r-xl); box-shadow:var(--shadow-card);">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
               <div style="display:flex; align-items:center; gap:1.1rem;">
                 <div style="width:48px; height:48px; border-radius:14px; background:linear-gradient(135deg, var(--primary) 0%, #4338CA 100%); color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-size:1.3rem; box-shadow:0 4px 14px rgba(99,102,241,0.35); flex-shrink:0;">
@@ -1528,16 +1527,16 @@
                 <div>
                   <h3 style="font-size:1.25rem; margin:0 0 0.25rem 0; font-weight:800; font-family:'Outfit', sans-serif; display:flex; align-items:center; gap:0.65rem; flex-wrap:wrap;">
                     <span id="teacherReportsClassTitle">Grade 5 Class</span>
-                    <span id="teacherReportsClassCode" style="font-size:0.725rem; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.25); padding:0.18rem 0.65rem; border-radius:999px; color:#818CF8; font-weight:700; font-family:monospace;">CLS-6070</span>
-                    <span style="font-size:0.7rem; font-weight:700; background:rgba(255,255,255,0.06); color:#94A3B8; border:1px solid rgba(255,255,255,0.1); border-radius:999px; padding:0.18rem 0.65rem; display:inline-flex; align-items:center; gap:4px;">
+                    <span id="teacherReportsClassCode" style="font-size:0.725rem; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.25); padding:0.18rem 0.65rem; border-radius:999px; color:var(--primary); font-weight:700; font-family:monospace;">CLS-6070</span>
+                    <span style="font-size:0.7rem; font-weight:700; background:rgba(99,102,241,0.08); color:var(--text-secondary); border:1px solid var(--border-subtle); border-radius:999px; padding:0.18rem 0.65rem; display:inline-flex; align-items:center; gap:4px;">
                       <i class="fa-solid fa-layer-group"></i> Class Analytics
                     </span>
                   </h3>
                   <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; font-size:0.785rem; color:var(--text-secondary);">
                     <span><i class="fa-solid fa-user-tie" style="color:var(--primary); margin-right:0.3rem;"></i>Class Teacher: <strong id="teacherReportsTeacherName" style="color:var(--text-primary); font-weight:600;">Class Teacher</strong></span>
-                    <span style="color:rgba(255,255,255,0.2);">•</span>
+                    <span style="color:var(--border-default);">•</span>
                     <span id="teacherReportTimePeriod"><i class="fa-regular fa-calendar" style="color:var(--primary); margin-right:0.25rem;"></i> Active Range: Loading...</span>
-                    <span style="color:rgba(255,255,255,0.2);">•</span>
+                    <span style="color:var(--border-default);">•</span>
                     <span id="teacherReportLastUpdated" style="color:var(--text-muted); font-weight:500;"></span>
                   </div>
                 </div>
@@ -1562,7 +1561,7 @@
                   <button type="button" class="btn-action-outline" id="btnToggleReportsDropdown" style="height:36px; padding:0 1rem; font-size:0.8rem; font-weight:700; border-radius:var(--r-md); display:inline-flex; align-items:center; gap:0.5rem;">
                     <i class="fa-solid fa-file-export" style="color:var(--primary);"></i> Export Report <i class="fa-solid fa-chevron-down" style="font-size:0.65rem; color:var(--text-muted);"></i>
                   </button>
-                  <div id="reportsDropdownMenu" style="display:none; position:absolute; right:0; top:calc(100% + 6px); background:#0F172A; border:1px solid rgba(255,255,255,0.12); border-radius:var(--r-md); box-shadow:0 16px 36px rgba(0,0,0,0.5); z-index:100; min-width:160px; padding:0.4rem 0;">
+                  <div id="reportsDropdownMenu" style="display:none; position:absolute; right:0; top:calc(100% + 6px); background:var(--bg-card); border:1px solid var(--border-default); border-radius:var(--r-md); box-shadow:var(--shadow-lg); z-index:100; min-width:160px; padding:0.4rem 0;">
                     <button type="button" id="btnExportCsv" style="width:100%; text-align:left; background:none; border:none; padding:0.6rem 1rem; font-size:0.8rem; color:var(--text-primary); cursor:pointer; display:flex; align-items:center; gap:0.6rem; font-weight:500;">
                       <i class="fa-solid fa-file-csv" style="color:var(--accent-green);"></i> Export CSV (.csv)
                     </button>
