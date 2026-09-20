@@ -68,17 +68,88 @@ export async function supabaseLogin(email, password) {
 }
 
 /**
+ * Strict Real Email & Educational Domain Validation
+ * Accepts:
+ *  - Official @gmail.com accounts
+ *  - Any valid commercial domain ending in .com (e.g. @... .com)
+ *  - Any educational / academic domain:
+ *      * .edu / .edu.* (e.g. harvard.edu, school.edu.in, etc.)
+ *      * .ac.* / .ac.in / .ac.uk / .ac.jp (e.g. kce.ac.in, oxford.ac.uk, etc.)
+ *      * .school / .college / .university
+ *  - Valid standard global top-level domains: .org, .net, .in, .co.in, .gov, .io, etc.
+ * Rejects:
+ *  - Malformed email strings (missing @, missing dot, spaces, consecutive dots '..', missing TLD)
+ *  - Disposable, temporary, throwaway, or fake email domains (tempmail, mailinator, etc.)
+ *  - Placeholder / dummy usernames (test, dummy, fake, asdf, etc.)
+ */
+export function isValidEmailDomain(email) {
+  if (!email || typeof email !== 'string') return false;
+  const clean = email.trim().toLowerCase();
+
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!emailRegex.test(clean)) return false;
+  if (clean.includes('..')) return false;
+
+  const parts = clean.split('@');
+  if (parts.length !== 2) return false;
+  const [userPart, domainPart] = parts;
+
+  if (userPart.length < 2) return false;
+
+  // Disallow generic placeholder / dummy usernames
+  const blockedUsernames = ['test', 'asdf', 'fake', 'dummy', 'temp', 'sample', 'example', 'null', 'undefined', 'qwert'];
+  if (blockedUsernames.includes(userPart)) {
+    return false;
+  }
+
+  // Blacklist of disposable, throwaway, or fake email domains
+  const blockedDomainKeywords = [
+    'tempmail', 'temp-mail', 'mailinator', '10minutemail', 'guerrillamail',
+    'trashmail', 'sharklasers', 'dispostable', 'getairmail', 'yopmail',
+    'throwawaymail', 'fakemail', 'mohmal', 'burnermail', 'mytemp',
+    'crazymailing', 'armyspy', 'cuvox', 'dayrep', 'einrot', 'fleckens',
+    'gustr', 'jourrapide', 'rhyta', 'superrito', 'teleworm', 'tinemail',
+    'spambox', 'emailondeck', 'fakeinbox', 'generator.email', 'dropmail',
+    'nada.ltd', 'inboxkitten', 'getnada', 'example.com', 'test.com',
+    'fake.com', 'dummy.com', 'localhost', 'invalid'
+  ];
+
+  if (blockedDomainKeywords.some(bad => domainPart === bad || domainPart.includes(bad))) {
+    return false;
+  }
+
+  // Check educational / institutional domains (e.g. kce.ac.in, harvard.edu, oxford.ac.uk, school.edu.in)
+  const isEducational = 
+    domainPart.endsWith('.edu') || 
+    domainPart.includes('.edu.') ||
+    domainPart.endsWith('.ac.in') || 
+    domainPart.includes('.ac.') || 
+    domainPart.endsWith('.ac.uk') ||
+    domainPart.endsWith('.school') || 
+    domainPart.includes('.school.') ||
+    domainPart.endsWith('.college') ||
+    domainPart.endsWith('.university');
+
+  // Check valid commercial / global domains: e.g. @... .com, @... .org, @... .net, @... .in, etc.
+  const isValidTld = domainPart.endsWith('.com') ||
+    domainPart.endsWith('.org') ||
+    domainPart.endsWith('.net') ||
+    domainPart.endsWith('.in') ||
+    domainPart.endsWith('.co.in') ||
+    domainPart.endsWith('.gov') ||
+    domainPart.endsWith('.io');
+
+  return isEducational || isValidTld;
+}
+
+/**
  * Direct Registration in Supabase `users` table
  */
 export async function supabaseRegister(name, email, password, role = 'PARENT') {
   try {
     const cleanEmail = email.trim().toLowerCase();
-    const parts = cleanEmail.split('@');
-    const domainPart = parts[1] || '';
-    const isGmail = (domainPart === 'gmail.com');
-    const isEdu = domainPart.endsWith('.edu') || domainPart.includes('.edu.');
-    if (!isGmail && !isEdu) {
-      return { success: false, message: 'Only official @gmail.com or @*.edu educational email addresses are accepted' };
+    if (!isValidEmailDomain(cleanEmail)) {
+      return { success: false, message: 'Please enter a valid email address (e.g. name@gmail.com, @... .com, or institutional .ac.in / .edu domain)' };
     }
 
     // Check if user already exists

@@ -32,34 +32,11 @@ import {
   supabaseGetStudentNutritionReports,
   supabaseGetClassMeals,
   supabaseGetTeacherClassReport,
-  supabaseGetStudentInsights
+  supabaseGetStudentInsights,
+  isValidEmailDomain
 } from './supabaseClient.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-
-  // Strict Real Email Domain Validation: Only official @gmail.com or @*.edu email addresses allowed
-  function isValidEmailDomain(email) {
-    if (!email || typeof email !== 'string') return false;
-    const clean = email.trim().toLowerCase();
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(clean)) return false;
-    if (clean.includes('..')) return false;
-
-    const parts = clean.split('@');
-    if (parts.length !== 2) return false;
-    const [userPart, domainPart] = parts;
-
-    // Disallow dummy/placeholder usernames like test@, asdf@, fake@, dummy@, etc.
-    if (['test', 'asdf', 'fake', 'dummy', 'admin', 'user'].includes(userPart)) {
-      return false;
-    }
-
-    // Strictly enforce: Must be either @gmail.com OR an educational .edu domain
-    const isGmail = (domainPart === 'gmail.com');
-    const isEdu = domainPart.endsWith('.edu') || domainPart.includes('.edu.');
-
-    return isGmail || isEdu;
-  }
 
   // Local Date Helper (YYYY-MM-DD in local browser time zone, avoiding UTC midnight offset bugs)
   function getLocalTodayISO() {
@@ -1318,9 +1295,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = authPasswordInput.value.trim();
         const submitBtn = authForm.querySelector('button[type="submit"]');
 
-        // 1. STRICT EMAIL DOMAIN VALIDATION RULE (Only @gmail.com or @*.edu)
+        // 1. STRICT EMAIL DOMAIN VALIDATION RULE
         if (!isValidEmailDomain(email)) {
-          showToast("Only official @gmail.com or @*.edu educational email addresses are accepted.", "error");
+          showToast("Please enter a valid email address (e.g. name@gmail.com, @... .com, or institutional .ac.in / .edu domain).", "error");
           return;
         }
 
@@ -1347,7 +1324,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (!isValidEmailDomain(email)) {
-      showToast("Only official @gmail.com or @*.edu educational email addresses are accepted.", "error");
+      showToast("Please enter a valid email address (e.g. name@gmail.com, @... .com, or institutional .ac.in / .edu domain).", "error");
       return;
     }
 
