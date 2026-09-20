@@ -260,7 +260,7 @@
       <!-- ACCOUNT & SYSTEM ACTIONS PINNED AT BOTTOM -->
       <div class="sidebar-account-section">
         <div class="sidebar-nav-label">ACCOUNT</div>
-        <button class="nav-link-btn" id="btnOpenSettings">
+        <button class="nav-link-btn" data-pane="settings" id="btnOpenSettings">
           <i class="fa-solid fa-gear"></i> <span>Settings</span>
         </button>
         <button class="nav-link-btn" id="btnSwitchRole" style="color:var(--accent-rose);">
@@ -2000,6 +2000,340 @@
           </div>
         </div>
 
+        <!-- PANE 12: APPLICATION SETTINGS & ACCOUNT MANAGEMENT -->
+        <div class="pane-container" id="pane-settings">
+          <div class="settings-page-wrapper">
+            
+            <!-- User Identity & Account Card -->
+            <div class="card settings-profile-header-card">
+              <div class="settings-profile-header-left">
+                <div class="settings-avatar-circle" id="settingsAvatarInitial">U</div>
+                <div class="settings-profile-meta">
+                  <div class="settings-profile-title-row">
+                    <h3 class="settings-profile-name" id="settingsAccountName">User Profile</h3>
+                    <span class="settings-role-badge" id="settingsAccountRoleBadge">Parent</span>
+                  </div>
+                  <p class="settings-profile-email" id="settingsAccountEmail">user@example.com</p>
+                </div>
+              </div>
+              <div class="settings-profile-header-right">
+                <div class="settings-meta-item">
+                  <span class="settings-meta-label">System Account ID</span>
+                  <strong class="settings-meta-val" id="settingsAccountUserId">-</strong>
+                </div>
+                <div class="settings-meta-item">
+                  <span class="settings-meta-label">Auth Security</span>
+                  <span class="settings-status-pill"><i class="fa-solid fa-circle-check"></i> Verified Active</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Segmented Navigation Tabs -->
+            <div class="settings-nav-tabs">
+              <button type="button" class="settings-tab-btn active" data-settings-tab="tab-settings-profile">
+                <i class="fa-solid fa-user-gear"></i> Profile &amp; Security
+              </button>
+              <button type="button" class="settings-tab-btn" data-settings-tab="tab-settings-nutrition">
+                <i class="fa-solid fa-apple-whole"></i> Classroom &amp; Nutrition
+              </button>
+              <button type="button" class="settings-tab-btn" data-settings-tab="tab-settings-appearance">
+                <i class="fa-solid fa-palette"></i> Appearance &amp; Units
+              </button>
+              <button type="button" class="settings-tab-btn" data-settings-tab="tab-settings-alerts">
+                <i class="fa-solid fa-bell"></i> Reminders &amp; Sync
+              </button>
+            </div>
+
+            <!-- TAB 1: PROFILE & SECURITY -->
+            <div class="settings-tab-pane active" id="tab-settings-profile">
+              <div class="card settings-content-card">
+                <div class="settings-section-header">
+                  <div>
+                    <h4 class="settings-section-title"><i class="fa-solid fa-id-card" style="color:var(--primary);"></i> Personal Profile &amp; Security</h4>
+                    <p class="settings-section-subtitle">Update your personal contact details, residential address, or account access credentials.</p>
+                  </div>
+                </div>
+
+                <form id="profileSettingsForm">
+                  <div class="settings-grid-2col">
+                    <div class="form-group">
+                      <label class="form-label" for="profileFullName">Full Legal Name <span style="color:var(--accent-rose);">*</span></label>
+                      <input type="text" id="profileFullName" class="form-input" placeholder="e.g. Sanjeet Kumar" required>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="profileMobile">Mobile Contact Number</label>
+                      <input type="text" id="profileMobile" class="form-input" placeholder="e.g. +91 98765 43210">
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="profileEmail">Email Address <span style="color:var(--accent-rose);">*</span></label>
+                    <input type="email" id="profileEmail" class="form-input" placeholder="e.g. user@example.com" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="profileAddress">Home / Residential Address</label>
+                    <textarea id="profileAddress" class="form-input" rows="2" placeholder="Street address, apartment, city, pincode" style="resize:none;"></textarea>
+                  </div>
+
+                  <div class="settings-card-divider"></div>
+
+                  <div class="settings-section-header" style="margin-top:0.5rem;">
+                    <div>
+                      <h4 class="settings-section-title" style="font-size:0.95rem;"><i class="fa-solid fa-lock" style="color:var(--accent-amber);"></i> Change Password</h4>
+                      <p class="settings-section-subtitle">Leave blank if you want to keep your current authentication password unchanged.</p>
+                    </div>
+                  </div>
+
+                  <div class="form-group" style="max-width:480px;">
+                    <label class="form-label" for="profilePassword">New Password (Min. 8 characters)</label>
+                    <input type="password" id="profilePassword" class="form-input" placeholder="••••••••" autocomplete="new-password">
+                  </div>
+
+                  <div class="settings-form-actions">
+                    <button type="submit" class="btn-submit-primary" id="btnSaveProfile">
+                      <i class="fa-solid fa-floppy-disk"></i> Save Profile Changes
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- TAB 2: NUTRITION & CLASSROOM STANDARDS -->
+            <div class="settings-tab-pane" id="tab-settings-nutrition" style="display:none;">
+              <div class="card settings-content-card">
+                <div class="settings-section-header">
+                  <div>
+                    <h4 class="settings-section-title"><i class="fa-solid fa-bullseye" style="color:var(--accent-teal);"></i> Classroom Nutrition Standards</h4>
+                    <p class="settings-section-subtitle">Set nutritional warning thresholds and enable intelligent AI meal compliance detection.</p>
+                  </div>
+                </div>
+
+                <!-- Low-Intake Alert Threshold -->
+                <div class="form-group" style="margin-bottom:1.5rem;">
+                  <label class="form-label" style="font-weight:700; margin-bottom:0.35rem;">
+                    Low-Intake Alert Threshold
+                  </label>
+                  <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 0.85rem 0; line-height:1.4;">
+                    Flags students under "Students Requiring Attention" and sends teacher follow-up prompts when consumption drops below this target.
+                  </p>
+                  <div class="settings-threshold-pills">
+                    <label class="settings-threshold-pill active" id="thresholdPill50">
+                      <input type="radio" name="settingsThreshold" value="50" checked style="display:none;">
+                      <span class="threshold-badge">&lt; 50%</span>
+                      <span class="threshold-label">Recommended (Balanced Intake Target)</span>
+                    </label>
+                    <label class="settings-threshold-pill" id="thresholdPill40">
+                      <input type="radio" name="settingsThreshold" value="40" style="display:none;">
+                      <span class="threshold-badge">&lt; 40%</span>
+                      <span class="threshold-label">Moderate Intake Target</span>
+                    </label>
+                    <label class="settings-threshold-pill" id="thresholdPill25">
+                      <input type="radio" name="settingsThreshold" value="25" style="display:none;">
+                      <span class="threshold-badge">&lt; 25%</span>
+                      <span class="threshold-label">Critical Warning Only</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Camera & AI Vision Intelligence -->
+                <div class="settings-box-card">
+                  <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.85rem; display:flex; align-items:center; gap:0.45rem;">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent-teal);"></i> Vision Intelligence
+                  </div>
+
+                  <label class="settings-switch-row">
+                    <div class="settings-switch-text">
+                      <div class="settings-switch-title">
+                        <i class="fa-solid fa-compress" style="color:var(--primary); margin-right:0.35rem;"></i>
+                        Auto-Compress Meal Photos
+                      </div>
+                      <div class="settings-switch-sub">Reduces capture payload for faster Gemini AI upload without loss of food recognition fidelity.</div>
+                    </div>
+                    <input type="checkbox" id="settingCompressPhotos" class="custom-checkbox" checked>
+                  </label>
+
+                  <label class="settings-switch-row" style="border-top:1px solid var(--border-subtle); padding-top:0.85rem; margin-top:0.85rem;">
+                    <div class="settings-switch-text">
+                      <div class="settings-switch-title">
+                        <i class="fa-solid fa-shield-virus" style="color:var(--accent-amber); margin-right:0.35rem;"></i>
+                        Classroom Allergen Shield
+                      </div>
+                      <div class="settings-switch-sub">Display top allergy alerts whenever student lunchboxes contain potential peanut, dairy, or gluten allergens.</div>
+                    </div>
+                    <input type="checkbox" id="settingAllergenShield" class="custom-checkbox" checked>
+                  </label>
+                </div>
+
+                <div class="settings-form-actions">
+                  <button type="button" class="btn-submit-primary" id="btnSaveNutritionSettings">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Nutrition Standards
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 3: APPEARANCE & UNITS -->
+            <div class="settings-tab-pane" id="tab-settings-appearance" style="display:none;">
+              <div class="card settings-content-card">
+                <div class="settings-section-header">
+                  <div>
+                    <h4 class="settings-section-title"><i class="fa-solid fa-swatchbook" style="color:var(--primary);"></i> Interface Theme &amp; Measurement Units</h4>
+                    <p class="settings-section-subtitle">Customize the dashboard appearance and choose your regional measurement units.</p>
+                  </div>
+                </div>
+
+                <!-- Theme Toggle Segmented Control -->
+                <div class="form-group" style="margin-bottom:1.5rem;">
+                  <label class="form-label" style="margin-bottom:0.4rem; font-weight:700; display:flex; align-items:center; justify-content:space-between;">
+                    <span>Color Theme</span>
+                    <span style="font-size:0.75rem; color:var(--text-muted); font-weight:500;">Persistent Across Sessions</span>
+                  </label>
+                  <div class="theme-segmented-control" id="themeSegmentedControl" style="max-width:380px;">
+                    <div class="theme-slider-pill" id="themeSliderPill"></div>
+                    <button type="button" class="theme-segment-btn" id="btnThemeLight"><i class="fa-solid fa-sun"></i> Light Theme</button>
+                    <button type="button" class="theme-segment-btn" id="btnThemeDark"><i class="fa-solid fa-moon"></i> Dark Theme</button>
+                  </div>
+                </div>
+
+                <!-- Measurement Unit System -->
+                <div class="form-group" style="margin-bottom:1.5rem;">
+                  <label class="form-label" style="margin-bottom:0.4rem; font-weight:700;">Measurement Unit System</label>
+                  <div class="settings-unit-grid">
+                    <label class="settings-unit-card active" id="unitCardMetric">
+                      <input type="radio" name="settingsUnitSystem" value="metric" checked style="display:none;">
+                      <div class="settings-unit-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+                      <div class="settings-unit-info">
+                        <strong>Metric (Standard)</strong>
+                        <span>Grams (g), Milliliters (ml), kcal</span>
+                      </div>
+                      <i class="fa-solid fa-circle-check settings-unit-check"></i>
+                    </label>
+
+                    <label class="settings-unit-card" id="unitCardImperial">
+                      <input type="radio" name="settingsUnitSystem" value="imperial" style="display:none;">
+                      <div class="settings-unit-icon"><i class="fa-solid fa-ruler"></i></div>
+                      <div class="settings-unit-info">
+                        <strong>Imperial</strong>
+                        <span>Ounces (oz), Fl. oz, kcal</span>
+                      </div>
+                      <i class="fa-solid fa-circle-check settings-unit-check"></i>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Application System Info -->
+                <div class="settings-info-card">
+                  <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.6rem; margin-bottom:0.6rem;">
+                    <span style="color:var(--text-secondary);"><i class="fa-solid fa-code-commit" style="color:var(--primary); margin-right:0.35rem;"></i> ChewCheckers Build</span>
+                    <strong style="color:var(--text-primary); font-family:monospace;">v2.4.2-enterprise</strong>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
+                    <span style="color:var(--text-secondary);"><i class="fa-solid fa-brain" style="color:var(--accent-teal); margin-right:0.35rem;"></i> AI Vision Engine</span>
+                    <span class="badge-status-consumed" style="font-size:0.7rem; font-weight:700;">Gemini 2.5 Pro Vision Active</span>
+                  </div>
+                </div>
+
+                <div class="settings-form-actions">
+                  <button type="button" class="btn-submit-primary" id="btnSaveAppearanceSettings">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Appearance Preferences
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 4: REMINDERS & CONNECTIVITY -->
+            <div class="settings-tab-pane" id="tab-settings-alerts" style="display:none;">
+              <div class="card settings-content-card">
+                <div class="settings-section-header">
+                  <div>
+                    <h4 class="settings-section-title"><i class="fa-solid fa-bell-concierge" style="color:var(--accent-amber);"></i> Reminders, Sync &amp; Maintenance</h4>
+                    <p class="settings-section-subtitle">Configure automated schedule notifications, background synchronization, and local storage cache.</p>
+                  </div>
+                </div>
+
+                <!-- Daily Reminder Timers -->
+                <div class="settings-box-card" style="margin-bottom:1.25rem;">
+                  <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.85rem; display:flex; align-items:center; gap:0.45rem;">
+                    <i class="fa-solid fa-clock" style="color:var(--accent-amber);"></i> Automated Daily Timers
+                  </div>
+
+                  <div class="settings-timer-row">
+                    <div style="display:flex; align-items:flex-start; gap:0.65rem; flex:1;">
+                      <input type="checkbox" id="settingMorningReminder" class="custom-checkbox" checked style="margin-top:0.25rem;">
+                      <div>
+                        <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Morning Pack-Lunch Reminder</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.3;">Notifies parents to verify and photograph prepared lunchbox.</div>
+                      </div>
+                    </div>
+                    <input type="time" id="settingMorningReminderTime" class="settings-time-input" value="07:30">
+                  </div>
+
+                  <div class="settings-timer-row" style="border-top:1px solid var(--border-subtle); padding-top:0.85rem; margin-top:0.85rem;">
+                    <div style="display:flex; align-items:flex-start; gap:0.65rem; flex:1;">
+                      <input type="checkbox" id="settingAfternoonReminder" class="custom-checkbox" checked style="margin-top:0.25rem;">
+                      <div>
+                        <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Afternoon Leftover Audit Reminder</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.3;">Prompts teachers to conduct post-meal leftover inspection.</div>
+                      </div>
+                    </div>
+                    <input type="time" id="settingAfternoonReminderTime" class="settings-time-input" value="13:30">
+                  </div>
+                </div>
+
+                <!-- Live Sync & Message Alerts -->
+                <div class="settings-box-card" style="margin-bottom:1.25rem;">
+                  <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.85rem; display:flex; align-items:center; gap:0.45rem;">
+                    <i class="fa-solid fa-rotate" style="color:var(--primary);"></i> Live Connectivity
+                  </div>
+
+                  <label class="settings-switch-row">
+                    <div class="settings-switch-text">
+                      <div class="settings-switch-title"><i class="fa-solid fa-bell" style="color:var(--primary); margin-right:0.35rem;"></i> In-App Message Alerts</div>
+                      <div class="settings-switch-sub">Instant notifications when teachers or parents send direct inquiries.</div>
+                    </div>
+                    <input type="checkbox" id="settingMsgAlerts" class="custom-checkbox" checked>
+                  </label>
+
+                  <label class="settings-switch-row" style="border-top:1px solid var(--border-subtle); padding-top:0.85rem; margin-top:0.85rem;">
+                    <div class="settings-switch-text">
+                      <div class="settings-switch-title"><i class="fa-solid fa-bolt" style="color:var(--accent-teal); margin-right:0.35rem;"></i> Real-Time Live Sync (5s)</div>
+                      <div class="settings-switch-sub">Background polling to reflect attendance and meal audits across devices.</div>
+                    </div>
+                    <input type="checkbox" id="settingAutoRefresh" class="custom-checkbox" checked>
+                  </label>
+                </div>
+
+                <!-- Technical Gateway URL (Admin Only) -->
+                <div class="form-group" id="adminGatewaySettingBlock" style="display:none; margin-bottom:1.25rem;">
+                  <label class="form-label" for="settingGatewayUrl" style="font-weight:700;">Spring Cloud Gateway URL <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Admin Configuration)</span></label>
+                  <input type="text" id="settingGatewayUrl" class="form-input" value="http://localhost:8088">
+                </div>
+
+                <!-- Maintenance & Clear Cache -->
+                <div class="settings-box-card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                  <div>
+                    <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:0.4rem;">
+                      <i class="fa-solid fa-broom" style="color:var(--accent-rose);"></i> Clear Application Cache
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Purge temporary cached lunchbox thumbnails, AI predictions, and session media.</div>
+                  </div>
+                  <button type="button" class="btn-clear-cache" id="btnClearMediaCache">
+                    <i class="fa-solid fa-trash-can"></i> Purge Offline Cache
+                  </button>
+                </div>
+
+                <div class="settings-form-actions">
+                  <button type="button" class="btn-submit-primary" id="btnSaveAlertsSettings">
+                    <i class="fa-solid fa-floppy-disk"></i> Save System &amp; Connectivity
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
       </main>
     </div>
   </div>
@@ -2144,297 +2478,9 @@
     </div>
   </div>
 
-  <!-- MODAL 4: APPLICATION SETTINGS -->
-  <div class="modal-backdrop" id="settingsModal">
-    <div class="modal-container" style="max-width:540px; width:95%;">
-      <div class="modal-title-row" style="margin-bottom:1rem;">
-        <h3 style="font-size:1.15rem; display:flex; align-items:center; gap:0.55rem;">
-          <span style="display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:var(--r-sm); background:rgba(99,102,241,0.12); color:var(--primary); font-size:0.95rem;">
-            <i class="fa-solid fa-gear"></i>
-          </span>
-          Application Settings
-        </h3>
-        <button class="modal-close-btn" id="btnCloseSettingsModal">&times;</button>
-      </div>
-
-      <!-- Segmented Navigation Tabs -->
-      <div class="settings-nav-tabs">
-        <button type="button" class="settings-tab-btn active" data-settings-tab="tab-settings-appearance">
-          <i class="fa-solid fa-palette"></i> Appearance
-        </button>
-        <button type="button" class="settings-tab-btn" data-settings-tab="tab-settings-nutrition">
-          <i class="fa-solid fa-apple-whole"></i> Nutrition &amp; AI
-        </button>
-        <button type="button" class="settings-tab-btn" data-settings-tab="tab-settings-alerts">
-          <i class="fa-solid fa-bell"></i> Reminders &amp; Sync
-        </button>
-      </div>
-
-      <!-- TAB 1: APPEARANCE & DISPLAY -->
-      <div class="settings-tab-pane" id="tab-settings-appearance">
-        <div style="display:flex; flex-direction:column; gap:1.15rem;">
-          
-          <!-- Theme Toggle Segmented Control -->
-          <div class="form-group" style="margin-bottom:0;">
-            <label class="form-label" style="margin-bottom:0.4rem; font-weight:700; display:flex; align-items:center; justify-content:space-between;">
-              <span>Color Theme</span>
-              <span style="font-size:0.75rem; color:var(--text-muted); font-weight:500;">Persistent Across Sessions</span>
-            </label>
-            <div class="theme-segmented-control" id="themeSegmentedControl">
-              <div class="theme-slider-pill" id="themeSliderPill"></div>
-              <button type="button" class="theme-segment-btn" id="btnThemeLight"><i class="fa-solid fa-sun"></i> Light Theme</button>
-              <button type="button" class="theme-segment-btn" id="btnThemeDark"><i class="fa-solid fa-moon"></i> Dark Theme</button>
-            </div>
-          </div>
-
-          <!-- Measurement Unit System -->
-          <div class="form-group" style="margin-bottom:0;">
-            <label class="form-label" style="margin-bottom:0.4rem; font-weight:700;">Measurement Unit System</label>
-            <div class="settings-unit-grid">
-              <label class="settings-unit-card active" id="unitCardMetric">
-                <input type="radio" name="settingsUnitSystem" value="metric" checked style="display:none;">
-                <div class="settings-unit-icon"><i class="fa-solid fa-scale-balanced"></i></div>
-                <div class="settings-unit-info">
-                  <strong>Metric (Standard)</strong>
-                  <span>Grams (g), Milliliters (ml), kcal</span>
-                </div>
-                <i class="fa-solid fa-circle-check settings-unit-check"></i>
-              </label>
-
-              <label class="settings-unit-card" id="unitCardImperial">
-                <input type="radio" name="settingsUnitSystem" value="imperial" style="display:none;">
-                <div class="settings-unit-icon"><i class="fa-solid fa-ruler"></i></div>
-                <div class="settings-unit-info">
-                  <strong>Imperial</strong>
-                  <span>Ounces (oz), Fl. oz, kcal</span>
-                </div>
-                <i class="fa-solid fa-circle-check settings-unit-check"></i>
-              </label>
-            </div>
-          </div>
-
-          <!-- Application System Info -->
-          <div class="settings-info-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.5rem; margin-bottom:0.5rem;">
-              <span style="color:var(--text-secondary);"><i class="fa-solid fa-code-commit" style="color:var(--primary); margin-right:0.35rem;"></i> ChewCheckers Build</span>
-              <strong style="color:var(--text-primary); font-family:monospace;">v2.4.2-enterprise</strong>
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
-              <span style="color:var(--text-secondary);"><i class="fa-solid fa-brain" style="color:var(--accent-teal); margin-right:0.35rem;"></i> AI Vision Engine</span>
-              <span class="badge-status-consumed" style="font-size:0.7rem; font-weight:700;">Gemini 2.5 Pro Vision Active</span>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- TAB 2: NUTRITION & AI -->
-      <div class="settings-tab-pane" id="tab-settings-nutrition" style="display:none;">
-        <div style="display:flex; flex-direction:column; gap:1.15rem;">
-          
-          <!-- Low-Intake Alert Threshold -->
-          <div class="form-group" style="margin-bottom:0;">
-            <label class="form-label" style="margin-bottom:0.3rem; font-weight:700;">
-              Low-Intake Alert Threshold
-            </label>
-            <p style="font-size:0.775rem; color:var(--text-muted); margin:0 0 0.6rem 0; line-height:1.35;">
-              Flags students under "Students Requiring Attention" and sends teacher follow-up prompts when consumption drops below this target.
-            </p>
-            <div class="settings-threshold-pills">
-              <label class="settings-threshold-pill active" id="thresholdPill50">
-                <input type="radio" name="settingsThreshold" value="50" checked style="display:none;">
-                <span class="threshold-badge">&lt; 50%</span>
-                <span class="threshold-label">Recommended (Balanced Intake Target)</span>
-              </label>
-              <label class="settings-threshold-pill" id="thresholdPill40">
-                <input type="radio" name="settingsThreshold" value="40" style="display:none;">
-                <span class="threshold-badge">&lt; 40%</span>
-                <span class="threshold-label">Moderate Intake Target</span>
-              </label>
-              <label class="settings-threshold-pill" id="thresholdPill25">
-                <input type="radio" name="settingsThreshold" value="25" style="display:none;">
-                <span class="threshold-badge">&lt; 25%</span>
-                <span class="threshold-label">Critical Warning Only</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Camera & AI Optimization Box -->
-          <div class="settings-box-card">
-            <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem;">
-              <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent-teal);"></i> Vision Intelligence
-            </div>
-
-            <!-- Auto-Compress Meal Photos -->
-            <label class="settings-switch-row">
-              <div class="settings-switch-text">
-                <div class="settings-switch-title">
-                  <i class="fa-solid fa-compress" style="color:var(--primary); margin-right:0.35rem;"></i>
-                  Auto-Compress Meal Photos
-                </div>
-                <div class="settings-switch-sub">Reduces capture payload for faster Gemini AI upload without loss of food recognition fidelity.</div>
-              </div>
-              <input type="checkbox" id="settingCompressPhotos" class="custom-checkbox" checked>
-            </label>
-
-            <!-- Allergen Warning Shield -->
-            <label class="settings-switch-row" style="border-top:1px solid var(--border-subtle); padding-top:0.75rem; margin-top:0.75rem;">
-              <div class="settings-switch-text">
-                <div class="settings-switch-title">
-                  <i class="fa-solid fa-shield-virus" style="color:var(--accent-amber); margin-right:0.35rem;"></i>
-                  Classroom Allergen Shield
-                </div>
-                <div class="settings-switch-sub">Display top allergy alerts whenever student lunchboxes contain potential peanut, dairy, or gluten allergens.</div>
-              </div>
-              <input type="checkbox" id="settingAllergenShield" class="custom-checkbox" checked>
-            </label>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- TAB 3: REMINDERS & SYNC -->
-      <div class="settings-tab-pane" id="tab-settings-alerts" style="display:none;">
-        <div style="display:flex; flex-direction:column; gap:1.15rem;">
-          
-          <!-- Daily Reminder Timers -->
-          <div class="settings-box-card">
-            <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem;">
-              <i class="fa-solid fa-clock" style="color:var(--accent-amber);"></i> Automated Daily Timers
-            </div>
-
-            <!-- Morning Pack-Lunch Reminder -->
-            <div class="settings-timer-row">
-              <div style="display:flex; align-items:flex-start; gap:0.65rem; flex:1;">
-                <input type="checkbox" id="settingMorningReminder" class="custom-checkbox" checked style="margin-top:0.25rem;">
-                <div>
-                  <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Morning Pack-Lunch Reminder</div>
-                  <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.3;">Notifies parents to verify and photograph prepared lunchbox.</div>
-                </div>
-              </div>
-              <input type="time" id="settingMorningReminderTime" class="settings-time-input" value="07:30">
-            </div>
-
-            <!-- Afternoon Clearance Reminder -->
-            <div class="settings-timer-row" style="border-top:1px solid var(--border-subtle); padding-top:0.75rem; margin-top:0.75rem;">
-              <div style="display:flex; align-items:flex-start; gap:0.65rem; flex:1;">
-                <input type="checkbox" id="settingAfternoonReminder" class="custom-checkbox" checked style="margin-top:0.25rem;">
-                <div>
-                  <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Afternoon Leftover Audit Reminder</div>
-                  <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.3;">Prompts teachers to conduct post-meal leftover inspection.</div>
-                </div>
-              </div>
-              <input type="time" id="settingAfternoonReminderTime" class="settings-time-input" value="13:30">
-            </div>
-          </div>
-
-          <!-- Live Sync & Message Alerts -->
-          <div class="settings-box-card">
-            <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem;">
-              <i class="fa-solid fa-rotate" style="color:var(--primary);"></i> Live Connectivity
-            </div>
-
-            <label class="settings-switch-row">
-              <div class="settings-switch-text">
-                <div class="settings-switch-title"><i class="fa-solid fa-bell" style="color:var(--primary); margin-right:0.35rem;"></i> In-App Message Alerts</div>
-                <div class="settings-switch-sub">Instant notifications when teachers or parents send direct inquiries.</div>
-              </div>
-              <input type="checkbox" id="settingMsgAlerts" class="custom-checkbox" checked>
-            </label>
-
-            <label class="settings-switch-row" style="border-top:1px solid var(--border-subtle); padding-top:0.75rem; margin-top:0.75rem;">
-              <div class="settings-switch-text">
-                <div class="settings-switch-title"><i class="fa-solid fa-bolt" style="color:var(--accent-teal); margin-right:0.35rem;"></i> Real-Time Live Sync (5s)</div>
-                <div class="settings-switch-sub">Background polling to reflect attendance and meal audits across devices.</div>
-              </div>
-              <input type="checkbox" id="settingAutoRefresh" class="custom-checkbox" checked>
-            </label>
-          </div>
-
-          <!-- Technical Gateway URL (Admin Only) -->
-          <div class="form-group" id="adminGatewaySettingBlock" style="display:none; margin-bottom:0;">
-            <label class="form-label" for="settingGatewayUrl" style="font-weight:700;">Spring Cloud Gateway URL <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Admin Configuration)</span></label>
-            <input type="text" id="settingGatewayUrl" class="form-input" value="http://localhost:8088">
-          </div>
-
-        </div>
-      </div>
-
-      <!-- MODAL FOOTER ACTIONS -->
-      <div class="settings-modal-footer">
-        <button type="button" class="btn-clear-cache" id="btnClearMediaCache" title="Clear offline image preview cache and temporary states">
-          <i class="fa-solid fa-broom"></i> Clear Cache
-        </button>
-        <button type="button" class="btn-submit-primary" id="btnSaveSettings">
-          <i class="fa-solid fa-floppy-disk"></i> Save Settings
-        </button>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- MODAL 4B: PROFILE MANAGEMENT (RELOCATED FROM SETTINGS) -->
-  <div class="modal-backdrop" id="profileManagementModal">
-    <div class="modal-container" style="max-width:550px;">
-      <div class="modal-title-row">
-        <h3 style="font-size:1.15rem;"><i class="fa-solid fa-user-gear" style="color:var(--primary)"></i> Profile Management</h3>
-        <button class="modal-close-btn" id="btnCloseProfileModal">&times;</button>
-      </div>
-
-      <form id="profileManagementForm">
-        <div style="display:flex; flex-direction:column; gap:1.1rem; margin-top:0.5rem; max-height: 70vh; overflow-y: auto; padding-right: 0.5rem;">
-          
-          <!-- Initial Avatar Header Row -->
-          <div style="display:flex; align-items:center; gap:1rem; background:var(--bg-elevated); padding:0.95rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
-            <div style="width:58px; height:58px; border-radius:50%; background:linear-gradient(135deg, var(--primary) 0%, #4F46E5 100%); color:#FFFFFF; font-weight:800; font-size:1.6rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(99,102,241,0.25); flex-shrink:0; text-transform:uppercase;" id="profileAvatarPreviewInitial">
-              J
-            </div>
-            <div style="flex:1;">
-              <strong style="font-size:1.05rem; color:var(--text-primary); display:block;" id="profileAvatarName">User Profile</strong>
-              <p style="font-size:0.775rem; color:var(--text-muted); margin:0.2rem 0 0 0;">Profile avatar badge based on first letter of name</p>
-            </div>
-          </div>
-
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
-            <div class="form-group">
-              <label class="form-label" for="profileFullName">Full Name</label>
-              <input type="text" id="profileFullName" class="form-input" placeholder="e.g. John Doe" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="profileMobile">Mobile Number</label>
-              <input type="text" id="profileMobile" class="form-input" placeholder="e.g. +91 98765 43210">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="profileEmail">Email Address</label>
-            <input type="email" id="profileEmail" class="form-input" placeholder="e.g. user@example.com" required>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="profileAddress">Home Address</label>
-            <textarea id="profileAddress" class="form-input" rows="2" placeholder="Enter home address" style="resize:none; padding:0.5rem;"></textarea>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="profilePassword">New Password (leave blank to keep current)</label>
-            <input type="password" id="profilePassword" class="form-input" placeholder="Min. 8 characters">
-          </div>
-
-          <!-- ACCOUNT INFORMATION (READ-ONLY) -->
-          <div style="background:var(--bg-elevated); padding:0.75rem; border-radius:var(--r-md); border:1px solid var(--border-subtle);">
-            <h5 style="font-size:0.825rem; font-weight:700; color:var(--text-secondary); margin-bottom:0.4rem;">Account Info</h5>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem 1rem; font-size:0.75rem; color:var(--text-secondary);">
-              <div><strong>User ID:</strong> <span id="profileInfoUserId">-</span></div>
-              <div><strong>Account Role:</strong> <span id="profileInfoUserRole">-</span></div>
-            </div>
-          </div>
-
-          <button type="submit" class="btn-submit-primary" style="margin-top:0.25rem; font-weight:700;">Save Profile Changes</button>
-        </div>
-      </form>
-    </div>
-  </div>
+  <!-- LEGACY MODALS MIGRATED TO DEDICATED SETTINGS PAGE (#pane-settings) -->
+  <div id="settingsModal" style="display:none;" aria-hidden="true"></div>
+  <div id="profileManagementModal" style="display:none;" aria-hidden="true"></div>
 
   <!-- MODAL 5: ADD PUBLIC HOLIDAY WITH MULTI-DAY DATE RANGE -->
   <div class="modal-backdrop" id="holidayModal">

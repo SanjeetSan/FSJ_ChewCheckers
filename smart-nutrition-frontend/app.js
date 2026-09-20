@@ -182,9 +182,9 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const VALID_ROLE_PANES = {
-    ADMIN: ['admin-users', 'admin-holidays', 'admin-health'],
-    TEACHER: ['teacher-roster', 'teacher-students', 'teacher-reports', 'ai-scanner', 'messaging'],
-    PARENT: ['parent-overview', 'parent-children', 'children', 'ai-scanner', 'leftover-tracker', 'ai-assistant', 'messaging']
+    ADMIN: ['admin-users', 'admin-holidays', 'admin-health', 'settings'],
+    TEACHER: ['teacher-roster', 'teacher-students', 'teacher-reports', 'ai-scanner', 'messaging', 'settings'],
+    PARENT: ['parent-overview', 'parent-children', 'children', 'ai-scanner', 'leftover-tracker', 'ai-assistant', 'messaging', 'settings']
   };
 
   function getValidPaneForRole(role, candidatePane) {
@@ -431,36 +431,172 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 30000);
   }
 
+  function activateSettingsTab(targetTabId) {
+    const tabBtns = document.querySelectorAll('.settings-tab-btn');
+    const tabPanes = document.querySelectorAll('.settings-tab-pane');
+
+    tabBtns.forEach(btn => {
+      if (btn.getAttribute('data-settings-tab') === targetTabId) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    tabPanes.forEach(pane => {
+      if (pane.id === targetTabId) {
+        pane.classList.add('active');
+        pane.style.display = 'block';
+      } else {
+        pane.classList.remove('active');
+        pane.style.display = 'none';
+      }
+    });
+  }
+
+  function syncUnitSystemUI(unit) {
+    const unitCardMetric = document.getElementById('unitCardMetric');
+    const unitCardImperial = document.getElementById('unitCardImperial');
+    if (unit === 'imperial') {
+      unitCardImperial?.classList.add('active');
+      unitCardMetric?.classList.remove('active');
+      const radio = unitCardImperial?.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
+    } else {
+      unitCardMetric?.classList.add('active');
+      unitCardImperial?.classList.remove('active');
+      const radio = unitCardMetric?.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
+    }
+  }
+
+  function syncThresholdUI(val) {
+    const thresholdPill50 = document.getElementById('thresholdPill50');
+    const thresholdPill40 = document.getElementById('thresholdPill40');
+    const thresholdPill25 = document.getElementById('thresholdPill25');
+    [thresholdPill50, thresholdPill40, thresholdPill25].forEach(pill => {
+      if (!pill) return;
+      const input = pill.querySelector('input[type="radio"]');
+      if (input && String(input.value) === String(val)) {
+        pill.classList.add('active');
+        input.checked = true;
+      } else {
+        pill.classList.remove('active');
+        if (input) input.checked = false;
+      }
+    });
+  }
+
+  async function loadSettingsAndProfileData() {
+    const role = state.role || 'PARENT';
+    const userName = state.user?.name || 'User Profile';
+    const userInitial = userName.trim().charAt(0).toUpperCase() || 'U';
+    const userEmail = state.user?.email || '';
+    const userId = state.user?.id || state.user?.userId || '-';
+
+    // Header Identity Banner
+    const avatarElem = document.getElementById('settingsAvatarInitial');
+    const nameElem = document.getElementById('settingsAccountName');
+    const roleBadge = document.getElementById('settingsAccountRoleBadge');
+    const emailElem = document.getElementById('settingsAccountEmail');
+    const userIdElem = document.getElementById('settingsAccountUserId');
+
+    if (avatarElem) avatarElem.textContent = userInitial;
+    if (nameElem) nameElem.textContent = userName;
+    if (roleBadge) roleBadge.textContent = getFormattedRole(role);
+    if (emailElem) emailElem.textContent = userEmail || 'Registered Account';
+    if (userIdElem) userIdElem.textContent = userId;
+
+    // Profile Form Inputs
+    const nameInput = document.getElementById('profileFullName');
+    const emailInput = document.getElementById('profileEmail');
+    const mobileInput = document.getElementById('profileMobile');
+    const addressInput = document.getElementById('profileAddress');
+    const passInput = document.getElementById('profilePassword');
+
+    if (nameInput) nameInput.value = state.user?.name || '';
+    if (emailInput) emailInput.value = state.user?.email || '';
+    if (mobileInput) mobileInput.value = state.user?.mobileNumber || '';
+    if (addressInput) addressInput.value = state.user?.address || '';
+    if (passInput) passInput.value = '';
+
+    // Unit System
+    const currentUnit = localStorage.getItem('chewchecker_unit_system') || 'metric';
+    syncUnitSystemUI(currentUnit);
+
+    // Threshold
+    const currentThreshold = localStorage.getItem('chewchecker_low_intake_threshold') || '50';
+    syncThresholdUI(currentThreshold);
+
+    // Vision Intelligence
+    const settingCompressPhotos = document.getElementById('settingCompressPhotos');
+    const settingAllergenShield = document.getElementById('settingAllergenShield');
+    if (settingCompressPhotos) settingCompressPhotos.checked = localStorage.getItem('chewchecker_compress_photos') !== 'false';
+    if (settingAllergenShield) settingAllergenShield.checked = localStorage.getItem('chewchecker_allergen_shield') !== 'false';
+
+    // Timers
+    const settingMorningReminder = document.getElementById('settingMorningReminder');
+    const settingMorningReminderTime = document.getElementById('settingMorningReminderTime');
+    const settingAfternoonReminder = document.getElementById('settingAfternoonReminder');
+    const settingAfternoonReminderTime = document.getElementById('settingAfternoonReminderTime');
+    if (settingMorningReminder) settingMorningReminder.checked = localStorage.getItem('chewchecker_morning_reminder') !== 'false';
+    if (settingMorningReminderTime) settingMorningReminderTime.value = localStorage.getItem('chewchecker_morning_reminder_time') || '07:30';
+    if (settingAfternoonReminder) settingAfternoonReminder.checked = localStorage.getItem('chewchecker_afternoon_reminder') !== 'false';
+    if (settingAfternoonReminderTime) settingAfternoonReminderTime.value = localStorage.getItem('chewchecker_afternoon_reminder_time') || '13:30';
+
+    // Connectivity & Sync
+    const settingMsgAlerts = document.getElementById('settingMsgAlerts');
+    const settingAutoRefresh = document.getElementById('settingAutoRefresh');
+    if (settingMsgAlerts) settingMsgAlerts.checked = localStorage.getItem('chewchecker_msg_alerts') !== 'false';
+    if (settingAutoRefresh) settingAutoRefresh.checked = localStorage.getItem('chewchecker_auto_refresh') !== 'false';
+
+    // Admin Gateway URL
+    const settingGatewayUrl = document.getElementById('settingGatewayUrl');
+    const adminGatewaySettingBlock = document.getElementById('adminGatewaySettingBlock');
+    if (settingGatewayUrl) settingGatewayUrl.value = state.gatewayUrl;
+    if (adminGatewaySettingBlock) {
+      adminGatewaySettingBlock.style.display = (state.role === 'ADMIN') ? 'block' : 'none';
+    }
+
+    syncThemeToggleUI();
+
+    // Fetch fresh profile from backend API
+    try {
+      const res = await safeFetch('/api/users/profile', {
+        headers: { 'Authorization': `Bearer ${state.token}` }
+      });
+      if (res.ok) {
+        const u = await res.json();
+        state.user = { ...state.user, ...u };
+        localStorage.setItem('chewchecker_user_data', JSON.stringify(state.user));
+
+        if (nameInput && u.name) nameInput.value = u.name;
+        if (emailInput && u.email) emailInput.value = u.email;
+        if (mobileInput && u.mobileNumber !== undefined) mobileInput.value = u.mobileNumber || '';
+        if (addressInput && u.address !== undefined) addressInput.value = u.address || '';
+
+        const updatedName = u.name || userName;
+        const updatedInitial = updatedName.trim().charAt(0).toUpperCase() || 'U';
+        if (avatarElem) avatarElem.textContent = updatedInitial;
+        if (nameElem) nameElem.textContent = updatedName;
+        if (emailElem && u.email) emailElem.textContent = u.email;
+      }
+    } catch (err) {
+      console.warn("Failed to fetch fresh user profile:", err);
+    }
+  }
+
   function setupThemeSystem() {
     applyTheme();
 
-    const btnOpenSettings = document.getElementById('btnOpenSettings');
-    const btnCloseSettingsModal = document.getElementById('btnCloseSettingsModal');
-    const settingsModal = document.getElementById('settingsModal');
     const btnThemeLight = document.getElementById('btnThemeLight');
     const btnThemeDark = document.getElementById('btnThemeDark');
-    const btnSaveSettings = document.getElementById('btnSaveSettings');
     const btnClearMediaCache = document.getElementById('btnClearMediaCache');
     const settingGatewayUrl = document.getElementById('settingGatewayUrl');
 
     // Unit System Cards
     const unitCardMetric = document.getElementById('unitCardMetric');
     const unitCardImperial = document.getElementById('unitCardImperial');
-
-    function syncUnitSystemUI(unit) {
-      if (unit === 'imperial') {
-        unitCardImperial?.classList.add('active');
-        unitCardMetric?.classList.remove('active');
-        const radio = unitCardImperial?.querySelector('input[type="radio"]');
-        if (radio) radio.checked = true;
-      } else {
-        unitCardMetric?.classList.add('active');
-        unitCardImperial?.classList.remove('active');
-        const radio = unitCardMetric?.querySelector('input[type="radio"]');
-        if (radio) radio.checked = true;
-      }
-    }
-
     if (unitCardMetric) unitCardMetric.addEventListener('click', () => syncUnitSystemUI('metric'));
     if (unitCardImperial) unitCardImperial.addEventListener('click', () => syncUnitSystemUI('imperial'));
 
@@ -468,92 +604,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const thresholdPill50 = document.getElementById('thresholdPill50');
     const thresholdPill40 = document.getElementById('thresholdPill40');
     const thresholdPill25 = document.getElementById('thresholdPill25');
-
-    function syncThresholdUI(val) {
-      [thresholdPill50, thresholdPill40, thresholdPill25].forEach(pill => {
-        if (!pill) return;
-        const input = pill.querySelector('input[type="radio"]');
-        if (input && String(input.value) === String(val)) {
-          pill.classList.add('active');
-          input.checked = true;
-        } else {
-          pill.classList.remove('active');
-          if (input) input.checked = false;
-        }
-      });
-    }
-
     if (thresholdPill50) thresholdPill50.addEventListener('click', () => syncThresholdUI('50'));
     if (thresholdPill40) thresholdPill40.addEventListener('click', () => syncThresholdUI('40'));
     if (thresholdPill25) thresholdPill25.addEventListener('click', () => syncThresholdUI('25'));
 
-    // Tab Navigation within Settings Modal
-    if (settingsModal) {
-      const tabBtns = settingsModal.querySelectorAll('.settings-tab-btn');
-      const tabPanes = settingsModal.querySelectorAll('.settings-tab-pane');
-
-      tabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          const targetTabId = btn.getAttribute('data-settings-tab');
-          tabBtns.forEach(b => b.classList.remove('active'));
-          tabPanes.forEach(p => {
-            p.classList.remove('active');
-            p.style.display = 'none';
-          });
-          btn.classList.add('active');
-          const targetPane = document.getElementById(targetTabId);
-          if (targetPane) {
-            targetPane.classList.add('active');
-            targetPane.style.display = 'block';
-          }
-        });
+    // Tab Navigation within Settings Workspace
+    document.querySelectorAll('.settings-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetTabId = btn.getAttribute('data-settings-tab');
+        if (targetTabId) activateSettingsTab(targetTabId);
       });
-    }
-
-    // Modal Open & Populate State
-    if (btnOpenSettings) btnOpenSettings.addEventListener('click', () => {
-      if (settingGatewayUrl) settingGatewayUrl.value = state.gatewayUrl;
-      
-      const adminGatewaySettingBlock = document.getElementById('adminGatewaySettingBlock');
-      if (adminGatewaySettingBlock) {
-        adminGatewaySettingBlock.style.display = (state.role === 'ADMIN') ? 'block' : 'none';
-      }
-
-      // Unit System
-      const currentUnit = localStorage.getItem('chewchecker_unit_system') || 'metric';
-      syncUnitSystemUI(currentUnit);
-
-      // Threshold
-      const currentThreshold = localStorage.getItem('chewchecker_low_intake_threshold') || '50';
-      syncThresholdUI(currentThreshold);
-
-      // Vision Intelligence
-      const settingCompressPhotos = document.getElementById('settingCompressPhotos');
-      const settingAllergenShield = document.getElementById('settingAllergenShield');
-      if (settingCompressPhotos) settingCompressPhotos.checked = localStorage.getItem('chewchecker_compress_photos') !== 'false';
-      if (settingAllergenShield) settingAllergenShield.checked = localStorage.getItem('chewchecker_allergen_shield') !== 'false';
-
-      // Timers
-      const settingMorningReminder = document.getElementById('settingMorningReminder');
-      const settingMorningReminderTime = document.getElementById('settingMorningReminderTime');
-      const settingAfternoonReminder = document.getElementById('settingAfternoonReminder');
-      const settingAfternoonReminderTime = document.getElementById('settingAfternoonReminderTime');
-      if (settingMorningReminder) settingMorningReminder.checked = localStorage.getItem('chewchecker_morning_reminder') !== 'false';
-      if (settingMorningReminderTime) settingMorningReminderTime.value = localStorage.getItem('chewchecker_morning_reminder_time') || '07:30';
-      if (settingAfternoonReminder) settingAfternoonReminder.checked = localStorage.getItem('chewchecker_afternoon_reminder') !== 'false';
-      if (settingAfternoonReminderTime) settingAfternoonReminderTime.value = localStorage.getItem('chewchecker_afternoon_reminder_time') || '13:30';
-
-      // Connectivity & Sync
-      const settingMsgAlerts = document.getElementById('settingMsgAlerts');
-      const settingAutoRefresh = document.getElementById('settingAutoRefresh');
-      if (settingMsgAlerts) settingMsgAlerts.checked = localStorage.getItem('chewchecker_msg_alerts') !== 'false';
-      if (settingAutoRefresh) settingAutoRefresh.checked = localStorage.getItem('chewchecker_auto_refresh') !== 'false';
-
-      if (settingsModal) settingsModal.classList.add('open');
-      syncThemeToggleUI();
     });
-
-    if (btnCloseSettingsModal) btnCloseSettingsModal.addEventListener('click', () => settingsModal?.classList.remove('open'));
 
     // Clear Cache Button
     if (btnClearMediaCache) {
@@ -593,58 +654,76 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast("Switched to Dark Theme");
     });
 
-    if (btnSaveSettings) btnSaveSettings.addEventListener('click', () => {
-      if (settingGatewayUrl && state.role === 'ADMIN') {
-        state.gatewayUrl = settingGatewayUrl.value.trim() || 'http://localhost:8088';
-        localStorage.setItem('chewchecker_gateway', state.gatewayUrl);
-      }
+    const btnSaveNutritionSettings = document.getElementById('btnSaveNutritionSettings');
+    if (btnSaveNutritionSettings) {
+      btnSaveNutritionSettings.addEventListener('click', () => {
+        const selectedThreshold = document.querySelector('input[name="settingsThreshold"]:checked')?.value || '50';
+        localStorage.setItem('chewchecker_low_intake_threshold', selectedThreshold);
 
-      // Unit System
-      const selectedUnit = document.querySelector('input[name="settingsUnitSystem"]:checked')?.value || 'metric';
-      localStorage.setItem('chewchecker_unit_system', selectedUnit);
+        const settingCompressPhotos = document.getElementById('settingCompressPhotos');
+        const settingAllergenShield = document.getElementById('settingAllergenShield');
+        if (settingCompressPhotos) localStorage.setItem('chewchecker_compress_photos', settingCompressPhotos.checked);
+        if (settingAllergenShield) localStorage.setItem('chewchecker_allergen_shield', settingAllergenShield.checked);
 
-      // Low Intake Alert Threshold
-      const selectedThreshold = document.querySelector('input[name="settingsThreshold"]:checked')?.value || '50';
-      localStorage.setItem('chewchecker_low_intake_threshold', selectedThreshold);
+        showToast("Classroom nutrition standards saved successfully!");
 
-      // Vision Intelligence
-      const settingCompressPhotos = document.getElementById('settingCompressPhotos');
-      const settingAllergenShield = document.getElementById('settingAllergenShield');
-      if (settingCompressPhotos) localStorage.setItem('chewchecker_compress_photos', settingCompressPhotos.checked);
-      if (settingAllergenShield) localStorage.setItem('chewchecker_allergen_shield', settingAllergenShield.checked);
+        if (state.role === 'TEACHER' && typeof loadTeacherReports === 'function') {
+          loadTeacherReports();
+        }
+        if (state.role === 'PARENT' && typeof loadParentDashboard === 'function') {
+          loadParentDashboard();
+        }
+      });
+    }
 
-      // Timers
-      const settingMorningReminder = document.getElementById('settingMorningReminder');
-      const settingMorningReminderTime = document.getElementById('settingMorningReminderTime');
-      const settingAfternoonReminder = document.getElementById('settingAfternoonReminder');
-      const settingAfternoonReminderTime = document.getElementById('settingAfternoonReminderTime');
-      if (settingMorningReminder) localStorage.setItem('chewchecker_morning_reminder', settingMorningReminder.checked);
-      if (settingMorningReminderTime) localStorage.setItem('chewchecker_morning_reminder_time', settingMorningReminderTime.value || '07:30');
-      if (settingAfternoonReminder) localStorage.setItem('chewchecker_afternoon_reminder', settingAfternoonReminder.checked);
-      if (settingAfternoonReminderTime) localStorage.setItem('chewchecker_afternoon_reminder_time', settingAfternoonReminderTime.value || '13:30');
+    const btnSaveAppearanceSettings = document.getElementById('btnSaveAppearanceSettings');
+    if (btnSaveAppearanceSettings) {
+      btnSaveAppearanceSettings.addEventListener('click', () => {
+        const selectedUnit = document.querySelector('input[name="settingsUnitSystem"]:checked')?.value || 'metric';
+        localStorage.setItem('chewchecker_unit_system', selectedUnit);
+        showToast("Appearance & measurement units saved successfully!");
+      });
+    }
 
-      // Connectivity & Sync
-      const settingMsgAlerts = document.getElementById('settingMsgAlerts');
-      const settingAutoRefresh = document.getElementById('settingAutoRefresh');
-      if (settingMsgAlerts) localStorage.setItem('chewchecker_msg_alerts', settingMsgAlerts.checked);
-      if (settingAutoRefresh) localStorage.setItem('chewchecker_auto_refresh', settingAutoRefresh.checked);
+    const btnSaveAlertsSettings = document.getElementById('btnSaveAlertsSettings');
+    if (btnSaveAlertsSettings) {
+      btnSaveAlertsSettings.addEventListener('click', () => {
+        const settingMorningReminder = document.getElementById('settingMorningReminder');
+        const settingMorningReminderTime = document.getElementById('settingMorningReminderTime');
+        const settingAfternoonReminder = document.getElementById('settingAfternoonReminder');
+        const settingAfternoonReminderTime = document.getElementById('settingAfternoonReminderTime');
+        if (settingMorningReminder) localStorage.setItem('chewchecker_morning_reminder', settingMorningReminder.checked);
+        if (settingMorningReminderTime) localStorage.setItem('chewchecker_morning_reminder_time', settingMorningReminderTime.value || '07:30');
+        if (settingAfternoonReminder) localStorage.setItem('chewchecker_afternoon_reminder', settingAfternoonReminder.checked);
+        if (settingAfternoonReminderTime) localStorage.setItem('chewchecker_afternoon_reminder_time', settingAfternoonReminderTime.value || '13:30');
 
-      showToast("Settings saved successfully!");
-      settingsModal?.classList.remove('open');
+        const settingMsgAlerts = document.getElementById('settingMsgAlerts');
+        const settingAutoRefresh = document.getElementById('settingAutoRefresh');
+        if (settingMsgAlerts) localStorage.setItem('chewchecker_msg_alerts', settingMsgAlerts.checked);
+        if (settingAutoRefresh) localStorage.setItem('chewchecker_auto_refresh', settingAutoRefresh.checked);
 
-      // Dynamically re-evaluate views with new threshold and settings
-      if (state.role === 'TEACHER' && typeof loadTeacherReports === 'function') {
-        loadTeacherReports();
-      }
-      if (state.role === 'PARENT' && typeof loadParentDashboard === 'function') {
-        loadParentDashboard();
-      }
-    });
+        if (settingGatewayUrl && state.role === 'ADMIN') {
+          state.gatewayUrl = settingGatewayUrl.value.trim() || 'http://localhost:8088';
+          localStorage.setItem('chewchecker_gateway', state.gatewayUrl);
+        }
+
+        showToast("Reminders & connectivity settings saved!");
+      });
+    }
+
+    const btnSaveSettings = document.getElementById('btnSaveSettings');
+    if (btnSaveSettings) {
+      btnSaveSettings.addEventListener('click', () => {
+        btnSaveNutritionSettings?.click();
+        btnSaveAppearanceSettings?.click();
+        btnSaveAlertsSettings?.click();
+      });
+    }
 
     // Start background reminder timers
     setupReminderTimers();
 
-    // Wire Profile Management modal triggers (Avatar / Name / Profile Badge)
+    // Wire Profile Management
     setupProfileManagement();
   }
 
@@ -658,9 +737,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function setupProfileManagement() {
-    const profileModal = document.getElementById('profileManagementModal');
-    const btnCloseProfileModal = document.getElementById('btnCloseProfileModal');
-    const profileForm = document.getElementById('profileManagementForm');
+    const profileForm = document.getElementById('profileSettingsForm') || document.getElementById('profileManagementForm');
     const userProfileBadge = document.getElementById('userProfileBadge');
     const aiUserProfileBadge = document.getElementById('aiUserProfileBadge');
     const msgUserProfileBadge = document.getElementById('msgUserProfileBadge');
@@ -674,8 +751,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (aiUserProfileBadge) aiUserProfileBadge.onclick = triggerProfileModal;
     if (msgUserProfileBadge) msgUserProfileBadge.onclick = triggerProfileModal;
 
-    if (btnCloseProfileModal) btnCloseProfileModal.addEventListener('click', () => profileModal?.classList.remove('open'));
-
     if (profileForm) {
       profileForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -684,70 +759,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  async function openProfileManagementModal() {
-    const profileModal = document.getElementById('profileManagementModal');
-    if (!profileModal) return;
-
-    const passInput = document.getElementById('profilePassword');
-    const fileInput = document.getElementById('profileAvatarFile');
-    const preview = document.getElementById('profileAvatarPreview');
-
-    if (passInput) passInput.value = '';
-    if (fileInput) fileInput.value = '';
-
-    const role = state.role || 'PARENT';
-    const initialElem = document.getElementById('profileAvatarPreviewInitial');
-    const nameHeaderElem = document.getElementById('profileAvatarName');
-
-    const userName = state.user?.name || 'User Profile';
-    const userInitial = userName.trim().charAt(0).toUpperCase() || 'U';
-
-    if (initialElem) initialElem.textContent = userInitial;
-    if (nameHeaderElem) nameHeaderElem.textContent = userName;
-
-    const userIdElem = document.getElementById('profileInfoUserId');
-    const userRoleElem = document.getElementById('profileInfoUserRole');
-    if (userIdElem) userIdElem.textContent = state.user?.id || state.user?.userId || '-';
-    if (userRoleElem) userRoleElem.textContent = role;
-
-    try {
-      const res = await safeFetch('/api/users/profile', {
-        headers: { 'Authorization': `Bearer ${state.token}` }
-      });
-      if (res.ok) {
-        const u = await res.json();
-        state.user = { ...state.user, ...u };
-        localStorage.setItem('chewchecker_user_data', JSON.stringify(state.user));
-
-        const nameInput = document.getElementById('profileFullName');
-        const emailInput = document.getElementById('profileEmail');
-        const mobileInput = document.getElementById('profileMobile');
-        const addressInput = document.getElementById('profileAddress');
-
-        if (nameInput) nameInput.value = u.name || '';
-        if (emailInput) emailInput.value = u.email || '';
-        if (mobileInput) mobileInput.value = u.mobileNumber || '';
-        if (addressInput) addressInput.value = u.address || '';
-
-        const updatedName = u.name || userName;
-        const updatedInitial = updatedName.trim().charAt(0).toUpperCase() || 'U';
-        if (initialElem) initialElem.textContent = updatedInitial;
-        if (nameHeaderElem) nameHeaderElem.textContent = updatedName;
-      }
-    } catch (err) {
-      console.error("Failed to fetch user profile:", err);
-      const nameInput = document.getElementById('profileFullName');
-      const emailInput = document.getElementById('profileEmail');
-      const mobileInput = document.getElementById('profileMobile');
-      const addressInput = document.getElementById('profileAddress');
-
-      if (nameInput) nameInput.value = state.user?.name || '';
-      if (emailInput) emailInput.value = state.user?.email || '';
-      if (mobileInput) mobileInput.value = state.user?.mobileNumber || '';
-      if (addressInput) addressInput.value = state.user?.address || '';
-    }
-
-    profileModal.classList.add('open');
+  function openProfileManagementModal() {
+    switchPane('settings');
+    activateSettingsTab('tab-settings-profile');
   }
 
   async function saveProfileChanges() {
@@ -756,7 +770,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileVal = document.getElementById('profileMobile')?.value.trim();
     const addressVal = document.getElementById('profileAddress')?.value.trim();
     const passVal = document.getElementById('profilePassword')?.value.trim();
-    const fileInput = document.getElementById('profileAvatarFile');
 
     if (!nameVal || !emailVal) {
       showToast("Full Name and Email are required.", "error");
@@ -792,36 +805,22 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      let updatedUser = await res.json();
-
-      if (fileInput && fileInput.files && fileInput.files[0]) {
-        const file = fileInput.files[0];
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const picRes = await safeFetch('/api/users/profile/picture', {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${state.token}`
-          },
-          body: formData
-        });
-
-        if (picRes.ok) {
-          const uWithPic = await picRes.json();
-          updatedUser = uWithPic;
-        } else {
-          showToast("Failed to upload profile picture.", "warning");
-        }
-      }
-
+      const updatedUser = await res.json();
       state.user = { ...state.user, ...updatedUser };
       localStorage.setItem('chewchecker_user_data', JSON.stringify(state.user));
 
       updateUserProfileUI();
 
+      const avatarElem = document.getElementById('settingsAvatarInitial');
+      const nameElem = document.getElementById('settingsAccountName');
+      const emailElem = document.getElementById('settingsAccountEmail');
+      const passInput = document.getElementById('profilePassword');
+      if (avatarElem) avatarElem.textContent = (nameVal.charAt(0) || 'U').toUpperCase();
+      if (nameElem) nameElem.textContent = nameVal;
+      if (emailElem) emailElem.textContent = emailVal;
+      if (passInput) passInput.value = '';
+
       showToast("Profile saved successfully!");
-      document.getElementById('profileManagementModal')?.classList.remove('open');
     } catch (err) {
       console.error(err);
       showToast("Error saving profile details.", "error");
@@ -1571,7 +1570,8 @@ document.addEventListener('DOMContentLoaded', () => {
       'admin-users': ['System User Accounts', 'All registered users from the database'],
       'admin-holidays': ['School Closures & Holidays', 'Declare single or multi-day school closures and emergency holidays'],
       'admin-health': ['Microservices Health', 'Spring Cloud Gateway service status'],
-      'messaging': ['Messages', 'Private parent-teacher communications']
+      'messaging': ['Messages', 'Private parent-teacher communications'],
+      'settings': ['Settings & Preferences', 'Manage profile, classroom nutrition standards, appearance, and alerts']
     };
 
     if (paneTitles[validPane] && paneTitle && paneSubtitle) {
@@ -1607,6 +1607,8 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (validPane === 'ai-assistant') {
         updateAiChildContextBadge();
         updateUserProfileUI();
+      } else if (validPane === 'settings') {
+        loadSettingsAndProfileData();
       }
     } catch(err) {
       console.error("Error during pane controller execution:", validPane, err);
