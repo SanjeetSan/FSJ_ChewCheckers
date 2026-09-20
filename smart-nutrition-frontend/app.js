@@ -1182,8 +1182,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCancelOtp = document.getElementById('btnCancelOtp');
     const btnEditTargetEmail = document.getElementById('btnEditTargetEmail');
 
-    // Modern 6-box OTP input controller
+    // Modern 8-box OTP input controller
     const otpCells = document.querySelectorAll('.otp-digit-cell');
+    const totalOtpBoxes = otpCells.length || 8;
     otpCells.forEach((cell, idx) => {
       cell.addEventListener('input', () => {
         const val = cell.value.replace(/\D/g, '');
@@ -1197,7 +1198,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const currentCode = Array.from(document.querySelectorAll('.otp-digit-cell')).map(c => c.value).join('');
-        if (currentCode.length === 6) {
+        if (currentCode.length === totalOtpBoxes) {
           btnVerifyAndRegister?.click();
         }
       });
@@ -1216,7 +1217,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         } else if (e.key === 'ArrowLeft' && idx > 0) {
           document.querySelector(`.otp-digit-cell[data-idx="${idx - 1}"]`)?.focus();
-        } else if (e.key === 'ArrowRight' && idx < 5) {
+        } else if (e.key === 'ArrowRight' && idx < totalOtpBoxes - 1) {
           document.querySelector(`.otp-digit-cell[data-idx="${idx + 1}"]`)?.focus();
         } else if (e.key === 'Enter') {
           e.preventDefault();
@@ -1227,15 +1228,15 @@ document.addEventListener('DOMContentLoaded', () => {
       cell.addEventListener('paste', (e) => {
         e.preventDefault();
         const pasteData = (e.clipboardData || window.clipboardData)?.getData('text') || '';
-        const digits = pasteData.replace(/\D/g, '').slice(0, 6).split('');
+        const digits = pasteData.replace(/\D/g, '').slice(0, totalOtpBoxes).split('');
         const allCells = document.querySelectorAll('.otp-digit-cell');
         allCells.forEach((c, i) => {
           c.value = digits[i] || '';
           if (c.value) c.classList.add('filled');
           else c.classList.remove('filled');
         });
-        if (digits.length >= 6) {
-          allCells[5]?.focus();
+        if (digits.length >= totalOtpBoxes) {
+          allCells[totalOtpBoxes - 1]?.focus();
           btnVerifyAndRegister?.click();
         } else if (allCells[digits.length]) {
           allCells[digits.length]?.focus();
@@ -1252,8 +1253,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnVerifyAndRegister) {
       btnVerifyAndRegister.addEventListener('click', async () => {
         const enteredCode = Array.from(document.querySelectorAll('.otp-digit-cell')).map(c => c.value).join('').trim();
-        if (!enteredCode || enteredCode.length !== 6) {
-          showToast("Please enter all 6 digits of the verification code.", "error");
+        if (!enteredCode || enteredCode.length < 6) {
+          showToast("Please enter the complete verification code.", "error");
           document.querySelector('.otp-digit-cell[data-idx="0"]')?.focus();
           return;
         }
@@ -1308,8 +1309,17 @@ document.addEventListener('DOMContentLoaded', () => {
         state.pendingRegistration.expiresAt = Date.now() + 10 * 60 * 1000;
 
         let emailDispatched = true;
+        const formattedRole = (state.pendingRegistration.role === 'TEACHER') ? 'Teacher' : 'Parent';
         try {
-          const { error: sbResendErr } = await supabase.auth.signInWithOtp({ email: state.pendingRegistration.email });
+          const { error: sbResendErr } = await supabase.auth.signInWithOtp({
+            email: state.pendingRegistration.email,
+            options: {
+              data: {
+                name: state.pendingRegistration.name,
+                role: formattedRole
+              }
+            }
+          });
           if (sbResendErr) {
             console.warn("Supabase auth OTP resend warning:", sbResendErr);
             if (sbResendErr.status === 429 || sbResendErr.code === 'over_email_send_rate_limit') {
@@ -1427,8 +1437,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Dispatch OTP email through Supabase Auth
     let emailDispatched = true;
+    const formattedRole = (role === 'TEACHER') ? 'Teacher' : 'Parent';
     try {
-      const { error: sbOtpErr } = await supabase.auth.signInWithOtp({ email });
+      const { error: sbOtpErr } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          data: {
+            name: name.trim(),
+            role: formattedRole
+          }
+        }
+      });
       if (sbOtpErr) {
         console.warn("Supabase auth OTP dispatch warning:", sbOtpErr);
         if (sbOtpErr.status === 429 || sbOtpErr.code === 'over_email_send_rate_limit') {
@@ -1452,6 +1471,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('registerHeaderBlock')?.classList.add('hidden');
     const authOtpBlock = document.getElementById('authOtpBlock');
     if (authOtpBlock) authOtpBlock.classList.remove('hidden');
+
+    const otpGreetingRoleText = document.getElementById('otpGreetingRoleText');
+    if (otpGreetingRoleText) otpGreetingRoleText.textContent = formattedRole;
+    const otpGreetingNameText = document.getElementById('otpGreetingNameText');
+    if (otpGreetingNameText) otpGreetingNameText.textContent = name ? `${name.trim()}` : '';
 
     const otpTargetEmailText = document.getElementById('otpTargetEmailText');
     if (otpTargetEmailText) otpTargetEmailText.textContent = email;

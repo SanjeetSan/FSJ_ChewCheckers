@@ -172,8 +172,11 @@
               <i class="fa-solid fa-shield-halved"></i>
             </div>
             <h3 style="font-size:1.15rem; font-weight:800; color:var(--text-primary); margin:0.25rem 0 0.2rem 0;">Verify Your Email</h3>
+            <div id="otpGreetingBadge" style="display:inline-flex; align-items:center; gap:0.4rem; background:rgba(99,102,241,0.1); color:var(--primary); font-size:0.82rem; font-weight:700; padding:0.28rem 0.85rem; border-radius:999px; margin-bottom:0.45rem;">
+              <i class="fa-solid fa-hand-wave"></i> Welcome, <span id="otpGreetingRoleText">Parent</span> <span id="otpGreetingNameText"></span>!
+            </div>
             <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.45; margin:0 0 0.5rem 0;">
-              Enter the 6-digit verification code sent to
+              Enter the verification code sent to
               <span class="otp-recipient-pill">
                 <strong id="otpTargetEmailText">user@kce.ac.in</strong>
                 <button type="button" class="btn-edit-target-email" id="btnEditTargetEmail" title="Change email">
@@ -182,7 +185,7 @@
               </span>
             </p>
 
-            <!-- 6 Individual Digit Inputs -->
+            <!-- 8 Individual Digit Inputs -->
             <div class="otp-boxes-grid" id="otpBoxesGrid">
               <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="otp-digit-cell" data-idx="0" autocomplete="off" autofocus>
               <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="otp-digit-cell" data-idx="1" autocomplete="off">
@@ -190,6 +193,8 @@
               <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="otp-digit-cell" data-idx="3" autocomplete="off">
               <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="otp-digit-cell" data-idx="4" autocomplete="off">
               <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="otp-digit-cell" data-idx="5" autocomplete="off">
+              <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="otp-digit-cell" data-idx="6" autocomplete="off">
+              <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="otp-digit-cell" data-idx="7" autocomplete="off">
             </div>
 
 
