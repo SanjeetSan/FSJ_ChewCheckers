@@ -22,7 +22,11 @@ import {
   supabaseSavePostMeal,
   supabaseGetTeacherClasses,
   supabaseGetUsers,
+  supabaseDeleteUser,
+  supabaseUpdateUser,
   supabaseGetHolidays,
+  supabaseSaveHoliday,
+  supabaseDeleteHoliday,
   supabaseGetMessages,
   supabaseSendMessage,
   supabaseGetAllUserMessages,
@@ -1831,16 +1835,19 @@ document.addEventListener('DOMContentLoaded', () => {
       console.warn("Error fetching admin users:", e);
     }
 
-    if (Array.isArray(data) && data.length > 0) {
-      state.users = data.map(u => ({
-        id: u.id,
-        name: u.name || u.email.split('@')[0],
-        email: u.email,
-        role: (u.role || 'PARENT').toUpperCase(),
-        details: u.details || (u.role === 'ADMIN' ? 'System Administrator' : (u.role === 'TEACHER' ? 'Class Teacher' : 'Parent Account')),
-        status: u.status || 'Active',
-        protected: false
-      }));
+    if (Array.isArray(data)) {
+      const deletedIds = JSON.parse(localStorage.getItem('chewchecker_deleted_user_ids') || '[]');
+      state.users = data
+        .filter(u => !deletedIds.includes(u.id))
+        .map(u => ({
+          id: u.id,
+          name: u.name || u.email.split('@')[0],
+          email: u.email,
+          role: (u.role || 'PARENT').toUpperCase(),
+          details: u.details || (u.role === 'ADMIN' ? 'System Administrator' : (u.role === 'TEACHER' ? 'Class Teacher' : 'Parent Account')),
+          status: u.status || 'Active',
+          protected: false
+        }));
       saveStoredUsers(state.users);
     }
     renderUserTable();
@@ -3746,33 +3753,39 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           const payload = { name, email, role, details };
 
           setButtonLoading(submitBtn, true, 'Saving...');
-          // Execute live MySQL update via Gateway 8088, fallback to Auth Service 8081
           try {
-            let res = await fetch(`${state.gatewayUrl}/api/admin/users/${uid}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-            if (!res.ok) {
-              await fetch(`http://localhost:8081/api/admin/users/${uid}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-              });
-            }
+            await supabaseUpdateUser(uid, payload);
+            showToast(`Updated profile for ${name}!`, "success");
           } catch(err) {
+            console.warn("Direct update error, trying safeFetch fallback:", err);
             try {
-              await fetch(`http://localhost:8081/api/admin/users/${uid}`, {
+              await safeFetch(`/api/admin/users/${uid}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
               });
-            } catch(err2) {}
+              showToast(`Updated profile for ${name}!`, "success");
+            } catch(err2) {
+              console.error("Failed to update user:", err2);
+              showToast("Failed to update profile: " + (err2.message || "Unknown error"), "error");
+            }
           } finally {
             setButtonLoading(submitBtn, false);
           }
 
-          showToast(`Updated profile for ${name} in MySQL!`);
+          // Update local state and refresh table
+          const existingIdx = (state.users || []).findIndex(x => x.id === uid);
+          if (existingIdx !== -1) {
+            state.users[existingIdx] = {
+              ...state.users[existingIdx],
+              name,
+              email,
+              role,
+              details
+            };
+            saveStoredUsers(state.users);
+            renderUserTable();
+          }
           await fetchLiveUsersFromBackend();
         }
 
@@ -3991,19 +4004,26 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           if (!deletedIds.includes(uid)) deletedIds.push(uid);
           localStorage.setItem('chewchecker_deleted_user_ids', JSON.stringify(deletedIds));
 
-          // Attempt live delete call via Gateway 8088, fallback to Auth Service 8081
+          // Immediately remove user from local state and update UI table
+          state.users = (state.users || []).filter(x => x.id !== uid);
+          saveStoredUsers(state.users);
+          renderUserTable();
+
+          // Delete user permanently from Supabase Cloud Database
           try {
-            let res = await fetch(`${state.gatewayUrl}/api/admin/users/${uid}`, { method: 'DELETE' });
-            if (!res.ok) {
-              await fetch(`http://localhost:8081/api/admin/users/${uid}`, { method: 'DELETE' });
-            }
-          } catch(e) {
+            await supabaseDeleteUser(uid);
+            showToast(`Removed ${u.name}'s account from system!`, "warning");
+          } catch(err) {
+            console.warn("Direct Supabase delete failed, trying safeFetch fallback:", err);
             try {
-              await fetch(`http://localhost:8081/api/admin/users/${uid}`, { method: 'DELETE' });
-            } catch(e2) {}
+              await safeFetch(`/api/admin/users/${uid}`, { method: 'DELETE' });
+              showToast(`Removed ${u.name}'s account from system!`, "warning");
+            } catch(e2) {
+              console.error("Failed to delete user:", e2);
+              showToast("Error removing from database: " + (e2.message || "Unknown error"), "error");
+            }
           }
 
-          showToast(`Removed ${u.name}'s account from system!`, "warning");
           await fetchLiveUsersFromBackend();
         }
       });
@@ -4211,9 +4231,26 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         const studentId = path.split('/').pop();
         const meals = await supabaseGetMealsForStudent(studentId);
         return new Response(JSON.stringify(meals || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path.startsWith('/api/admin/users/') && options.method === 'DELETE') {
+        const uid = parseInt(path.split('/').pop());
+        await supabaseDeleteUser(uid);
+        return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path.startsWith('/api/admin/users/') && options.method === 'PUT') {
+        const uid = parseInt(path.split('/').pop());
+        const body = typeof options.body === 'string' ? JSON.parse(options.body) : (options.body || {});
+        const updated = await supabaseUpdateUser(uid, body);
+        return new Response(JSON.stringify(updated.user || updated), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if (path === '/api/admin/users') {
         const users = await supabaseGetUsers();
         return new Response(JSON.stringify(users || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path === '/api/admin/holidays' && options.method === 'POST') {
+        const body = typeof options.body === 'string' ? JSON.parse(options.body) : (options.body || {});
+        const saved = await supabaseSaveHoliday(body);
+        return new Response(JSON.stringify(saved), { status: 201, headers: { 'Content-Type': 'application/json' } });
+      } else if (path.startsWith('/api/admin/holidays/') && options.method === 'DELETE') {
+        const hid = parseInt(path.split('/').pop());
+        await supabaseDeleteHoliday(hid);
+        return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if (path === '/api/admin/holidays') {
         const holidays = await supabaseGetHolidays();
         return new Response(JSON.stringify(holidays || []), { status: 200, headers: { 'Content-Type': 'application/json' } });

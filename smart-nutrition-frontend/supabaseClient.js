@@ -1147,6 +1147,67 @@ export async function supabaseGetUsers() {
 }
 
 /**
+ * Delete / Remove User from Supabase
+ */
+export async function supabaseDeleteUser(userId) {
+  try {
+    const uid = parseInt(userId);
+    // 1. Remove parent-student associations
+    await supabase.from('parent_student').delete().eq('parent_id', uid);
+    // 2. Unlink teacher from any classes
+    await supabase.from('classes').update({ teacher_id: null }).eq('teacher_id', uid);
+    // 3. Remove user messages
+    await supabase.from('messages').delete().or(`sender_id.eq.${uid},receiver_id.eq.${uid}`);
+    // 4. Delete user record permanently
+    const { data, error } = await supabase.from('users').delete().eq('id', uid).select();
+    if (error) throw error;
+    return { success: true, data };
+  } catch (err) {
+    console.error('Supabase delete user error:', err);
+    throw err;
+  }
+}
+
+/**
+ * Update User in Supabase
+ */
+export async function supabaseUpdateUser(userId, payload) {
+  try {
+    const uid = parseInt(userId);
+    const updateObj = {};
+    if (payload.name !== undefined) updateObj.name = payload.name.trim();
+    if (payload.email !== undefined) updateObj.email = payload.email.trim().toLowerCase();
+    if (payload.role !== undefined) updateObj.role = payload.role.toUpperCase();
+    if (payload.status !== undefined) updateObj.is_active = (payload.status === 'Active' || payload.status === true);
+    if (payload.mobileNumber !== undefined) updateObj.mobile_number = payload.mobileNumber;
+    if (payload.address !== undefined) updateObj.address = payload.address;
+
+    const { data, error } = await supabase
+      .from('users')
+      .update(updateObj)
+      .eq('id', uid)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return {
+      success: true,
+      user: {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        status: data.is_active ? 'Active' : 'Inactive',
+        details: data.role === 'ADMIN' ? 'System Administrator' : (data.role === 'TEACHER' ? 'Class Teacher' : 'Parent Account')
+      }
+    };
+  } catch (err) {
+    console.error('Supabase update user error:', err);
+    throw err;
+  }
+}
+
+/**
  * Fetch Holidays
  */
 export async function supabaseGetHolidays() {
@@ -1154,13 +1215,74 @@ export async function supabaseGetHolidays() {
     const { data, error } = await supabase
       .from('holidays')
       .select('*')
-      .order('date', { ascending: true });
+      .order('start_date', { ascending: true });
 
     if (error) throw error;
-    return data || [];
+    return (data || []).map(h => ({
+      id: h.id,
+      name: h.name,
+      startDate: h.start_date,
+      endDate: h.end_date || h.start_date,
+      date: h.start_date,
+      duration: h.duration || '1 Day',
+      status: h.status || 'Active Paused'
+    }));
   } catch (err) {
     console.error('Supabase fetch holidays error:', err);
     return [];
+  }
+}
+
+/**
+ * Save Holiday to Supabase
+ */
+export async function supabaseSaveHoliday(holidayData) {
+  try {
+    const payload = {
+      name: holidayData.name.trim(),
+      start_date: holidayData.startDate || holidayData.date,
+      end_date: holidayData.endDate || holidayData.startDate || holidayData.date,
+      duration: holidayData.duration || '1 Day',
+      status: holidayData.status || 'Active Paused'
+    };
+
+    const { data, error } = await supabase
+      .from('holidays')
+      .insert([payload])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return {
+      id: data.id,
+      name: data.name,
+      startDate: data.start_date,
+      endDate: data.end_date,
+      date: data.start_date,
+      duration: data.duration,
+      status: data.status
+    };
+  } catch (err) {
+    console.error('Supabase save holiday error:', err);
+    throw err;
+  }
+}
+
+/**
+ * Delete Holiday from Supabase
+ */
+export async function supabaseDeleteHoliday(holidayId) {
+  try {
+    const { error } = await supabase
+      .from('holidays')
+      .delete()
+      .eq('id', parseInt(holidayId));
+
+    if (error) throw error;
+    return { success: true };
+  } catch (err) {
+    console.error('Supabase delete holiday error:', err);
+    throw err;
   }
 }
 
