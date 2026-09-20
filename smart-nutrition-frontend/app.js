@@ -409,29 +409,37 @@ document.addEventListener('DOMContentLoaded', () => {
       const currentHHMM = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
       const todayDateStr = now.toISOString().split('T')[0];
 
-      // Morning Pack-Lunch Reminder
-      const morningEnabled = localStorage.getItem('chewchecker_morning_reminder') !== 'false';
-      const morningTime = localStorage.getItem('chewchecker_morning_reminder_time') || '07:30';
-      const lastMorningDate = localStorage.getItem('chewchecker_last_morning_reminder');
+      // Morning Pack-Lunch Reminder (Parents only)
+      if (state.role === 'PARENT') {
+        const morningEnabled = localStorage.getItem('chewchecker_morning_reminder') !== 'false';
+        const morningTime = localStorage.getItem('chewchecker_morning_reminder_time') || '07:15';
+        const lastMorningDate = localStorage.getItem('chewchecker_last_morning_reminder');
 
-      if (morningEnabled && currentHHMM === morningTime && lastMorningDate !== todayDateStr) {
-        localStorage.setItem('chewchecker_last_morning_reminder', todayDateStr);
-        showToast("☀️ Morning Reminder: Time to pack lunch and photograph the meal!");
+        if (morningEnabled && currentHHMM === morningTime && lastMorningDate !== todayDateStr) {
+          localStorage.setItem('chewchecker_last_morning_reminder', todayDateStr);
+          showToast("☀️ Morning Reminder: Time to pack lunch and photograph the meal!");
+        }
       }
 
-      // Afternoon Clearance Reminder
-      const afternoonEnabled = localStorage.getItem('chewchecker_afternoon_reminder') !== 'false';
-      const afternoonTime = localStorage.getItem('chewchecker_afternoon_reminder_time') || '13:30';
-      const lastAfternoonDate = localStorage.getItem('chewchecker_last_afternoon_reminder');
+      // Afternoon Clearance Reminder (Teachers & Admins only)
+      if (state.role === 'TEACHER' || state.role === 'ADMIN') {
+        const afternoonEnabled = localStorage.getItem('chewchecker_afternoon_reminder') !== 'false';
+        const afternoonTime = localStorage.getItem('chewchecker_afternoon_reminder_time') || '13:30';
+        const lastAfternoonDate = localStorage.getItem('chewchecker_last_afternoon_reminder');
 
-      if (afternoonEnabled && currentHHMM === afternoonTime && lastAfternoonDate !== todayDateStr) {
-        localStorage.setItem('chewchecker_last_afternoon_reminder', todayDateStr);
-        showToast("🥗 Afternoon Reminder: Time to inspect leftovers and verify plate clearance!");
+        if (afternoonEnabled && currentHHMM === afternoonTime && lastAfternoonDate !== todayDateStr) {
+          localStorage.setItem('chewchecker_last_afternoon_reminder', todayDateStr);
+          showToast("🥗 Afternoon Reminder: Time to inspect leftovers and verify plate clearance!");
+        }
       }
     }, 30000);
   }
 
   function activateSettingsTab(targetTabId) {
+    if (state.role === 'PARENT' && targetTabId === 'tab-settings-nutrition') {
+      targetTabId = 'tab-settings-profile';
+    }
+
     const tabBtns = document.querySelectorAll('.settings-tab-btn');
     const tabPanes = document.querySelectorAll('.settings-tab-pane');
 
@@ -489,6 +497,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function loadSettingsAndProfileData() {
     const role = state.role || 'PARENT';
+    const isParent = (role === 'PARENT');
+    const isTeacher = (role === 'TEACHER');
+    const isAdmin = (role === 'ADMIN');
+
     const userName = state.user?.name || 'User Profile';
     const userInitial = userName.trim().charAt(0).toUpperCase() || 'U';
     const userEmail = state.user?.email || '';
@@ -500,12 +512,68 @@ document.addEventListener('DOMContentLoaded', () => {
     const roleBadge = document.getElementById('settingsAccountRoleBadge');
     const emailElem = document.getElementById('settingsAccountEmail');
     const userIdElem = document.getElementById('settingsAccountUserId');
+    const settingsMetaAccountLabel = document.getElementById('settingsMetaAccountLabel');
 
     if (avatarElem) avatarElem.textContent = userInitial;
     if (nameElem) nameElem.textContent = userName;
     if (roleBadge) roleBadge.textContent = getFormattedRole(role);
     if (emailElem) emailElem.textContent = userEmail || 'Registered Account';
-    if (userIdElem) userIdElem.textContent = userId;
+
+    // Role-tailored Account Meta (Hide raw UUID for parents)
+    if (settingsMetaAccountLabel) {
+      settingsMetaAccountLabel.textContent = isParent ? 'Account Type' : 'System Account ID';
+    }
+    if (userIdElem) {
+      if (isParent) {
+        userIdElem.innerHTML = '<span class="settings-status-pill" style="color:var(--primary); font-family:var(--font-sans); font-size:0.75rem;"><i class="fa-solid fa-house-chimney-user"></i> Family Account</span>';
+      } else {
+        userIdElem.textContent = userId;
+      }
+    }
+
+    // Role-tailored Tabs & Section Headings
+    const tabBtnNutrition = document.getElementById('tabBtnNutrition');
+    const tabAlertsTitle = document.getElementById('tabAlertsTitle');
+    const alertsSectionHeading = document.getElementById('alertsSectionHeading');
+    const alertsSectionSubheading = document.getElementById('alertsSectionSubheading');
+    const btnSaveAlertsSettings = document.getElementById('btnSaveAlertsSettings');
+
+    if (tabBtnNutrition) {
+      tabBtnNutrition.style.display = isParent ? 'none' : 'inline-flex';
+    }
+    if (tabAlertsTitle) {
+      tabAlertsTitle.textContent = isParent ? 'Notifications & Reminders' : 'Reminders & Alerts';
+    }
+    if (alertsSectionHeading) {
+      alertsSectionHeading.textContent = isParent ? 'Notification & Reminder Preferences' : 'Reminders, Sync & Maintenance';
+    }
+    if (alertsSectionSubheading) {
+      alertsSectionSubheading.textContent = isParent
+        ? "Choose when and how you want to be notified about your child's daily meals and teacher messages."
+        : 'Configure automated schedule notifications, background synchronization, and local storage cache.';
+    }
+    if (btnSaveAlertsSettings) {
+      btnSaveAlertsSettings.innerHTML = isParent
+        ? '<i class="fa-solid fa-floppy-disk"></i> Save Notification Preferences'
+        : '<i class="fa-solid fa-floppy-disk"></i> Save System & Connectivity';
+    }
+
+    // Role-tailored Cards (Parent vs Teacher vs Admin)
+    const parentAlertsCard = document.getElementById('parentAlertsCard');
+    const teacherAlertsCard = document.getElementById('teacherAlertsCard');
+    const cacheMaintenanceCard = document.getElementById('cacheMaintenanceCard');
+    const systemInfoCard = document.getElementById('systemInfoCard');
+
+    if (parentAlertsCard) parentAlertsCard.style.display = isParent ? 'block' : 'none';
+    if (teacherAlertsCard) teacherAlertsCard.style.display = isParent ? 'none' : 'block';
+    if (cacheMaintenanceCard) cacheMaintenanceCard.style.display = (isAdmin || isTeacher) ? 'flex' : 'none';
+    if (systemInfoCard) systemInfoCard.style.display = isParent ? 'none' : 'block';
+
+    // If parent is viewing tab-settings-nutrition, navigate to profile
+    const activeTab = document.querySelector('.settings-tab-pane.active');
+    if (isParent && activeTab && activeTab.id === 'tab-settings-nutrition') {
+      activateSettingsTab('tab-settings-profile');
+    }
 
     // Profile Form Inputs
     const nameInput = document.getElementById('profileFullName');
@@ -528,25 +596,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentThreshold = localStorage.getItem('chewchecker_low_intake_threshold') || '50';
     syncThresholdUI(currentThreshold);
 
-    // Vision Intelligence
+    // Vision Intelligence (silent background defaults)
+    if (localStorage.getItem('chewchecker_compress_photos') === null) {
+      localStorage.setItem('chewchecker_compress_photos', 'true');
+    }
     const settingCompressPhotos = document.getElementById('settingCompressPhotos');
     const settingAllergenShield = document.getElementById('settingAllergenShield');
     if (settingCompressPhotos) settingCompressPhotos.checked = localStorage.getItem('chewchecker_compress_photos') !== 'false';
     if (settingAllergenShield) settingAllergenShield.checked = localStorage.getItem('chewchecker_allergen_shield') !== 'false';
 
-    // Timers
+    // Parent Alert Settings
     const settingMorningReminder = document.getElementById('settingMorningReminder');
     const settingMorningReminderTime = document.getElementById('settingMorningReminderTime');
+    const settingMealAuditAlert = document.getElementById('settingMealAuditAlert');
+    const settingParentLowIntakeAlert = document.getElementById('settingParentLowIntakeAlert');
+    const settingParentMsgAlerts = document.getElementById('settingParentMsgAlerts');
+
+    if (settingMorningReminder) settingMorningReminder.checked = localStorage.getItem('chewchecker_morning_reminder') !== 'false';
+    if (settingMorningReminderTime) settingMorningReminderTime.value = localStorage.getItem('chewchecker_morning_reminder_time') || '07:15';
+    if (settingMealAuditAlert) settingMealAuditAlert.checked = localStorage.getItem('chewchecker_meal_audit_alert') !== 'false';
+    if (settingParentLowIntakeAlert) settingParentLowIntakeAlert.checked = localStorage.getItem('chewchecker_low_intake_alert') !== 'false';
+    if (settingParentMsgAlerts) settingParentMsgAlerts.checked = localStorage.getItem('chewchecker_msg_alerts') !== 'false';
+
+    // Teacher & Admin Timers & Connectivity
     const settingAfternoonReminder = document.getElementById('settingAfternoonReminder');
     const settingAfternoonReminderTime = document.getElementById('settingAfternoonReminderTime');
-    if (settingMorningReminder) settingMorningReminder.checked = localStorage.getItem('chewchecker_morning_reminder') !== 'false';
-    if (settingMorningReminderTime) settingMorningReminderTime.value = localStorage.getItem('chewchecker_morning_reminder_time') || '07:30';
-    if (settingAfternoonReminder) settingAfternoonReminder.checked = localStorage.getItem('chewchecker_afternoon_reminder') !== 'false';
-    if (settingAfternoonReminderTime) settingAfternoonReminderTime.value = localStorage.getItem('chewchecker_afternoon_reminder_time') || '13:30';
-
-    // Connectivity & Sync
     const settingMsgAlerts = document.getElementById('settingMsgAlerts');
     const settingAutoRefresh = document.getElementById('settingAutoRefresh');
+
+    if (settingAfternoonReminder) settingAfternoonReminder.checked = localStorage.getItem('chewchecker_afternoon_reminder') !== 'false';
+    if (settingAfternoonReminderTime) settingAfternoonReminderTime.value = localStorage.getItem('chewchecker_afternoon_reminder_time') || '13:30';
     if (settingMsgAlerts) settingMsgAlerts.checked = localStorage.getItem('chewchecker_msg_alerts') !== 'false';
     if (settingAutoRefresh) settingAutoRefresh.checked = localStorage.getItem('chewchecker_auto_refresh') !== 'false';
 
@@ -688,12 +767,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSaveAlertsSettings = document.getElementById('btnSaveAlertsSettings');
     if (btnSaveAlertsSettings) {
       btnSaveAlertsSettings.addEventListener('click', () => {
+        if (state.role === 'PARENT') {
+          const settingMorningReminder = document.getElementById('settingMorningReminder');
+          const settingMorningReminderTime = document.getElementById('settingMorningReminderTime');
+          const settingMealAuditAlert = document.getElementById('settingMealAuditAlert');
+          const settingParentLowIntakeAlert = document.getElementById('settingParentLowIntakeAlert');
+          const settingParentMsgAlerts = document.getElementById('settingParentMsgAlerts');
+
+          if (settingMorningReminder) localStorage.setItem('chewchecker_morning_reminder', settingMorningReminder.checked);
+          if (settingMorningReminderTime) localStorage.setItem('chewchecker_morning_reminder_time', settingMorningReminderTime.value || '07:15');
+          if (settingMealAuditAlert) localStorage.setItem('chewchecker_meal_audit_alert', settingMealAuditAlert.checked);
+          if (settingParentLowIntakeAlert) localStorage.setItem('chewchecker_low_intake_alert', settingParentLowIntakeAlert.checked);
+          if (settingParentMsgAlerts) localStorage.setItem('chewchecker_msg_alerts', settingParentMsgAlerts.checked);
+
+          showToast("Notification preferences saved successfully!");
+          return;
+        }
+
+        // Teacher & Admin save logic
         const settingMorningReminder = document.getElementById('settingMorningReminder');
         const settingMorningReminderTime = document.getElementById('settingMorningReminderTime');
         const settingAfternoonReminder = document.getElementById('settingAfternoonReminder');
         const settingAfternoonReminderTime = document.getElementById('settingAfternoonReminderTime');
         if (settingMorningReminder) localStorage.setItem('chewchecker_morning_reminder', settingMorningReminder.checked);
-        if (settingMorningReminderTime) localStorage.setItem('chewchecker_morning_reminder_time', settingMorningReminderTime.value || '07:30');
+        if (settingMorningReminderTime) localStorage.setItem('chewchecker_morning_reminder_time', settingMorningReminderTime.value || '07:15');
         if (settingAfternoonReminder) localStorage.setItem('chewchecker_afternoon_reminder', settingAfternoonReminder.checked);
         if (settingAfternoonReminderTime) localStorage.setItem('chewchecker_afternoon_reminder_time', settingAfternoonReminderTime.value || '13:30');
 
@@ -707,7 +804,7 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.setItem('chewchecker_gateway', state.gatewayUrl);
         }
 
-        showToast("Reminders & connectivity settings saved!");
+        showToast("System & connectivity settings saved!");
       });
     }
 
