@@ -274,7 +274,12 @@ export async function supabaseGetParentChildren(parentId) {
             id,
             class_name,
             section,
-            class_code
+            class_code,
+            teacher:teacher_id (
+              id,
+              name,
+              email
+            )
           ),
           school:schools (
             id,
@@ -290,6 +295,8 @@ export async function supabaseGetParentChildren(parentId) {
       const s = row.student || {};
       const c = s.class || {};
       const sc = s.school || {};
+      const t = c.teacher || {};
+      const resolvedTeacherName = t.name || 'Class Teacher';
       const classNameFormatted = c.class_name ? `${c.class_name} - ${c.section || 'A'}` : 'Grade 5 - B';
       return {
         id: s.id,
@@ -305,14 +312,16 @@ export async function supabaseGetParentChildren(parentId) {
         className: classNameFormatted,
         classCode: c.class_code || 'CLS-6070',
         classId: c.id,
+        teacherId: t.id || null,
+        teacherEmail: t.email || '',
         studentClass: {
           id: c.id,
           className: c.class_name,
           classCode: c.class_code || 'CLS-6070',
           section: c.section,
-          teacherName: 'Ms. Jothi'
+          teacherName: resolvedTeacherName
         },
-        teacherName: 'Ms. Jothi',
+        teacherName: resolvedTeacherName,
         schoolName: sc.name || 'Greenwood International School',
         schoolId: sc.id,
         relationship: row.relationship || 'Parent',
@@ -441,9 +450,9 @@ export async function supabaseAddChild(parentId, childData) {
         className: 'Grade 5',
         classCode: childData.classCode || 'CLS-6070',
         section: 'B',
-        teacherName: 'Ms. Jothi'
+        teacherName: 'Class Teacher'
       },
-      teacherName: 'Ms. Jothi',
+      teacherName: 'Class Teacher',
       relationship: childData.relationship || 'MOTHER',
       dailyTarget: {
         calories: newStudent.daily_calories,
@@ -557,7 +566,7 @@ export async function supabaseLinkClassCode(studentId, classCode) {
         className: cls.class_name,
         classCode: cls.class_code,
         section: cls.section,
-        teacherName: 'Ms. Jothi'
+        teacherName: 'Class Teacher'
       }
     };
   } catch (err) {

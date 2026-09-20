@@ -2278,7 +2278,7 @@ document.addEventListener('DOMContentLoaded', () => {
           child = null;
         }
 
-        const teacherName = (child && child.teacherName && child.teacherName !== 'N/A') ? child.teacherName : "Jothi Prakash V";
+        const teacherName = (child && child.teacherName && child.teacherName !== 'N/A' && child.teacherName !== 'Class Teacher') ? child.teacherName : "Padmesh T";
         const teacherId = (child && child.teacherId) ? child.teacherId : 2;
         const childName = child ? child.name : '';
         const classInfo = child ? (child.className || child.classCode || '') : '';
@@ -2772,7 +2772,7 @@ document.addEventListener('DOMContentLoaded', () => {
       name: child?.name || 'Student',
       grade: child?.className || child?.classCode || 'Grade 5',
       school: child?.schoolName || 'Greenwood International School',
-      studentId: child?.studentId || child?.id || 'STU-605352',
+      studentId: child?.studentCode || child?.student_code || (child?.id ? 'STU-' + child.id : 'STU-001'),
       targetCalories: targetCal,
       targetProtein: targetProt,
       targetCarbs: targets.lunchCarbsTarget || child?.lunchCarbs || 65,
@@ -4099,15 +4099,25 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     ];
   }
 
+  function getSessionUserId(fallback = 4) {
+    if (state.user?.id) return state.user.id;
+    const email = (state.user?.email || '').toLowerCase();
+    if (email === 'sivanesh8814@gmail.com' || email === 'pradeep@gmail.com') return 83;
+    if (email === 'sreedharuncr7@gmail.com' || email === 'dharun@gmail.com') return 4;
+    if (email === 'padmesh.t@gmail.com' || email === 'jothi@gmail.com') return 2;
+    if (email === 'ssanjeet1407@gmail.com' || email === 'sanjeet@gmail.com') return 1;
+    return fallback;
+  }
+
   async function safeFetch(path, options = {}) {
     // 0. Cloud Database Interceptor: Supabase
     try {
       if (path === '/api/parent/students' || path.startsWith('/api/parent/students')) {
-        const pId = state.user?.id || (state.user?.email === 'pradeep@gmail.com' ? 83 : 4);
+        const pId = getSessionUserId(4);
         const children = await supabaseGetParentChildren(pId);
         return new Response(JSON.stringify(children || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if (path === '/api/parent/student' && options.method === 'POST') {
-        const pId = state.user?.id || (state.user?.email === 'pradeep@gmail.com' ? 83 : 4);
+        const pId = getSessionUserId(4);
         const body = typeof options.body === 'string' ? JSON.parse(options.body) : (options.body || {});
         const newChild = await supabaseAddChild(pId, body);
         return new Response(JSON.stringify(newChild), { status: 201, headers: { 'Content-Type': 'application/json' } });
@@ -4143,14 +4153,14 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
       // 2. Child Profile endpoints (Guarded against /lunchbox-presets paths)
       } else if (path.startsWith('/api/parent/student/') && !path.includes('/lunchbox-presets') && options.method === 'DELETE') {
-        const pId = state.user?.id || (state.user?.email === 'pradeep@gmail.com' ? 83 : 4);
+        const pId = getSessionUserId(4);
         const childId = path.split('/')[4];
         await supabaseDeleteChild(childId, pId);
         return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if (path.startsWith('/api/parent/student/') && !path.includes('/lunchbox-presets') && options.method === 'PUT') {
         const childId = path.split('/')[4];
         if (path.includes('/class')) {
-          const urlObj = new URL('http://dummy.com' + path);
+          const urlObj = new URL('http://localhost' + path);
           const classCode = urlObj.searchParams.get('classCode') || '';
           const updated = await supabaseLinkClassCode(childId, classCode);
           return new Response(JSON.stringify(updated), { status: 200, headers: { 'Content-Type': 'application/json' } });
@@ -4188,20 +4198,20 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         return new Response(JSON.stringify(classes || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if (path.startsWith('/api/messages/history/')) {
         const contactId = parseInt(path.split('/').pop());
-        const currentUserId = state.user?.id || (state.user?.email === 'pradeep@gmail.com' ? 83 : (state.user?.email === 'dharun@gmail.com' ? 4 : 2));
+        const currentUserId = getSessionUserId(2);
         const messages = await supabaseGetMessages(currentUserId, contactId);
         return new Response(JSON.stringify(messages || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if (path === '/api/messages' && options.method === 'POST') {
-        const currentUserId = state.user?.id || (state.user?.email === 'pradeep@gmail.com' ? 83 : (state.user?.email === 'dharun@gmail.com' ? 4 : 2));
+        const currentUserId = getSessionUserId(2);
         const body = typeof options.body === 'string' ? JSON.parse(options.body) : (options.body || {});
         const sent = await supabaseSendMessage(currentUserId, body.receiverId, body.messageText);
         return new Response(JSON.stringify(sent), { status: 201, headers: { 'Content-Type': 'application/json' } });
       } else if (path === '/api/messages') {
-        const currentUserId = state.user?.id || (state.user?.email === 'pradeep@gmail.com' ? 83 : (state.user?.email === 'dharun@gmail.com' ? 4 : 2));
+        const currentUserId = getSessionUserId(2);
         const messages = await supabaseGetAllUserMessages(currentUserId);
         return new Response(JSON.stringify(messages || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if (path.startsWith('/api/teacher/students/eligible')) {
-        const urlObj = new URL('http://dummy.com' + path);
+        const urlObj = new URL('http://localhost' + path);
         const query = urlObj.searchParams.get('query') || '';
         const classCode = urlObj.searchParams.get('classCode') || (state.activeClass?.classCode || 'CLS-6070');
         const eligible = await supabaseGetEligibleStudents(classCode, query);
@@ -4209,7 +4219,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       } else if (path.includes('/link') && path.startsWith('/api/teacher/students/') && options.method === 'POST') {
         const parts = path.split('/');
         const studentId = parseInt(parts[4]);
-        const urlObj = new URL('http://dummy.com' + path);
+        const urlObj = new URL('http://localhost' + path);
         const classCode = urlObj.searchParams.get('classCode') || (state.activeClass?.classCode || 'CLS-6070');
         const linked = await supabaseLinkClassCode(studentId, classCode);
         return new Response(JSON.stringify(linked), { status: 200, headers: { 'Content-Type': 'application/json' } });
@@ -4219,7 +4229,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         await supabaseUnlinkStudent(studentId);
         return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if (path.startsWith('/api/teacher/students')) {
-        const urlObj = new URL('http://dummy.com' + path);
+        const urlObj = new URL('http://localhost' + path);
         const classCode = urlObj.searchParams.get('classCode') || (state.activeClass?.classCode || 'CLS-6070');
         const students = await supabaseGetStudentsByClassCode(classCode);
         return new Response(JSON.stringify(students || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
@@ -5905,9 +5915,9 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const headerClassCode = document.getElementById('teacherHeaderClassCode');
     if (headerClassCode) headerClassCode.textContent = classCode;
     const headerTeacherName = document.getElementById('teacherHeaderTeacherName');
-    if (headerTeacherName && state.user) headerTeacherName.textContent = state.user.name || "Jothi Prakash V";
+    if (headerTeacherName) headerTeacherName.textContent = (state.user && state.user.name) ? state.user.name : "Padmesh T";
     const headerTeacherEmail = document.getElementById('teacherHeaderTeacherEmail');
-    if (headerTeacherEmail && state.user) headerTeacherEmail.textContent = state.user.email || "jothi@gmail.com";
+    if (headerTeacherEmail) headerTeacherEmail.textContent = (state.user && state.user.email) ? state.user.email : "padmesh.t@gmail.com";
 
     const pendingBody = document.getElementById('teacherPendingQueueBody');
 
@@ -7641,7 +7651,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         if (classTitleElem) classTitleElem.textContent = (state.activeClass && state.activeClass.className) ? `${state.activeClass.className} Class` : "Grade 5 Class";
 
         const teacherNameElem = document.getElementById('teacherReportsTeacherName');
-        if (teacherNameElem && state.user) teacherNameElem.textContent = state.user.name || "Jothi Prakash V";
+        if (teacherNameElem) teacherNameElem.textContent = (state.user && state.user.name) ? state.user.name : "Padmesh T";
 
         function formatFriendlyDateRange(rawStr) {
           if (!rawStr) return 'Recent Period';

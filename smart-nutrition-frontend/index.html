@@ -136,7 +136,7 @@
             <label class="form-label" for="authEmail">Email address</label>
             <input type="email" id="authEmail" class="form-input" placeholder="e.g. name@gmail.com, student@kce.ac.in, or school.edu" autocomplete="off" required>
             <span style="font-size:0.74rem; color:var(--text-muted); margin-top:4px; display:flex; align-items:center; gap:0.35rem;">
-              <i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i> Valid email required (@gmail.com, @... .com, or institutional .ac.in / .edu domains)
+              <i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i> Valid email required (Official @gmail.com, standard domains, or academic .ac.in / .edu domains)
             </span>
           </div>
 
@@ -384,7 +384,7 @@
               <div class="onboarding-hero-icon" style="color:var(--primary); font-size:2rem;"><i class="fa-solid fa-child"></i></div>
               <h3 style="font-size:1.5rem; font-weight:800; font-family:'Outfit', sans-serif; color:var(--text-primary); margin:0.5rem 0 0.25rem 0;">Create Child Profile</h3>
               <p style="color:var(--text-secondary); max-width:600px; margin:0 auto; font-size:0.875rem;">
-                Step 1 of 3: Build a personalized child profile. This calculates baseline nutrient targets for daily macro calibration.
+                Step 1 of 3: Build a personalized child profile to calculate daily nutrition targets and monitor school lunch progress.
               </p>
             </div>
             <form id="onboardingChildForm" style="max-width:700px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:1.25rem;">
@@ -422,7 +422,7 @@
               </div>
               <div class="form-group">
                 <label class="form-label" for="obChildClass">Class Code *</label>
-                <input type="text" id="obChildClass" class="form-input" placeholder="e.g. CLS3B-9842" required>
+                <input type="text" id="obChildClass" class="form-input" placeholder="e.g. CLS-6070" required>
                 <small style="color:var(--text-muted); display:block; margin-top:0.25rem;">Ask your teacher for the classroom code</small>
               </div>
               <div class="form-group">
@@ -451,7 +451,7 @@
             <form id="onboardingLinkClassForm" style="max-width:450px; margin:0 auto; display:flex; flex-direction:column; gap:1.25rem;">
               <div class="form-group">
                 <label class="form-label" for="obClassCode" style="text-align:center;">Enter Classroom Code</label>
-                <input type="text" id="obClassCode" class="form-input" placeholder="e.g. CLS3B-9842" required style="text-align:center; font-weight:700; font-size:1.25rem; letter-spacing:1px; padding:0.75rem;">
+                <input type="text" id="obClassCode" class="form-input" placeholder="e.g. CLS-6070" required style="text-align:center; font-weight:700; font-size:1.25rem; letter-spacing:1px; padding:0.75rem;">
                 <small style="color:var(--text-muted); display:block; text-align:center; margin-top:0.35rem;">Ask your child's teacher for their 6-character classroom code</small>
               </div>
               <button type="submit" class="btn-action-primary" style="padding:0.85rem;"><i class="fa-solid fa-link"></i> Link & Proceed to Step 3</button>
@@ -464,7 +464,7 @@
               <div class="onboarding-hero-icon" style="color:var(--primary); font-size:2rem;"><i class="fa-solid fa-box-open"></i></div>
               <h3 style="font-size:1.5rem; font-weight:800; font-family:'Outfit', sans-serif; color:var(--text-primary); margin:0.5rem 0 0.25rem 0;">Calibrate Lunchbox Profile</h3>
               <p style="color:var(--text-secondary); max-width:600px; margin:0 auto; font-size:0.875rem;">
-                Step 3 of 3: Calibrate your child's physical lunchbox volume. Google Gemini Vision uses these exact dimensions to run 3D volumetric analysis and calorie estimations.
+                Step 3 of 3: Calibrate your child's lunchbox dimensions to ensure accurate portion calculations and nutrient estimations.
               </p>
             </div>
             <form id="onboardingLunchboxForm" style="max-width:500px; margin:0 auto; display:flex; flex-direction:column; gap:1.25rem;">
@@ -567,27 +567,27 @@
                 <!-- Protein Progress -->
                 <div class="hero-metric-item">
                   <span class="hero-metric-label">Protein Progress</span>
-                  <span class="hero-metric-value val-protein" id="heroProteinProgress">23g / 24g Protein</span>
+                  <span class="hero-metric-value val-protein" id="heroProteinProgress">—</span>
                   <div class="hero-progress-bar">
-                    <div class="hero-progress-fill fill-protein" id="heroProteinBar" style="width: 95%;"></div>
+                    <div class="hero-progress-fill fill-protein" id="heroProteinBar" style="width: 0%;"></div>
                   </div>
                 </div>
 
                 <!-- Calorie Progress -->
                 <div class="hero-metric-item">
                   <span class="hero-metric-label">Calorie Progress</span>
-                  <span class="hero-metric-value" id="heroCalProgress">625 / 500 kcal</span>
+                  <span class="hero-metric-value" id="heroCalProgress">—</span>
                   <div class="hero-progress-bar">
-                    <div class="hero-progress-fill fill-cal" id="heroCalBar" style="width: 100%;"></div>
+                    <div class="hero-progress-fill fill-cal" id="heroCalBar" style="width: 0%;"></div>
                   </div>
                 </div>
 
                 <!-- Meal Completion % -->
                 <div class="hero-metric-item">
                   <span class="hero-metric-label">Meal Completion</span>
-                  <span class="hero-metric-value val-accent" id="heroMealCompletion">88% Meal Completion</span>
+                  <span class="hero-metric-value val-accent" id="heroMealCompletion">—</span>
                   <div class="hero-progress-bar">
-                    <div class="hero-progress-fill fill-completion" id="heroCompletionBar" style="width: 88%;"></div>
+                    <div class="hero-progress-fill fill-completion" id="heroCompletionBar" style="width: 0%;"></div>
                   </div>
                 </div>
               </div>
@@ -605,7 +605,7 @@
                     Last Updated: <strong id="heroLastUpdatedTime">Not logged today</strong>
                   </span>
                 </div>
-                <span class="hero-status-note" id="heroStatusNote">No lunch logged today. Click "Upload Lunchbox" below to log.</span>
+                <span class="hero-status-note" id="heroStatusNote">No lunch logged today. Use Quick Actions below to upload today's lunchbox.</span>
               </div>
             </div>
 
@@ -781,7 +781,7 @@
               
               <!-- Child Selector Card -->
               <div style="background:var(--bg-page); padding:1rem 1.25rem; border-radius:var(--r-lg); border:1px solid var(--border-subtle); display:flex; flex-direction:column; justify-content:center;">
-                <label style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.45rem; letter-spacing:0.5px;">Selecting Student</label>
+                <label style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:0.45rem; letter-spacing:0.5px;">Active Student Profile</label>
                 <div class="custom-child-dropdown" id="scannerCustomChildDropdown" style="min-width:0; width:100%;">
                   <button type="button" class="custom-child-dropdown-trigger" id="scannerCustomChildDropdownTrigger" aria-haspopup="listbox" aria-expanded="false" style="padding:0.5rem 0.85rem;">
                     <div class="custom-child-avatar" id="scannerCustomChildAvatar" style="width:30px; height:30px; font-size:0.8rem;">S</div>
@@ -829,7 +829,7 @@
                 <i class="fa-solid fa-cloud-arrow-up"></i>
               </div>
               <h3 style="font-size:1.15rem; font-weight:800; color:var(--text-primary); margin:0 0 0.35rem 0;">Click or Drag & Drop Lunchbox Photo</h3>
-              <p style="color:var(--text-muted); font-size:0.85rem; margin:0 0 1.25rem 0;">Supports JPG, PNG, WEBP files for Gemini Vision AI analysis</p>
+              <p style="color:var(--text-muted); font-size:0.85rem; margin:0 0 1.25rem 0;">Supports JPG, PNG, and WEBP lunchbox photos</p>
               <label for="imageFileInput" class="btn-action-primary" style="padding:0.65rem 1.4rem; font-size:0.875rem; font-weight:700; cursor:pointer;">
                 <i class="fa-solid fa-camera"></i> Upload Photo File
               </label>
@@ -910,19 +910,19 @@
                 <div class="scanner-metric-cards-grid">
                   <div class="scanner-metric-card">
                     <span class="scanner-metric-lbl">Calories</span>
-                    <strong id="detCal" class="scanner-metric-val">625 kcal</strong>
+                    <strong id="detCal" class="scanner-metric-val">— kcal</strong>
                   </div>
                   <div class="scanner-metric-card">
                     <span class="scanner-metric-lbl">Protein</span>
-                    <strong id="detProtein" class="scanner-metric-val val-protein">23g</strong>
+                    <strong id="detProtein" class="scanner-metric-val val-protein">— g</strong>
                   </div>
                   <div class="scanner-metric-card">
                     <span class="scanner-metric-lbl">Carbs</span>
-                    <strong id="detCarbs" class="scanner-metric-val">63g</strong>
+                    <strong id="detCarbs" class="scanner-metric-val">— g</strong>
                   </div>
                   <div class="scanner-metric-card">
                     <span class="scanner-metric-lbl">Fiber</span>
-                    <strong id="detFiber" class="scanner-metric-val">6g</strong>
+                    <strong id="detFiber" class="scanner-metric-val">— g</strong>
                   </div>
                 </div>
               </div>
@@ -1010,15 +1010,6 @@
                     <span class="scanner-sub-label">Scan Metadata</span>
                     <strong class="scanner-tech-val" id="scannerTimestampVal">Processed Just Now</strong>
                   </div>
-                </div>
-
-                <!-- Estimated Consumption Slider -->
-                <div id="parentConsumptionBlock" class="scanner-slider-row">
-                  <div class="scanner-slider-header">
-                    <span class="scanner-sub-label">Estimated Consumption</span>
-                    <span id="eatenPercentLabel" class="scanner-slider-val">85% Eaten</span>
-                  </div>
-                  <input type="range" id="eatenRange" min="0" max="100" value="85" class="scanner-slider">
                 </div>
               </div>
             </details>
@@ -1280,8 +1271,8 @@
                     <span id="teacherHeaderClassCode" style="font-size:0.75rem; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); padding:0.15rem 0.55rem; border-radius:6px; color:var(--primary); font-weight:700; font-family:monospace;">CLS-6070</span>
                   </h3>
                   <div style="display:flex; align-items:center; gap:0.65rem; flex-wrap:wrap; font-size:0.775rem; color:var(--text-secondary);">
-                    <span><i class="fa-solid fa-user-tie" style="color:var(--primary); margin-right:0.3rem;"></i>Class Teacher: <strong id="teacherHeaderTeacherName" style="color:var(--text-primary); font-weight:600;">Jothi Prakash V</strong></span>
-                    <span id="teacherHeaderTeacherEmail" style="display:none;">jothi@gmail.com</span>
+                    <span><i class="fa-solid fa-user-tie" style="color:var(--primary); margin-right:0.3rem;"></i>Class Teacher: <strong id="teacherHeaderTeacherName" style="color:var(--text-primary); font-weight:600;">Class Teacher</strong></span>
+                    <span id="teacherHeaderTeacherEmail" style="display:none;"></span>
                   </div>
                 </div>
               </div>
@@ -1574,7 +1565,7 @@
                     </span>
                   </h3>
                   <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; font-size:0.785rem; color:var(--text-secondary);">
-                    <span><i class="fa-solid fa-user-tie" style="color:var(--primary); margin-right:0.3rem;"></i>Class Teacher: <strong id="teacherReportsTeacherName" style="color:var(--text-primary); font-weight:600;">Jothi Prakash V</strong></span>
+                    <span><i class="fa-solid fa-user-tie" style="color:var(--primary); margin-right:0.3rem;"></i>Class Teacher: <strong id="teacherReportsTeacherName" style="color:var(--text-primary); font-weight:600;">Class Teacher</strong></span>
                     <span style="color:rgba(255,255,255,0.2);">•</span>
                     <span id="teacherReportTimePeriod"><i class="fa-regular fa-calendar" style="color:var(--primary); margin-right:0.25rem;"></i> Active Range: Loading...</span>
                     <span style="color:rgba(255,255,255,0.2);">•</span>
@@ -1845,7 +1836,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem;">
               <div>
                 <h3 style="font-size:1.1rem;"><i class="fa-solid fa-users-gear" style="color:var(--primary)"></i> System Registered User Accounts</h3>
-                <small style="color:var(--text-muted);">Overview of registered Parents, Teachers & Admins (Default Admin: sanjeet@gmail.com / sanjeet123)</small>
+                <small style="color:var(--text-muted);">Overview of registered school accounts across Parents, Teachers, and Administrators</small>
               </div>
               <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
                 <div class="admin-search-box">
@@ -2333,11 +2324,11 @@
                 <div class="settings-info-card" id="systemInfoCard">
                   <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.6rem; margin-bottom:0.6rem;">
                     <span style="color:var(--text-secondary);"><i class="fa-solid fa-code-commit" style="color:var(--primary); margin-right:0.35rem;"></i> ChewCheckers Build</span>
-                    <strong style="color:var(--text-primary); font-family:monospace;">v2.4.2-enterprise</strong>
+                    <strong style="color:var(--text-primary); font-family:monospace;">v2.5.0 (Production)</strong>
                   </div>
                   <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
                     <span style="color:var(--text-secondary);"><i class="fa-solid fa-brain" style="color:var(--accent-teal); margin-right:0.35rem;"></i> AI Vision Engine</span>
-                    <span class="badge-status-consumed" style="font-size:0.7rem; font-weight:700;">Gemini 2.5 Pro Vision Active</span>
+                    <span class="badge-status-consumed" style="font-size:0.7rem; font-weight:700;">Gemini Vision AI Engine Active</span>
                   </div>
                 </div>
 
@@ -2486,10 +2477,9 @@
                   </div>
                 </div>
 
-                <!-- Technical Gateway URL (Admin Only) -->
-                <div class="form-group" id="adminGatewaySettingBlock" style="display:none; margin-bottom:1.25rem;">
-                  <label class="form-label" for="settingGatewayUrl" style="font-weight:700;">Spring Cloud Gateway URL <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Admin Configuration)</span></label>
-                  <input type="text" id="settingGatewayUrl" class="form-input" value="http://localhost:8088">
+                <!-- Legacy Backend Configuration (Retained for DOM compatibility) -->
+                <div id="adminGatewaySettingBlock" style="display:none;" aria-hidden="true">
+                  <input type="hidden" id="settingGatewayUrl" value="http://localhost:8088">
                 </div>
 
                 <!-- Maintenance & Clear Cache (Teacher & Admin) -->
@@ -2537,12 +2527,12 @@
 
         <div class="form-group">
           <label class="form-label" for="inputUserName">Full Name</label>
-          <input type="text" id="inputUserName" class="form-input" placeholder="e.g. Sanjeet Admin" required>
+          <input type="text" id="inputUserName" class="form-input" placeholder="e.g. Full Name" required>
         </div>
 
         <div class="form-group">
           <label class="form-label" for="inputUserEmail">Email Address</label>
-          <input type="email" id="inputUserEmail" class="form-input" placeholder="e.g. sanjeet@gmail.com" required>
+          <input type="email" id="inputUserEmail" class="form-input" placeholder="e.g. user@school.edu or name@gmail.com" required>
         </div>
 
         <div class="form-group">
@@ -2633,7 +2623,7 @@
 
         <div class="form-group">
           <label class="form-label" for="childSchoolInput">Class Code</label>
-          <input type="text" id="childSchoolInput" class="form-input" placeholder="e.g. CLS-1018" required>
+          <input type="text" id="childSchoolInput" class="form-input" placeholder="e.g. CLS-6070" required>
         </div>
 
         <button type="submit" class="btn-submit-primary" style="margin-top:1rem;">Save & Continue</button>
@@ -2652,7 +2642,7 @@
       <form id="linkClassForm">
         <div class="form-group">
           <label class="form-label" for="inputClassCode">Class Code</label>
-          <input type="text" id="inputClassCode" class="form-input" placeholder="e.g. CLS3B-9842" style="font-size:1.1rem; letter-spacing:0.08em; text-transform:uppercase;" required>
+          <input type="text" id="inputClassCode" class="form-input" placeholder="e.g. CLS-6070" style="font-size:1.1rem; letter-spacing:0.08em; text-transform:uppercase;" required>
         </div>
 
         <button type="submit" class="btn-submit-primary">Link Child to Classroom</button>
@@ -2866,11 +2856,11 @@
           
           <!-- Quick presets pills -->
           <div style="display:flex; justify-content:space-between; gap:0.35rem; margin-top:0.45rem;">
-            <button type="button" class="btn-quick-pct-chip" data-pct="0" style="flex:1; padding:0.25rem 0.2rem; font-size:0.725rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle); background:var(--bg-page); color:var(--text-secondary); cursor:pointer; font-weight:600;">0% Left</button>
+            <button type="button" class="btn-quick-pct-chip" data-pct="0" style="flex:1; padding:0.25rem 0.2rem; font-size:0.725rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle); background:var(--bg-page); color:var(--text-secondary); cursor:pointer; font-weight:600;">0% (Untouched)</button>
             <button type="button" class="btn-quick-pct-chip" data-pct="25" style="flex:1; padding:0.25rem 0.2rem; font-size:0.725rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle); background:var(--bg-page); color:var(--text-secondary); cursor:pointer; font-weight:600;">25%</button>
             <button type="button" class="btn-quick-pct-chip" data-pct="50" style="flex:1; padding:0.25rem 0.2rem; font-size:0.725rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle); background:var(--bg-page); color:var(--text-secondary); cursor:pointer; font-weight:600;">50%</button>
             <button type="button" class="btn-quick-pct-chip" data-pct="75" style="flex:1; padding:0.25rem 0.2rem; font-size:0.725rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle); background:rgba(99,102,241,0.12); color:var(--primary); border-color:var(--primary); cursor:pointer; font-weight:600;">75%</button>
-            <button type="button" class="btn-quick-pct-chip" data-pct="100" style="flex:1; padding:0.25rem 0.2rem; font-size:0.725rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle); background:var(--bg-page); color:var(--text-secondary); cursor:pointer; font-weight:600;">100%</button>
+            <button type="button" class="btn-quick-pct-chip" data-pct="100" style="flex:1; padding:0.25rem 0.2rem; font-size:0.725rem; border-radius:var(--r-sm); border:1px solid var(--border-subtle); background:var(--bg-page); color:var(--text-secondary); cursor:pointer; font-weight:600;">100% (Clean Plate)</button>
           </div>
         </div>
 
@@ -3187,7 +3177,7 @@
           </div>
           <div class="form-group" style="grid-column: span 2;">
             <label class="form-label" for="editChildClassCode">Classroom Code</label>
-            <input type="text" id="editChildClassCode" class="form-input" placeholder="e.g. CLS3B-9842">
+            <input type="text" id="editChildClassCode" class="form-input" placeholder="e.g. CLS-6070">
           </div>
           <div class="form-group" style="grid-column: span 2;">
             <label class="form-label" for="editChildAllergies">
