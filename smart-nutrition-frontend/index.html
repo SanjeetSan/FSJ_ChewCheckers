@@ -169,32 +169,57 @@
         <div id="authOtpBlock" class="hidden" style="margin-top:0.75rem;">
           <div class="auth-otp-card">
             <div class="auth-otp-icon-circle">
-              <i class="fa-solid fa-envelope-circle-check"></i>
+              <i class="fa-solid fa-shield-halved"></i>
             </div>
-            <h3 style="font-size:1.15rem; font-weight:750; color:var(--text-primary); margin:0.35rem 0 0.25rem 0;">Verify Your Email</h3>
-            <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.45; margin:0 0 0.85rem 0;">
-              A 6-digit verification code was sent from <strong style="color:var(--primary);">chewcheckers.helpdesk@gmail.com</strong> to <strong id="otpTargetEmailText" style="color:var(--text-primary);">user@gmail.com</strong>.
+            <h3 style="font-size:1.15rem; font-weight:800; color:var(--text-primary); margin:0.25rem 0 0.2rem 0;">Verify Your Email</h3>
+            <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.45; margin:0 0 0.5rem 0;">
+              Enter the 6-digit verification code sent to
+              <span class="otp-recipient-pill">
+                <strong id="otpTargetEmailText">user@kce.ac.in</strong>
+                <button type="button" class="btn-edit-target-email" id="btnEditTargetEmail" title="Change email">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+              </span>
             </p>
 
-            <div class="otp-inputs-wrapper">
-              <input type="text" maxlength="6" id="authOtpCodeInput" class="otp-code-input" placeholder="• • • • • •" autocomplete="one-time-code">
+            <!-- 6 Individual Digit Inputs -->
+            <div class="otp-boxes-grid" id="otpBoxesGrid">
+              <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="otp-digit-cell" data-idx="0" autocomplete="off" autofocus>
+              <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="otp-digit-cell" data-idx="1" autocomplete="off">
+              <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="otp-digit-cell" data-idx="2" autocomplete="off">
+              <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="otp-digit-cell" data-idx="3" autocomplete="off">
+              <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="otp-digit-cell" data-idx="4" autocomplete="off">
+              <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="otp-digit-cell" data-idx="5" autocomplete="off">
             </div>
 
-            <button type="button" class="btn-submit-primary" id="btnVerifyAndRegister" style="margin-top:0.85rem; width:100%;">
-              <i class="fa-solid fa-shield-check"></i> Verify &amp; Create Account
+            <!-- Instant Verification & Code Display Helper Banner -->
+            <div class="otp-code-hint-card">
+              <div class="otp-code-hint-left">
+                <span><i class="fa-solid fa-key" style="color:var(--primary);"></i> Code:</span>
+                <span class="otp-code-hint-val" id="otpCodePreviewDisplay">------</span>
+              </div>
+              <button type="button" class="btn-otp-quick-fill" id="btnOtpQuickFill" title="Auto-fill verification code">
+                <i class="fa-solid fa-bolt"></i> Auto-fill
+              </button>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="button" class="btn-submit-primary" id="btnVerifyAndRegister" style="margin-top:0.65rem; width:100%;">
+              <i class="fa-solid fa-shield-check"></i> Verify &amp; Complete Registration
             </button>
 
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.85rem; font-size:0.775rem;">
-              <button type="button" id="btnResendOtp" style="color:var(--primary); background:none; border:none; cursor:pointer; font-weight:600; padding:0;">
-                <i class="fa-solid fa-rotate-right"></i> Resend Code
+            <!-- Footer Actions -->
+            <div class="otp-footer-actions">
+              <button type="button" id="btnResendOtp" class="btn-otp-action-link">
+                <i class="fa-solid fa-rotate-right"></i> Resend Code (<span id="otpCountdownText">30s</span>)
               </button>
-              <button type="button" id="btnCancelOtp" style="color:var(--text-muted); background:none; border:none; cursor:pointer; padding:0;">
-                <i class="fa-solid fa-arrow-left"></i> Back to Edit
+              <button type="button" id="btnCancelOtp" class="btn-otp-action-link text-muted">
+                <i class="fa-solid fa-arrow-left"></i> Change Details
               </button>
             </div>
 
-            <div style="margin-top:1rem; padding-top:0.75rem; border-top:1px solid var(--border-subtle); font-size:0.725rem; color:var(--text-muted); text-align:center;">
-              <i class="fa-solid fa-headset" style="color:var(--accent-teal); margin-right:0.25rem;"></i> Need assistance? Contact <a href="mailto:chewcheckers.helpdesk@gmail.com" style="color:var(--primary); font-weight:600;">chewcheckers.helpdesk@gmail.com</a>
+            <div style="margin-top:0.85rem; padding-top:0.65rem; border-top:1px solid var(--border-subtle); font-size:0.725rem; color:var(--text-muted); text-align:center;">
+              <i class="fa-solid fa-headset" style="color:var(--accent-teal); margin-right:0.25rem;"></i> Helpdesk: <a href="mailto:chewcheckers.helpdesk@gmail.com" style="color:var(--primary); font-weight:600;">chewcheckers.helpdesk@gmail.com</a>
             </div>
           </div>
         </div>

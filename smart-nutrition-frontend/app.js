@@ -1180,29 +1180,96 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnVerifyAndRegister = document.getElementById('btnVerifyAndRegister');
     const btnResendOtp = document.getElementById('btnResendOtp');
     const btnCancelOtp = document.getElementById('btnCancelOtp');
-    const authOtpCodeInput = document.getElementById('authOtpCodeInput');
+    const btnOtpQuickFill = document.getElementById('btnOtpQuickFill');
+    const btnEditTargetEmail = document.getElementById('btnEditTargetEmail');
 
-    if (authOtpCodeInput) {
-      authOtpCodeInput.addEventListener('input', () => {
-        authOtpCodeInput.value = authOtpCodeInput.value.replace(/\D/g, '').slice(0, 6);
-        if (authOtpCodeInput.value.length === 6) {
+    // Modern 6-box OTP input controller
+    const otpCells = document.querySelectorAll('.otp-digit-cell');
+    otpCells.forEach((cell, idx) => {
+      cell.addEventListener('input', () => {
+        const val = cell.value.replace(/\D/g, '');
+        cell.value = val ? val.slice(-1) : '';
+        if (cell.value) {
+          cell.classList.add('filled');
+          const next = document.querySelector(`.otp-digit-cell[data-idx="${idx + 1}"]`);
+          if (next) next.focus();
+        } else {
+          cell.classList.remove('filled');
+        }
+
+        const currentCode = Array.from(document.querySelectorAll('.otp-digit-cell')).map(c => c.value).join('');
+        if (currentCode.length === 6) {
           btnVerifyAndRegister?.click();
         }
       });
-      authOtpCodeInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
+
+      cell.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace') {
+          if (!cell.value && idx > 0) {
+            const prev = document.querySelector(`.otp-digit-cell[data-idx="${idx - 1}"]`);
+            if (prev) {
+              prev.value = '';
+              prev.classList.remove('filled');
+              prev.focus();
+            }
+          } else {
+            cell.classList.remove('filled');
+          }
+        } else if (e.key === 'ArrowLeft' && idx > 0) {
+          document.querySelector(`.otp-digit-cell[data-idx="${idx - 1}"]`)?.focus();
+        } else if (e.key === 'ArrowRight' && idx < 5) {
+          document.querySelector(`.otp-digit-cell[data-idx="${idx + 1}"]`)?.focus();
+        } else if (e.key === 'Enter') {
           e.preventDefault();
           btnVerifyAndRegister?.click();
         }
+      });
+
+      cell.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const pasteData = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+        const digits = pasteData.replace(/\D/g, '').slice(0, 6).split('');
+        const allCells = document.querySelectorAll('.otp-digit-cell');
+        allCells.forEach((c, i) => {
+          c.value = digits[i] || '';
+          if (c.value) c.classList.add('filled');
+          else c.classList.remove('filled');
+        });
+        if (digits.length >= 6) {
+          allCells[5]?.focus();
+          btnVerifyAndRegister?.click();
+        } else if (allCells[digits.length]) {
+          allCells[digits.length]?.focus();
+        }
+      });
+    });
+
+    if (btnOtpQuickFill) {
+      btnOtpQuickFill.addEventListener('click', () => {
+        if (!state.pendingRegistration?.otp) return;
+        const digits = state.pendingRegistration.otp.split('');
+        const allCells = document.querySelectorAll('.otp-digit-cell');
+        allCells.forEach((c, i) => {
+          c.value = digits[i] || '';
+          c.classList.add('filled');
+        });
+        showToast("Verification code filled!", "info");
+        btnVerifyAndRegister?.click();
+      });
+    }
+
+    if (btnEditTargetEmail) {
+      btnEditTargetEmail.addEventListener('click', () => {
+        btnCancelOtp?.click();
       });
     }
 
     if (btnVerifyAndRegister) {
       btnVerifyAndRegister.addEventListener('click', async () => {
-        const enteredCode = authOtpCodeInput ? authOtpCodeInput.value.trim() : '';
+        const enteredCode = Array.from(document.querySelectorAll('.otp-digit-cell')).map(c => c.value).join('').trim();
         if (!enteredCode || enteredCode.length !== 6) {
-          showToast("Please enter the 6-digit verification code.", "error");
-          authOtpCodeInput?.focus();
+          showToast("Please enter all 6 digits of the verification code.", "error");
+          document.querySelector('.otp-digit-cell[data-idx="0"]')?.focus();
           return;
         }
 
@@ -1255,24 +1322,29 @@ document.addEventListener('DOMContentLoaded', () => {
         state.pendingRegistration.otp = newOtp;
         state.pendingRegistration.expiresAt = Date.now() + 10 * 60 * 1000;
 
+        const otpCodePreviewDisplay = document.getElementById('otpCodePreviewDisplay');
+        if (otpCodePreviewDisplay) otpCodePreviewDisplay.textContent = newOtp;
+
         try {
           await supabase.auth.signInWithOtp({ email: state.pendingRegistration.email });
         } catch (err) {}
 
-        showToast("New verification code sent from chewcheckers.helpdesk@gmail.com!", "success");
+        showToast(`New verification code: ${newOtp}`, "success");
         console.log(`[CHEWCHECKERS OTP RESENT] Sent to ${state.pendingRegistration.email}: ${newOtp}`);
 
         btnResendOtp.disabled = true;
         let count = 30;
-        btnResendOtp.textContent = `Resend in ${count}s`;
+        const countdownSpan = document.getElementById('otpCountdownText');
+        if (countdownSpan) countdownSpan.textContent = `${count}s`;
         const interval = setInterval(() => {
           count--;
           if (count <= 0) {
             clearInterval(interval);
             btnResendOtp.disabled = false;
+            if (countdownSpan) countdownSpan.textContent = '';
             btnResendOtp.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Resend Code';
           } else {
-            btnResendOtp.textContent = `Resend in ${count}s`;
+            if (countdownSpan) countdownSpan.textContent = `${count}s`;
           }
         }, 1000);
       });
@@ -1366,8 +1438,8 @@ document.addEventListener('DOMContentLoaded', () => {
       console.warn("Supabase auth OTP dispatch warning:", err);
     }
 
-    showToast(`Verification code sent from chewcheckers.helpdesk@gmail.com!`, "success");
-    console.log(`[CHEWCHECKERS OTP] Code sent from chewcheckers.helpdesk@gmail.com to ${email}: ${generatedOtp}`);
+    showToast(`Verification code: ${generatedOtp}`, "success");
+    console.log(`[CHEWCHECKERS OTP] Code generated for ${email}: ${generatedOtp}`);
 
     // Switch view to OTP input block
     document.getElementById('authForm')?.classList.add('hidden');
@@ -1380,11 +1452,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const otpTargetEmailText = document.getElementById('otpTargetEmailText');
     if (otpTargetEmailText) otpTargetEmailText.textContent = email;
 
-    const authOtpCodeInput = document.getElementById('authOtpCodeInput');
-    if (authOtpCodeInput) {
-      authOtpCodeInput.value = '';
-      setTimeout(() => authOtpCodeInput.focus(), 100);
-    }
+    const otpCodePreviewDisplay = document.getElementById('otpCodePreviewDisplay');
+    if (otpCodePreviewDisplay) otpCodePreviewDisplay.textContent = generatedOtp;
+
+    // Clear and focus first digit box
+    const allCells = document.querySelectorAll('.otp-digit-cell');
+    allCells.forEach(c => {
+      c.value = '';
+      c.classList.remove('filled');
+    });
+    setTimeout(() => {
+      document.querySelector('.otp-digit-cell[data-idx="0"]')?.focus();
+    }, 150);
   }
 
   async function handleStrictLogin(email, password) {
