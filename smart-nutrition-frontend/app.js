@@ -37,11 +37,40 @@ import {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Strict Email Domain Validation (Ensures proper domain e.g. name@gmail.com, user@school.com)
+  // Strict Real Email Domain Validation (Rejects disposable/fake domains like tempmail, mailinator, etc.)
+  const BLOCKED_DISPOSABLE_DOMAINS = new Set([
+    'mailinator.com', 'tempmail.com', '10minutemail.com', 'guerrillamail.com',
+    'throwaway.com', 'trashmail.com', 'fake.com', 'test.com', 'example.com',
+    'yopmail.com', 'sharklasers.com', 'dispostable.com', 'getairmail.com'
+  ]);
+
   function isValidEmailDomain(email) {
     if (!email || typeof email !== 'string') return false;
+    const clean = email.trim().toLowerCase();
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return emailRegex.test(email.trim());
+    if (!emailRegex.test(clean)) return false;
+    if (clean.includes('..')) return false;
+
+    const parts = clean.split('@');
+    if (parts.length !== 2) return false;
+    const [userPart, domainPart] = parts;
+
+    // Disallow dummy usernames like test@, asdf@, fake@, etc.
+    if (['test', 'asdf', 'fake', 'dummy', 'admin', 'user'].includes(userPart)) {
+      return false;
+    }
+
+    // Disallow disposable fake domains
+    if (BLOCKED_DISPOSABLE_DOMAINS.has(domainPart)) {
+      return false;
+    }
+
+    // Must have a valid top-level domain
+    const domainSegments = domainPart.split('.');
+    const tld = domainSegments[domainSegments.length - 1];
+    if (!tld || tld.length < 2 || tld.length > 10) return false;
+
+    return true;
   }
 
   // Local Date Helper (YYYY-MM-DD in local browser time zone, avoiding UTC midnight offset bugs)
@@ -639,29 +668,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     syncThemeToggleUI();
 
-    // Fetch fresh profile from backend API
+    // Fetch fresh profile directly from Supabase Cloud DB
     try {
-      const res = await safeFetch('/api/users/profile', {
-        headers: { 'Authorization': `Bearer ${state.token}` }
-      });
-      if (res.ok) {
-        const u = await res.json();
-        state.user = { ...state.user, ...u };
-        localStorage.setItem('chewchecker_user_data', JSON.stringify(state.user));
+      if (state.user?.id) {
+        const { data: u, error: uErr } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', state.user.id)
+          .single();
+        if (!uErr && u) {
+          state.user = {
+            ...state.user,
+            name: u.name || state.user.name,
+            email: u.email || state.user.email,
+            mobileNumber: u.mobile_number !== undefined ? u.mobile_number : state.user.mobileNumber,
+            address: u.address !== undefined ? u.address : state.user.address,
+            role: (u.role || state.user.role).toUpperCase()
+          };
+          localStorage.setItem('chewchecker_user_data', JSON.stringify(state.user));
 
-        if (nameInput && u.name) nameInput.value = u.name;
-        if (emailInput && u.email) emailInput.value = u.email;
-        if (mobileInput && u.mobileNumber !== undefined) mobileInput.value = u.mobileNumber || '';
-        if (addressInput && u.address !== undefined) addressInput.value = u.address || '';
+          if (nameInput && u.name) nameInput.value = u.name;
+          if (emailInput && u.email) emailInput.value = u.email;
+          if (mobileInput && u.mobile_number !== undefined) mobileInput.value = u.mobile_number || '';
+          if (addressInput && u.address !== undefined) addressInput.value = u.address || '';
 
-        const updatedName = u.name || userName;
-        const updatedInitial = updatedName.trim().charAt(0).toUpperCase() || 'U';
-        if (avatarElem) avatarElem.textContent = updatedInitial;
-        if (nameElem) nameElem.textContent = updatedName;
-        if (emailElem && u.email) emailElem.textContent = u.email;
+          const updatedName = u.name || userName;
+          const updatedInitial = updatedName.trim().charAt(0).toUpperCase() || 'U';
+          if (avatarElem) avatarElem.textContent = updatedInitial;
+          if (nameElem) nameElem.textContent = updatedName;
+          if (emailElem && u.email) emailElem.textContent = u.email;
+        }
       }
     } catch (err) {
-      console.warn("Failed to fetch fresh user profile:", err);
+      console.warn("Failed to fetch fresh user profile from Supabase:", err);
     }
   }
 
@@ -869,41 +908,58 @@ document.addEventListener('DOMContentLoaded', () => {
     const passVal = document.getElementById('profilePassword')?.value.trim();
 
     if (!nameVal || !emailVal) {
-      showToast("Full Name and Email are required.", "error");
+      showToast("Full Legal Name and Email Address are required.", "error");
       return;
+    }
+
+    if (!isValidEmailDomain(emailVal)) {
+      showToast("Please enter a valid real email address (e.g. name@gmail.com).", "error");
+      return;
+    }
+
+    if (passVal && passVal.length < 8) {
+      showToast("New password must be at least 8 characters.", "error");
+      return;
+    }
+
+    const userId = state.user?.id || state.user?.userId;
+    if (!userId) {
+      showToast("User session not found. Please log in again.", "error");
+      return;
+    }
+
+    const btnSaveProfile = document.getElementById('btnSaveProfile');
+    if (btnSaveProfile) {
+      btnSaveProfile.disabled = true;
+      btnSaveProfile.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving Profile...';
     }
 
     try {
       const profilePayload = {
         name: nameVal,
-        email: emailVal,
+        email: emailVal.toLowerCase(),
         mobileNumber: mobileVal,
         address: addressVal
       };
       if (passVal && passVal.length >= 8) {
         profilePayload.password = passVal;
-      } else if (passVal && passVal.length < 8) {
-        showToast("Password must be at least 8 characters.", "error");
+      }
+
+      // 1. Direct Supabase Cloud Update (works seamlessly on Vercel & Production)
+      const updateResult = await supabaseUpdateProfile(userId, profilePayload);
+      if (!updateResult.success) {
+        showToast(`Failed to save profile: ${updateResult.message || 'Database error'}`, "error");
         return;
       }
 
-      const res = await safeFetch('/api/users/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${state.token}`
-        },
-        body: JSON.stringify(profilePayload)
-      });
-
-      if (!res.ok) {
-        const errMsg = await res.text();
-        showToast(`Failed to save profile: ${errMsg}`, "error");
-        return;
-      }
-
-      const updatedUser = await res.json();
-      state.user = { ...state.user, ...updatedUser };
+      // 2. Update local state and storage
+      state.user = {
+        ...state.user,
+        name: nameVal,
+        email: emailVal.toLowerCase(),
+        mobileNumber: mobileVal,
+        address: addressVal
+      };
       localStorage.setItem('chewchecker_user_data', JSON.stringify(state.user));
 
       updateUserProfileUI();
@@ -914,13 +970,32 @@ document.addEventListener('DOMContentLoaded', () => {
       const passInput = document.getElementById('profilePassword');
       if (avatarElem) avatarElem.textContent = (nameVal.charAt(0) || 'U').toUpperCase();
       if (nameElem) nameElem.textContent = nameVal;
-      if (emailElem) emailElem.textContent = emailVal;
+      if (emailElem) emailElem.textContent = emailVal.toLowerCase();
       if (passInput) passInput.value = '';
 
-      showToast("Profile saved successfully!");
+      showToast("Profile and email updated successfully!");
+
+      // Optional background sync to local gateway if available
+      try {
+        await safeFetch('/api/users/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${state.token}`
+          },
+          body: JSON.stringify(profilePayload)
+        });
+      } catch (ignored) {
+        // Non-blocking fallback for cloud Vercel deployment
+      }
     } catch (err) {
-      console.error(err);
-      showToast("Error saving profile details.", "error");
+      console.error("Error saving profile details:", err);
+      showToast("Error saving profile details: " + (err.message || "Network error"), "error");
+    } finally {
+      if (btnSaveProfile) {
+        btnSaveProfile.disabled = false;
+        btnSaveProfile.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Profile Changes';
+      }
     }
   }
 
