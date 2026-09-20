@@ -1180,7 +1180,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnVerifyAndRegister = document.getElementById('btnVerifyAndRegister');
     const btnResendOtp = document.getElementById('btnResendOtp');
     const btnCancelOtp = document.getElementById('btnCancelOtp');
-    const btnOtpQuickFill = document.getElementById('btnOtpQuickFill');
     const btnEditTargetEmail = document.getElementById('btnEditTargetEmail');
 
     // Modern 6-box OTP input controller
@@ -1243,20 +1242,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     });
-
-    if (btnOtpQuickFill) {
-      btnOtpQuickFill.addEventListener('click', () => {
-        if (!state.pendingRegistration?.otp) return;
-        const digits = state.pendingRegistration.otp.split('');
-        const allCells = document.querySelectorAll('.otp-digit-cell');
-        allCells.forEach((c, i) => {
-          c.value = digits[i] || '';
-          c.classList.add('filled');
-        });
-        showToast("Verification code filled!", "info");
-        btnVerifyAndRegister?.click();
-      });
-    }
 
     if (btnEditTargetEmail) {
       btnEditTargetEmail.addEventListener('click', () => {
@@ -1322,15 +1307,24 @@ document.addEventListener('DOMContentLoaded', () => {
         state.pendingRegistration.otp = newOtp;
         state.pendingRegistration.expiresAt = Date.now() + 10 * 60 * 1000;
 
-        const otpCodePreviewDisplay = document.getElementById('otpCodePreviewDisplay');
-        if (otpCodePreviewDisplay) otpCodePreviewDisplay.textContent = newOtp;
-
+        let emailDispatched = true;
         try {
-          await supabase.auth.signInWithOtp({ email: state.pendingRegistration.email });
-        } catch (err) {}
+          const { error: sbResendErr } = await supabase.auth.signInWithOtp({ email: state.pendingRegistration.email });
+          if (sbResendErr) {
+            console.warn("Supabase auth OTP resend warning:", sbResendErr);
+            if (sbResendErr.status === 429 || sbResendErr.code === 'over_email_send_rate_limit') {
+              showToast("Hourly email limit reached. Please check previous email or contact chewcheckers.helpdesk@gmail.com", "warning");
+              emailDispatched = false;
+            }
+          }
+        } catch (err) {
+          console.warn("Supabase auth OTP resend error:", err);
+        }
 
-        showToast(`New verification code: ${newOtp}`, "success");
-        console.log(`[CHEWCHECKERS OTP RESENT] Sent to ${state.pendingRegistration.email}: ${newOtp}`);
+        if (emailDispatched) {
+          showToast("A new verification code has been sent to your email.", "success");
+        }
+        console.log(`[CHEWCHECKERS OTP] Resend requested for ${state.pendingRegistration.email}`);
 
         btnResendOtp.disabled = true;
         let count = 30;
@@ -1432,14 +1426,24 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Dispatch OTP email through Supabase Auth
+    let emailDispatched = true;
     try {
-      await supabase.auth.signInWithOtp({ email });
+      const { error: sbOtpErr } = await supabase.auth.signInWithOtp({ email });
+      if (sbOtpErr) {
+        console.warn("Supabase auth OTP dispatch warning:", sbOtpErr);
+        if (sbOtpErr.status === 429 || sbOtpErr.code === 'over_email_send_rate_limit') {
+          showToast("Hourly email limit reached. Please check your spam folder or contact chewcheckers.helpdesk@gmail.com", "warning");
+          emailDispatched = false;
+        }
+      }
     } catch (err) {
-      console.warn("Supabase auth OTP dispatch warning:", err);
+      console.warn("Supabase auth OTP dispatch error:", err);
     }
 
-    showToast(`Verification code: ${generatedOtp}`, "success");
-    console.log(`[CHEWCHECKERS OTP] Code generated for ${email}: ${generatedOtp}`);
+    if (emailDispatched) {
+      showToast("Verification code sent to your email! Please check your inbox.", "success");
+    }
+    console.log(`[CHEWCHECKERS OTP] Verification dispatch initiated for ${email}`);
 
     // Switch view to OTP input block
     document.getElementById('authForm')?.classList.add('hidden');
@@ -1451,9 +1455,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const otpTargetEmailText = document.getElementById('otpTargetEmailText');
     if (otpTargetEmailText) otpTargetEmailText.textContent = email;
-
-    const otpCodePreviewDisplay = document.getElementById('otpCodePreviewDisplay');
-    if (otpCodePreviewDisplay) otpCodePreviewDisplay.textContent = generatedOtp;
 
     // Clear and focus first digit box
     const allCells = document.querySelectorAll('.otp-digit-cell');
