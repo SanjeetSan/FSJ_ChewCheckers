@@ -7434,38 +7434,38 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
               const initial = (s.name || 'S').trim().charAt(0).toUpperCase();
 
               rows.push(`
-                <div class="insight-bullet-row warning" style="display:flex; justify-content:space-between; align-items:center; gap:0.6rem; padding:0.55rem 0.85rem;">
+                <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.6rem; padding:0.55rem 0.85rem; border-color:rgba(244,63,94,0.2); background:rgba(244,63,94,0.03);">
                   <div style="display:flex; align-items:center; gap:0.65rem; flex:1; min-width:0;">
-                    <div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, #F43F5E 0%, #BE123C 100%); color:#FFF; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.85rem; flex-shrink:0; box-shadow:0 2px 6px rgba(244,63,94,0.3);">
+                    <div style="width:30px; height:30px; border-radius:50%; background:rgba(244,63,94,0.12); color:#FB7185; border:1px solid rgba(244,63,94,0.28); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.8rem; flex-shrink:0;">
                       ${initial}
                     </div>
                     <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
                       <div style="display:flex; align-items:center; gap:6px;">
                         <strong style="color:var(--text-primary); font-size:0.875rem; font-family:'Outfit',sans-serif;">${s.name}</strong>
-                        <span style="font-size:0.68rem; color:var(--text-muted); font-family:monospace; background:rgba(255,255,255,0.06); padding:1px 5px; border-radius:4px;">${s.studentCode || ''}</span>
+                        <span style="font-size:0.68rem; color:var(--text-muted); font-family:monospace; background:rgba(255,255,255,0.05); padding:1px 5px; border-radius:4px;">${s.studentCode || ''}</span>
                       </div>
                       <div style="display:flex; align-items:center; gap:6px;">
-                        <span style="font-size:0.725rem; color:#FDA4AF; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;">
-                          <i class="fa-solid fa-triangle-exclamation" style="font-size:0.68rem;"></i> Low intake (${currentPct}%)
+                        <span style="font-size:0.725rem; color:#FDA4AF; display:inline-flex; align-items:center; gap:4px; white-space:nowrap; font-weight:600;">
+                          <i class="fa-solid fa-circle-exclamation" style="font-size:0.68rem;"></i> Low intake (${currentPct}%)
                         </span>
-                        <div style="width:38px; height:4px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden; flex-shrink:0;">
-                          <div style="width:${Math.max(5, currentPct)}%; height:100%; background:linear-gradient(90deg, #F43F5E, #F59E0B); border-radius:999px;"></div>
+                        <div style="width:36px; height:3px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden; flex-shrink:0;">
+                          <div style="width:${Math.max(5, currentPct)}%; height:100%; background:#F43F5E; border-radius:999px;"></div>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div style="display:flex; gap:0.3rem; align-items:center; flex-shrink:0;">
+                  <div style="display:flex; gap:0.35rem; align-items:center; flex-shrink:0;">
                     ${studentMeal ? `
-                      <button type="button" class="btn-action-primary btn-action-review-meal" data-meal-id="${studentMeal.id}" data-student-name="${escapedName}" data-current-pct="${currentPct}" style="height:28px; padding:0 0.6rem; font-size:0.75rem; border-radius:6px; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;">
-                        <i class="fa-solid fa-camera"></i> Review
+                      <button type="button" class="btn-action-outline btn-action-review-meal" data-meal-id="${studentMeal.id}" data-student-name="${escapedName}" data-current-pct="${currentPct}" style="height:26px; padding:0 0.55rem; font-size:0.725rem; font-weight:600; border-radius:5px; display:inline-flex; align-items:center; gap:4px; white-space:nowrap; background:rgba(255,255,255,0.06); color:var(--text-primary); border:1px solid rgba(255,255,255,0.12);">
+                        <i class="fa-solid fa-camera" style="font-size:0.68rem;"></i> Review
                       </button>
                     ` : ''}
-                    <button type="button" class="btn-action-outline btn-action-chat-parent" data-parent-id="${s.parentId || ''}" data-student-name="${escapedName}" data-reason="${reasonText.replace(/"/g, '&quot;')}" style="height:28px; padding:0 0.6rem; font-size:0.75rem; border-radius:6px; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;">
-                      <i class="fa-solid fa-comments"></i> Message
+                    <button type="button" class="btn-action-outline btn-action-chat-parent" data-parent-id="${s.parentId || ''}" data-student-name="${escapedName}" data-reason="${reasonText.replace(/"/g, '&quot;')}" style="height:26px; padding:0 0.55rem; font-size:0.725rem; font-weight:600; border-radius:5px; display:inline-flex; align-items:center; gap:4px; white-space:nowrap; background:transparent; color:var(--text-secondary); border:1px solid rgba(255,255,255,0.1);">
+                      <i class="fa-solid fa-comments" style="font-size:0.68rem;"></i> Message
                     </button>
-                    <button type="button" class="btn-action-outline btn-action-view-profile" data-student-id="${s.id}" title="Student Profile" style="height:28px; width:28px; padding:0; font-size:0.75rem; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;">
-                      <i class="fa-solid fa-id-card"></i>
+                    <button type="button" class="btn-action-outline btn-action-view-profile" data-student-id="${s.id}" title="Student Profile" style="height:26px; width:26px; padding:0; font-size:0.725rem; border-radius:5px; display:inline-flex; align-items:center; justify-content:center; background:transparent; color:var(--text-muted); border:1px solid rgba(255,255,255,0.1);">
+                      <i class="fa-solid fa-id-card" style="font-size:0.68rem;"></i>
                     </button>
                   </div>
                 </div>
@@ -7473,16 +7473,16 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             });
           } else {
             rows.push(`
-              <div class="insight-bullet-row positive" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0.85rem;">
+              <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0.85rem;">
                 <div style="display:flex; align-items:center; gap:0.7rem;">
-                  <span class="bullet-icon"><i class="fa-solid fa-circle-check"></i></span>
+                  <span class="bullet-icon" style="width:26px; height:26px; border-radius:6px; background:rgba(255,255,255,0.04); color:var(--text-muted); border:1px solid rgba(255,255,255,0.06); display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem; flex-shrink:0;"><i class="fa-solid fa-circle-check"></i></span>
                   <div>
                     <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">All Intake Goals Met</div>
                     <div style="font-size:0.75rem; color:var(--text-muted);">No student clearance action required today</div>
                   </div>
                 </div>
-                <span style="font-size:0.75rem; font-weight:700; padding:3px 9px; border-radius:6px; background:rgba(16,185,129,0.12); color:#34D399; border:1px solid rgba(16,185,129,0.25); white-space:nowrap;">
-                  <i class="fa-solid fa-circle-check"></i> Clear
+                <span style="font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:5px; background:rgba(255,255,255,0.04); color:var(--text-secondary); border:1px solid rgba(255,255,255,0.08); white-space:nowrap;">
+                  Clear
                 </span>
               </div>
             `);
@@ -7493,14 +7493,14 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             rows.push(`
               <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0.85rem;">
                 <div style="display:flex; align-items:center; gap:0.7rem;">
-                  <span class="bullet-icon" style="background:rgba(245,158,11,0.12); color:#F59E0B;"><i class="fa-solid fa-chart-pie"></i></span>
+                  <span class="bullet-icon" style="width:26px; height:26px; border-radius:6px; background:rgba(255,255,255,0.04); color:var(--text-muted); border:1px solid rgba(255,255,255,0.06); display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem; flex-shrink:0;"><i class="fa-solid fa-chart-pie"></i></span>
                   <div>
                     <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Plate Waste Level</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">Avg leftovers ~<strong>${cappedWaste}%</strong> across logged meals</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">Avg leftovers ~${cappedWaste}% across logged meals</div>
                   </div>
                 </div>
-                <span style="font-size:0.75rem; font-weight:700; padding:3px 9px; border-radius:6px; background:rgba(245,158,11,0.12); color:#F59E0B; border:1px solid rgba(245,158,11,0.25); white-space:nowrap;">
-                  <i class="fa-solid fa-chart-pie"></i> ${cappedWaste}% Waste
+                <span style="font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:5px; background:rgba(255,255,255,0.04); color:var(--text-secondary); border:1px solid rgba(255,255,255,0.08); white-space:nowrap;">
+                  ${cappedWaste}% waste
                 </span>
               </div>
             `);
@@ -7509,14 +7509,14 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             rows.push(`
               <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0.85rem;">
                 <div style="display:flex; align-items:center; gap:0.7rem;">
-                  <span class="bullet-icon" style="background:rgba(99,102,241,0.12); color:var(--primary);"><i class="fa-solid fa-lightbulb"></i></span>
+                  <span class="bullet-icon" style="width:26px; height:26px; border-radius:6px; background:rgba(255,255,255,0.04); color:var(--text-muted); border:1px solid rgba(255,255,255,0.06); display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem; flex-shrink:0;"><i class="fa-solid fa-lightbulb"></i></span>
                   <div>
                     <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Nutritional Guidance</div>
                     <div style="font-size:0.75rem; color:var(--text-muted);">Recommend hydrating fruits & veggies for low intake</div>
                   </div>
                 </div>
-                <span style="font-size:0.75rem; font-weight:700; padding:3px 9px; border-radius:6px; background:rgba(99,102,241,0.12); color:var(--primary-light); border:1px solid rgba(99,102,241,0.25); white-space:nowrap;">
-                  <i class="fa-solid fa-lightbulb"></i> Advisory
+                <span style="font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:5px; background:rgba(255,255,255,0.04); color:var(--text-secondary); border:1px solid rgba(255,255,255,0.08); white-space:nowrap;">
+                  Guidance
                 </span>
               </div>
             `);
@@ -7525,14 +7525,14 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             rows.push(`
               <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0.85rem;">
                 <div style="display:flex; align-items:center; gap:0.7rem;">
-                  <span class="bullet-icon" style="background:rgba(16,185,129,0.12); color:#10B981;"><i class="fa-solid fa-clipboard-check"></i></span>
+                  <span class="bullet-icon" style="width:26px; height:26px; border-radius:6px; background:rgba(255,255,255,0.04); color:var(--text-muted); border:1px solid rgba(255,255,255,0.06); display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem; flex-shrink:0;"><i class="fa-solid fa-clipboard-check"></i></span>
                   <div>
                     <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Attendance & Logs</div>
                     <div style="font-size:0.75rem; color:var(--text-muted);">Classroom roster attendance fully confirmed</div>
                   </div>
                 </div>
-                <span style="font-size:0.75rem; font-weight:700; padding:3px 9px; border-radius:6px; background:rgba(16,185,129,0.12); color:#34D399; border:1px solid rgba(16,185,129,0.25); white-space:nowrap;">
-                  <i class="fa-solid fa-check"></i> Verified
+                <span style="font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:5px; background:rgba(255,255,255,0.04); color:var(--text-secondary); border:1px solid rgba(255,255,255,0.08); white-space:nowrap;">
+                  <i class="fa-solid fa-check" style="color:var(--text-muted); margin-right:3px;"></i> Logged
                 </span>
               </div>
             `);
@@ -7605,14 +7605,14 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           insights.push(`
             <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0.85rem;">
               <div style="display:flex; align-items:center; gap:0.7rem;">
-                <span class="bullet-icon" style="background:rgba(245,158,11,0.12); color:#F59E0B;"><i class="fa-solid fa-chart-pie"></i></span>
+                <span class="bullet-icon" style="width:26px; height:26px; border-radius:6px; background:rgba(255,255,255,0.04); color:var(--text-muted); border:1px solid rgba(255,255,255,0.06); display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem; flex-shrink:0;"><i class="fa-solid fa-chart-pie"></i></span>
                 <div>
                   <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Plate Completion</div>
-                  <div style="font-size:0.75rem; color:var(--text-muted);">Avg plate waste: <strong style="color:var(--text-primary);">${cappedWaste}%</strong> across logged meals</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted);">Avg plate waste: ${cappedWaste}% across logged meals</div>
                 </div>
               </div>
-              <span style="font-size:0.85rem; font-weight:800; color:#F59E0B; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.25); padding:3px 10px; border-radius:6px; font-family:'Outfit',sans-serif;">
-                ${completionRate}% Eaten
+              <span style="font-size:0.775rem; font-weight:700; color:var(--text-primary); background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:2px 9px; border-radius:5px; font-family:'Outfit',sans-serif;">
+                ${completionRate}% eaten
               </span>
             </div>
           `);
@@ -7621,14 +7621,14 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           insights.push(`
             <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0.85rem;">
               <div style="display:flex; align-items:center; gap:0.7rem;">
-                <span class="bullet-icon" style="background:rgba(99,102,241,0.12); color:var(--primary);"><i class="fa-solid fa-utensils"></i></span>
+                <span class="bullet-icon" style="width:26px; height:26px; border-radius:6px; background:rgba(255,255,255,0.04); color:var(--text-muted); border:1px solid rgba(255,255,255,0.06); display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem; flex-shrink:0;"><i class="fa-solid fa-utensils"></i></span>
                 <div>
                   <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Top Consumed Item</div>
                   <div style="font-size:0.75rem; color:var(--text-muted);">Highest student clearance rate</div>
                 </div>
               </div>
-              <span class="badge-dish-top" style="font-size:0.78rem; padding:3px 10px;">
-                <i class="fa-solid fa-star" style="color:#FBBF24;"></i> ${topFood}
+              <span style="font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:5px; background:rgba(255,255,255,0.04); color:var(--text-primary); border:1px solid rgba(255,255,255,0.08); white-space:nowrap;">
+                <i class="fa-solid fa-star" style="color:#CBD5E1; margin-right:3px; font-size:0.65rem;"></i> ${topFood}
               </span>
             </div>
           `);
@@ -7637,15 +7637,15 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           insights.push(`
             <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0.85rem;">
               <div style="display:flex; align-items:center; gap:0.7rem;">
-                <span class="bullet-icon" style="background:${needsReview ? 'rgba(245,158,11,0.12)' : 'rgba(16,185,129,0.12)'}; color:${needsReview ? '#F59E0B' : '#10B981'};">
-                  <i class="fa-solid ${needsReview ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i>
+                <span class="bullet-icon" style="width:26px; height:26px; border-radius:6px; background:${needsReview ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.04)'}; color:${needsReview ? '#FBBF24' : 'var(--text-muted)'}; border:1px solid ${needsReview ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.06)'}; display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem; flex-shrink:0;">
+                  <i class="fa-solid ${needsReview ? 'fa-circle-exclamation' : 'fa-circle-check'}"></i>
                 </span>
                 <div>
                   <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Intake Compliance</div>
                   <div style="font-size:0.75rem; color:var(--text-muted);">${needsReview ? `${lowConsStudents.length} student${lowConsStudents.length > 1 ? 's' : ''} with low intake (< 50%)` : 'All students meeting nutrition targets'}</div>
                 </div>
               </div>
-              ${needsReview ? '<span class="badge-compliance-warning" style="font-size:0.75rem; padding:3px 9px;"><i class="fa-solid fa-triangle-exclamation"></i> Needs Review</span>' : '<span class="badge-compliance-optimal" style="font-size:0.75rem; padding:3px 9px;"><i class="fa-solid fa-circle-check"></i> Optimal Balance</span>'}
+              ${needsReview ? '<span style="font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:5px; background:rgba(245,158,11,0.08); color:#FBBF24; border:1px solid rgba(245,158,11,0.2); white-space:nowrap;"><i class="fa-solid fa-circle-exclamation" style="margin-right:3px;"></i> Needs Review</span>' : '<span style="font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:5px; background:rgba(255,255,255,0.04); color:var(--text-secondary); border:1px solid rgba(255,255,255,0.08); white-space:nowrap;">Optimal</span>'}
             </div>
           `);
 
@@ -7653,14 +7653,14 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           insights.push(`
             <div class="insight-bullet-row" style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0.85rem;">
               <div style="display:flex; align-items:center; gap:0.7rem;">
-                <span class="bullet-icon" style="background:rgba(16,185,129,0.12); color:#10B981;"><i class="fa-solid fa-seedling"></i></span>
+                <span class="bullet-icon" style="width:26px; height:26px; border-radius:6px; background:rgba(255,255,255,0.04); color:var(--text-muted); border:1px solid rgba(255,255,255,0.06); display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem; flex-shrink:0;"><i class="fa-solid fa-seedling"></i></span>
                 <div>
                   <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Dietary Diversity</div>
                   <div style="font-size:0.75rem; color:var(--text-muted);">Macro and calorie targets consistently supported</div>
                 </div>
               </div>
-              <span style="font-size:0.75rem; font-weight:700; padding:3px 9px; border-radius:6px; background:rgba(16,185,129,0.12); color:#34D399; border:1px solid rgba(16,185,129,0.25);">
-                <i class="fa-solid fa-shield-halved"></i> Balanced
+              <span style="font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:5px; background:rgba(255,255,255,0.04); color:var(--text-secondary); border:1px solid rgba(255,255,255,0.08); white-space:nowrap;">
+                Balanced
               </span>
             </div>
           `);
