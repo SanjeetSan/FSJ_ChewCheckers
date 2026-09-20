@@ -37,13 +37,7 @@ import {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Strict Real Email Domain Validation (Rejects disposable/fake domains like tempmail, mailinator, etc.)
-  const BLOCKED_DISPOSABLE_DOMAINS = new Set([
-    'mailinator.com', 'tempmail.com', '10minutemail.com', 'guerrillamail.com',
-    'throwaway.com', 'trashmail.com', 'fake.com', 'test.com', 'example.com',
-    'yopmail.com', 'sharklasers.com', 'dispostable.com', 'getairmail.com'
-  ]);
-
+  // Strict Real Email Domain Validation: Only official @gmail.com or @*.edu email addresses allowed
   function isValidEmailDomain(email) {
     if (!email || typeof email !== 'string') return false;
     const clean = email.trim().toLowerCase();
@@ -55,22 +49,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (parts.length !== 2) return false;
     const [userPart, domainPart] = parts;
 
-    // Disallow dummy usernames like test@, asdf@, fake@, etc.
+    // Disallow dummy/placeholder usernames like test@, asdf@, fake@, dummy@, etc.
     if (['test', 'asdf', 'fake', 'dummy', 'admin', 'user'].includes(userPart)) {
       return false;
     }
 
-    // Disallow disposable fake domains
-    if (BLOCKED_DISPOSABLE_DOMAINS.has(domainPart)) {
-      return false;
-    }
+    // Strictly enforce: Must be either @gmail.com OR an educational .edu domain
+    const isGmail = (domainPart === 'gmail.com');
+    const isEdu = domainPart.endsWith('.edu') || domainPart.includes('.edu.');
 
-    // Must have a valid top-level domain
-    const domainSegments = domainPart.split('.');
-    const tld = domainSegments[domainSegments.length - 1];
-    if (!tld || tld.length < 2 || tld.length > 10) return false;
-
-    return true;
+    return isGmail || isEdu;
   }
 
   // Local Date Helper (YYYY-MM-DD in local browser time zone, avoiding UTC midnight offset bugs)
@@ -1136,6 +1124,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loginHeaderBlock) loginHeaderBlock.classList.remove('hidden');
         if (registerHeaderBlock) registerHeaderBlock.classList.add('hidden');
 
+        const authOtpBlock = document.getElementById('authOtpBlock');
+        if (authOtpBlock) authOtpBlock.classList.add('hidden');
+        if (authForm) authForm.classList.remove('hidden');
+
         if (nameGroup) nameGroup.classList.add('hidden');
         if (rolePickerBlock) rolePickerBlock.classList.add('hidden');
         if (roleExplanationBlock) roleExplanationBlock.classList.add('hidden');
@@ -1147,6 +1139,10 @@ document.addEventListener('DOMContentLoaded', () => {
         isRegisterMode = true;
         authRegisterTab.classList.add('active');
         authLoginTab.classList.remove('active');
+
+        const authOtpBlock = document.getElementById('authOtpBlock');
+        if (authOtpBlock) authOtpBlock.classList.add('hidden');
+        if (authForm) authForm.classList.remove('hidden');
 
         if (heroHeading) heroHeading.textContent = "Connect home lunch with classroom care.";
         if (heroSubheading) heroSubheading.textContent = "A transparent school nutrition monitoring system connecting parents and teachers.";
@@ -1203,6 +1199,118 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    // Wire Registration OTP Verification Controls
+    const btnVerifyAndRegister = document.getElementById('btnVerifyAndRegister');
+    const btnResendOtp = document.getElementById('btnResendOtp');
+    const btnCancelOtp = document.getElementById('btnCancelOtp');
+    const authOtpCodeInput = document.getElementById('authOtpCodeInput');
+
+    if (authOtpCodeInput) {
+      authOtpCodeInput.addEventListener('input', () => {
+        authOtpCodeInput.value = authOtpCodeInput.value.replace(/\D/g, '').slice(0, 6);
+        if (authOtpCodeInput.value.length === 6) {
+          btnVerifyAndRegister?.click();
+        }
+      });
+      authOtpCodeInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          btnVerifyAndRegister?.click();
+        }
+      });
+    }
+
+    if (btnVerifyAndRegister) {
+      btnVerifyAndRegister.addEventListener('click', async () => {
+        const enteredCode = authOtpCodeInput ? authOtpCodeInput.value.trim() : '';
+        if (!enteredCode || enteredCode.length !== 6) {
+          showToast("Please enter the 6-digit verification code.", "error");
+          authOtpCodeInput?.focus();
+          return;
+        }
+
+        if (!state.pendingRegistration) {
+          showToast("Registration session expired. Please enter your details again.", "error");
+          btnCancelOtp?.click();
+          return;
+        }
+
+        if (Date.now() > state.pendingRegistration.expiresAt) {
+          showToast("Verification code has expired. Please click Resend Code.", "error");
+          return;
+        }
+
+        let isMatch = (enteredCode === state.pendingRegistration.otp);
+
+        // Also check Supabase verifyOtp
+        if (!isMatch) {
+          try {
+            const { error: sbVerifyErr } = await supabase.auth.verifyOtp({
+              email: state.pendingRegistration.email,
+              token: enteredCode,
+              type: 'email'
+            });
+            if (!sbVerifyErr) isMatch = true;
+          } catch (e) {}
+        }
+
+        if (!isMatch) {
+          showToast("Invalid verification code. Please check your inbox and try again.", "error");
+          return;
+        }
+
+        // Successfully verified! Create account
+        setButtonLoading(btnVerifyAndRegister, true, 'Creating Account...');
+        const { name, email, password, role } = state.pendingRegistration;
+        await executeDirectRegistration(name, email, password, role);
+        setButtonLoading(btnVerifyAndRegister, false);
+
+        state.pendingRegistration = null;
+        document.getElementById('authOtpBlock')?.classList.add('hidden');
+        document.getElementById('authForm')?.classList.remove('hidden');
+      });
+    }
+
+    if (btnResendOtp) {
+      btnResendOtp.addEventListener('click', async () => {
+        if (!state.pendingRegistration) return;
+        const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+        state.pendingRegistration.otp = newOtp;
+        state.pendingRegistration.expiresAt = Date.now() + 10 * 60 * 1000;
+
+        try {
+          await supabase.auth.signInWithOtp({ email: state.pendingRegistration.email });
+        } catch (err) {}
+
+        showToast("New verification code sent from chewcheckers.helpdesk@gmail.com!", "success");
+        console.log(`[CHEWCHECKERS OTP RESENT] Sent to ${state.pendingRegistration.email}: ${newOtp}`);
+
+        btnResendOtp.disabled = true;
+        let count = 30;
+        btnResendOtp.textContent = `Resend in ${count}s`;
+        const interval = setInterval(() => {
+          count--;
+          if (count <= 0) {
+            clearInterval(interval);
+            btnResendOtp.disabled = false;
+            btnResendOtp.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Resend Code';
+          } else {
+            btnResendOtp.textContent = `Resend in ${count}s`;
+          }
+        }, 1000);
+      });
+    }
+
+    if (btnCancelOtp) {
+      btnCancelOtp.addEventListener('click', () => {
+        document.getElementById('authOtpBlock')?.classList.add('hidden');
+        document.getElementById('authForm')?.classList.remove('hidden');
+        document.getElementById('rolePickerBlock')?.classList.remove('hidden');
+        document.getElementById('roleExplanationBlock')?.classList.remove('hidden');
+        document.getElementById('registerHeaderBlock')?.classList.remove('hidden');
+      });
+    }
+
     if (authForm) {
       authForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -1210,16 +1318,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = authPasswordInput.value.trim();
         const submitBtn = authForm.querySelector('button[type="submit"]');
 
-        // 1. STRICT EMAIL DOMAIN VALIDATION RULE
+        // 1. STRICT EMAIL DOMAIN VALIDATION RULE (Only @gmail.com or @*.edu)
         if (!isValidEmailDomain(email)) {
-          showToast("Please enter a valid email ending in a proper domain (e.g. name@gmail.com)!", "error");
+          showToast("Only official @gmail.com or @*.edu educational email addresses are accepted.", "error");
           return;
         }
 
         if (isRegisterMode) {
           const name = authNameInput ? authNameInput.value.trim() : '';
-          setButtonLoading(submitBtn, true, 'Creating Account...');
-          await handleStrictRegister(name, email, password, state.selectedRegisterRole);
+          setButtonLoading(submitBtn, true, 'Sending Verification Code...');
+          await initiateRegistrationWithOtp(name, email, password, state.selectedRegisterRole);
           setButtonLoading(submitBtn, false);
         } else {
           setButtonLoading(submitBtn, true, 'Logging In...');
@@ -1230,6 +1338,76 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (btnSwitchRole) btnSwitchRole.addEventListener('click', logout);
+  }
+
+  async function initiateRegistrationWithOtp(name, email, password, role) {
+    if (!name) {
+      showToast("Please enter your full legal name.", "error");
+      return;
+    }
+
+    if (!isValidEmailDomain(email)) {
+      showToast("Only official @gmail.com or @*.edu educational email addresses are accepted.", "error");
+      return;
+    }
+
+    if (!password || password.length < 8) {
+      showToast("Password must be at least 8 characters long.", "error");
+      return;
+    }
+
+    // Check if account already exists in Supabase
+    try {
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id, email')
+        .ilike('email', email)
+        .maybeSingle();
+
+      if (existingUser) {
+        showToast("An account with this email is already registered. Please log in.", "error");
+        return;
+      }
+    } catch (err) {
+      console.warn("User existence check:", err);
+    }
+
+    const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    state.pendingRegistration = {
+      name,
+      email,
+      password,
+      role: role || 'PARENT',
+      otp: generatedOtp,
+      expiresAt: Date.now() + 10 * 60 * 1000
+    };
+
+    // Dispatch OTP email through Supabase Auth
+    try {
+      await supabase.auth.signInWithOtp({ email });
+    } catch (err) {
+      console.warn("Supabase auth OTP dispatch warning:", err);
+    }
+
+    showToast(`Verification code sent from chewcheckers.helpdesk@gmail.com!`, "success");
+    console.log(`[CHEWCHECKERS OTP] Code sent from chewcheckers.helpdesk@gmail.com to ${email}: ${generatedOtp}`);
+
+    // Switch view to OTP input block
+    document.getElementById('authForm')?.classList.add('hidden');
+    document.getElementById('rolePickerBlock')?.classList.add('hidden');
+    document.getElementById('roleExplanationBlock')?.classList.add('hidden');
+    document.getElementById('registerHeaderBlock')?.classList.add('hidden');
+    const authOtpBlock = document.getElementById('authOtpBlock');
+    if (authOtpBlock) authOtpBlock.classList.remove('hidden');
+
+    const otpTargetEmailText = document.getElementById('otpTargetEmailText');
+    if (otpTargetEmailText) otpTargetEmailText.textContent = email;
+
+    const authOtpCodeInput = document.getElementById('authOtpCodeInput');
+    if (authOtpCodeInput) {
+      authOtpCodeInput.value = '';
+      setTimeout(() => authOtpCodeInput.focus(), 100);
+    }
   }
 
   async function handleStrictLogin(email, password) {

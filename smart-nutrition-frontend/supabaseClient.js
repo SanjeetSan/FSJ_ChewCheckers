@@ -72,11 +72,20 @@ export async function supabaseLogin(email, password) {
  */
 export async function supabaseRegister(name, email, password, role = 'PARENT') {
   try {
+    const cleanEmail = email.trim().toLowerCase();
+    const parts = cleanEmail.split('@');
+    const domainPart = parts[1] || '';
+    const isGmail = (domainPart === 'gmail.com');
+    const isEdu = domainPart.endsWith('.edu') || domainPart.includes('.edu.');
+    if (!isGmail && !isEdu) {
+      return { success: false, message: 'Only official @gmail.com or @*.edu educational email addresses are accepted' };
+    }
+
     // Check if user already exists
     const { data: existing } = await supabase
       .from('users')
       .select('id')
-      .ilike('email', email.trim())
+      .ilike('email', cleanEmail)
       .maybeSingle();
 
     if (existing) {

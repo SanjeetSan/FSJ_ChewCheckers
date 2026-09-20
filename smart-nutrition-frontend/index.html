@@ -133,8 +133,11 @@
 
           <!-- Email Address -->
           <div class="form-group">
-            <label class="form-label" for="authEmail">Email or username</label>
-            <input type="email" id="authEmail" class="form-input" placeholder="you@example.com" autocomplete="off" required>
+            <label class="form-label" for="authEmail">Email address</label>
+            <input type="email" id="authEmail" class="form-input" placeholder="e.g. name@gmail.com or teacher@school.edu" autocomplete="off" required>
+            <span style="font-size:0.74rem; color:var(--text-muted); margin-top:4px; display:flex; align-items:center; gap:0.35rem;">
+              <i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i> Only verified @gmail.com or @*.edu email accounts accepted
+            </span>
           </div>
 
           <!-- Password with Eye Toggle -->
@@ -162,9 +165,43 @@
           </button>
         </form>
 
+        <!-- OTP VERIFICATION BLOCK (Registration Security) -->
+        <div id="authOtpBlock" class="hidden" style="margin-top:0.75rem;">
+          <div class="auth-otp-card">
+            <div class="auth-otp-icon-circle">
+              <i class="fa-solid fa-envelope-circle-check"></i>
+            </div>
+            <h3 style="font-size:1.15rem; font-weight:750; color:var(--text-primary); margin:0.35rem 0 0.25rem 0;">Verify Your Email</h3>
+            <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.45; margin:0 0 0.85rem 0;">
+              A 6-digit verification code was sent from <strong style="color:var(--primary);">chewcheckers.helpdesk@gmail.com</strong> to <strong id="otpTargetEmailText" style="color:var(--text-primary);">user@gmail.com</strong>.
+            </p>
+
+            <div class="otp-inputs-wrapper">
+              <input type="text" maxlength="6" id="authOtpCodeInput" class="otp-code-input" placeholder="• • • • • •" autocomplete="one-time-code">
+            </div>
+
+            <button type="button" class="btn-submit-primary" id="btnVerifyAndRegister" style="margin-top:0.85rem; width:100%;">
+              <i class="fa-solid fa-shield-check"></i> Verify &amp; Create Account
+            </button>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.85rem; font-size:0.775rem;">
+              <button type="button" id="btnResendOtp" style="color:var(--primary); background:none; border:none; cursor:pointer; font-weight:600; padding:0;">
+                <i class="fa-solid fa-rotate-right"></i> Resend Code
+              </button>
+              <button type="button" id="btnCancelOtp" style="color:var(--text-muted); background:none; border:none; cursor:pointer; padding:0;">
+                <i class="fa-solid fa-arrow-left"></i> Back to Edit
+              </button>
+            </div>
+
+            <div style="margin-top:1rem; padding-top:0.75rem; border-top:1px solid var(--border-subtle); font-size:0.725rem; color:var(--text-muted); text-align:center;">
+              <i class="fa-solid fa-headset" style="color:var(--accent-teal); margin-right:0.25rem;"></i> Need assistance? Contact <a href="mailto:chewcheckers.helpdesk@gmail.com" style="color:var(--primary); font-weight:600;">chewcheckers.helpdesk@gmail.com</a>
+            </div>
+          </div>
+        </div>
+
         <!-- Context Tag Under Form -->
         <div class="auth-footer-tag">
-          <span>School Nutrition & Wellness Platform</span>
+          <span>School Nutrition &amp; Wellness Platform</span>
         </div>
       </div>
 
