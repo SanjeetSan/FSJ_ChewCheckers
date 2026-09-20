@@ -1130,9 +1130,6 @@
                 <small style="color:var(--text-muted);">Chronological records verified by classroom teachers with granular intake metrics</small>
               </div>
               <div style="display:flex; gap:0.5rem; align-items:center;">
-                <button type="button" class="btn-action-outline" id="btnToggleParentViewMode" style="padding:0.4rem 0.75rem; font-size:0.78rem;">
-                  <i class="fa-solid fa-table"></i> <span id="parentViewModeLabel">Table View</span>
-                </button>
                 <button type="button" class="btn-action-primary" id="btnExportParentCsv" style="padding:0.4rem 0.85rem; font-size:0.78rem;">
                   <i class="fa-solid fa-file-csv"></i> Download CSV History
                 </button>
@@ -1147,27 +1144,6 @@
                 <div class="reports-empty-state-title">No verified lunch records available yet.</div>
                 <div class="reports-empty-state-text">Reports will appear after teacher meal verification at school. Pack and scan a lunchbox to begin tracking.</div>
               </div>
-            </div>
-
-            <!-- Table Container (Initially Hidden, Toggled by Button) -->
-            <div id="leftoverHistoryTableWrapper" class="table-responsive" style="display:none; margin-top:0.5rem;">
-              <table class="table-chewcheckers">
-                <thead>
-                  <tr>
-                    <th>DATE</th>
-                    <th>FOOD ITEMS</th>
-                    <th>TARGET / PACKED</th>
-                    <th>CONSUMED</th>
-                    <th>PROTEIN</th>
-                    <th>CONSUMPTION %</th>
-                    <th>STATUS</th>
-                    <th>CLINICAL VERDICT</th>
-                  </tr>
-                </thead>
-                <tbody id="leftoverHistoryTableBody">
-                  <tr><td colspan="8" class="text-center" style="padding:1.5rem; color:var(--text-muted);">No records available</td></tr>
-                </tbody>
-              </table>
             </div>
           </div>
 

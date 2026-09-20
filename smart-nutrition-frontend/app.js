@@ -10244,8 +10244,6 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
   function updateLeftoverHistory(meals = [], reports = [], insightsData = null) {
     const container = document.getElementById('leftoverHistoryContainer') || document.getElementById('leftoversLogHistory');
-    const tableBody = document.getElementById('leftoverHistoryTableBody');
-    const tableWrapper = document.getElementById('leftoverHistoryTableWrapper');
     const elAvgClearance = document.getElementById('parentRepPlateClearance') || document.getElementById('parentRepAvgClearance');
     const elAvgStatus = document.getElementById('parentRepAvgClearanceStatus');
     const elTeacherVerifications = document.getElementById('parentRepVerifications') || document.getElementById('parentRepTeacherVerifications');
@@ -10495,74 +10493,8 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       }
     }
 
-    // --- RENDER TABLE VIEW ---
-    if (tableBody) {
-      if (sortedMeals.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="8" class="text-center" style="padding:1.5rem; color:var(--text-muted);">No meal records recorded for this child yet.</td></tr>`;
-      } else {
-        tableBody.innerHTML = sortedMeals.map(meal => {
-          const formattedDate = meal.mealDate ? new Date(meal.mealDate).toLocaleDateString('en-US', {
-            month: 'short', day: 'numeric', year: 'numeric'
-          }) : 'Today';
-
-          const isPending = isMealPendingReview(meal);
-          const eatenPercent = getEffectiveMealConsumption(meal);
-          const items = meal.foodItems || [];
-          const foodNames = items.map(f => f.foodName).join(', ') || 'Lunchbox Meal';
-          const totalCal = Math.round(items.reduce((acc, f) => acc + (parseFloat(f.calories) || 0), 0)) || targetCal;
-          const eatenCal = eatenPercent !== null ? (eatenPercent === 0 ? 0 : Math.round(totalCal * (eatenPercent / 100))) : totalCal;
-          const protein = Math.round(items.reduce((acc, f) => acc + (parseFloat(f.proteinG || f.protein) || 0), 0)) || 12;
-
-          const lowThreshold = getLowIntakeThreshold();
-          let statusBadge = `<span class="badge-status-consumed"><i class="fa-solid fa-check"></i> Clean Plate</span>`;
-          let verdict = 'Optimal Clearance (≥ 90%)';
-          if (isPending || eatenPercent === null) {
-            statusBadge = `<span class="badge-status-pending"><i class="fa-solid fa-clock"></i> Pending</span>`;
-            verdict = 'Awaiting Teacher Review';
-          } else if (eatenPercent < lowThreshold) {
-            statusBadge = `<span class="badge-status-attention"><i class="fa-solid fa-triangle-exclamation"></i> Low Intake</span>`;
-            verdict = `High Plate Waste (< ${lowThreshold}%)`;
-          } else if (eatenPercent < 90) {
-            statusBadge = `<span class="badge-status-partial"><i class="fa-solid fa-chart-pie"></i> Partial</span>`;
-            verdict = `Balanced Intake (${lowThreshold}-89%)`;
-          }
-
-          return `
-            <tr>
-              <td style="font-size:0.8rem; font-weight:600; color:var(--text-primary);">${formattedDate}</td>
-              <td style="font-size:0.8rem; max-width:240px; white-space:normal; line-height:1.3;">${foodNames}</td>
-              <td style="font-size:0.8rem; color:var(--text-secondary);">${totalCal} kcal</td>
-              <td style="font-size:0.8rem; font-weight:700; color:var(--text-primary);">${isPending ? '—' : `${eatenCal} kcal`}</td>
-              <td style="font-size:0.8rem; font-weight:600;">${protein}g</td>
-              <td style="font-size:0.8rem; font-weight:700; color:${eatenPercent >= 75 ? 'var(--accent-green)' : (eatenPercent >= 50 ? 'var(--accent-teal)' : 'var(--accent-rose)')};">
-                ${eatenPercent !== null ? `${eatenPercent}%` : 'Pending'}
-              </td>
-              <td>${statusBadge}</td>
-              <td style="font-size:0.775rem; color:var(--text-muted);">${verdict}</td>
-            </tr>
-          `;
-        }).join('');
-      }
-    }
-
-    // --- WIRE TOGGLE BUTTON ---
-    const btnToggle = document.getElementById('btnToggleParentViewMode');
-    const lblToggle = document.getElementById('parentViewModeLabel');
-    if (btnToggle && !btnToggle.dataset.listener) {
-      btnToggle.dataset.listener = "true";
-      btnToggle.onclick = () => {
-        if (!tableWrapper) return;
-        const isTable = tableWrapper.style.display !== 'none';
-        if (isTable) {
-          tableWrapper.style.display = 'none';
-          if (container) container.style.display = 'flex';
-          if (lblToggle) lblToggle.textContent = 'Table View';
-        } else {
-          tableWrapper.style.display = 'block';
-          if (container) container.style.display = 'none';
-          if (lblToggle) lblToggle.textContent = 'Cards View';
-        }
-      };
+    if (container) {
+      container.style.display = 'flex';
     }
 
     // --- WIRE PARENT CSV EXPORT ---

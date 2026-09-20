@@ -3758,10 +3758,22 @@ body.dark-theme .modal-container {
   color: #F8FAFC;
 }
 
-body.dark-theme .meal-log-card,
 body.dark-theme .onboarding-wizard {
   background: var(--bg-card) !important;
   border-color: var(--border-subtle) !important;
+}
+
+body.dark-theme .meal-log-card,
+body.dark-theme .simplified-meal-card {
+  background: #0b1220 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+body.dark-theme .meal-log-card:hover,
+body.dark-theme .simplified-meal-card:hover {
+  background: #070d18 !important;
+  border-color: rgba(99, 102, 241, 0.4) !important;
 }
 
 body.dark-theme .chat-messages {
