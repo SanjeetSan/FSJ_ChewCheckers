@@ -2109,7 +2109,7 @@
                   </div>
                 </div>
 
-                <!-- Low-Intake Alert Threshold -->
+                <!-- Low-Intake Alert Threshold (Horizontal 3-Column Grid) -->
                 <div class="form-group" style="margin-bottom:1.5rem;">
                   <label class="form-label" style="font-weight:700; margin-bottom:0.35rem;">
                     Low-Intake Alert Threshold
@@ -2117,21 +2117,35 @@
                   <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 0.85rem 0; line-height:1.4;">
                     Flags students under "Students Requiring Attention" and sends teacher follow-up prompts when consumption drops below this target.
                   </p>
-                  <div class="settings-threshold-pills">
-                    <label class="settings-threshold-pill active" id="thresholdPill50">
+                  <div class="settings-threshold-grid">
+                    <label class="settings-threshold-card active" id="thresholdPill50">
                       <input type="radio" name="settingsThreshold" value="50" checked style="display:none;">
-                      <span class="threshold-badge">&lt; 50%</span>
-                      <span class="threshold-label">Recommended (Balanced Intake Target)</span>
+                      <div class="threshold-card-top">
+                        <span class="threshold-card-pct">&lt; 50%</span>
+                        <span class="threshold-card-tag">Recommended</span>
+                      </div>
+                      <strong class="threshold-card-title">Balanced Target</strong>
+                      <span class="threshold-card-desc">Alerts when meal intake falls below healthy standard baseline</span>
                     </label>
-                    <label class="settings-threshold-pill" id="thresholdPill40">
+
+                    <label class="settings-threshold-card" id="thresholdPill40">
                       <input type="radio" name="settingsThreshold" value="40" style="display:none;">
-                      <span class="threshold-badge">&lt; 40%</span>
-                      <span class="threshold-label">Moderate Intake Target</span>
+                      <div class="threshold-card-top">
+                        <span class="threshold-card-pct">&lt; 40%</span>
+                        <span class="threshold-card-tag">Standard</span>
+                      </div>
+                      <strong class="threshold-card-title">Moderate Target</strong>
+                      <span class="threshold-card-desc">Flags moderate leftover plate waste for teacher review</span>
                     </label>
-                    <label class="settings-threshold-pill" id="thresholdPill25">
+
+                    <label class="settings-threshold-card" id="thresholdPill25">
                       <input type="radio" name="settingsThreshold" value="25" style="display:none;">
-                      <span class="threshold-badge">&lt; 25%</span>
-                      <span class="threshold-label">Critical Warning Only</span>
+                      <div class="threshold-card-top">
+                        <span class="threshold-card-pct">&lt; 25%</span>
+                        <span class="threshold-card-tag">Strict</span>
+                      </div>
+                      <strong class="threshold-card-title">Critical Warning</strong>
+                      <span class="threshold-card-desc">Alerts only on severe meal refusal and zero-consumption cases</span>
                     </label>
                   </div>
                 </div>
@@ -2142,7 +2156,7 @@
                     <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent-teal);"></i> Vision Intelligence
                   </div>
 
-                  <label class="settings-switch-row">
+                  <div class="settings-switch-row">
                     <div class="settings-switch-text">
                       <div class="settings-switch-title">
                         <i class="fa-solid fa-compress" style="color:var(--primary); margin-right:0.35rem;"></i>
@@ -2150,10 +2164,13 @@
                       </div>
                       <div class="settings-switch-sub">Reduces capture payload for faster Gemini AI upload without loss of food recognition fidelity.</div>
                     </div>
-                    <input type="checkbox" id="settingCompressPhotos" class="custom-checkbox" checked>
-                  </label>
+                    <label class="modern-toggle-switch">
+                      <input type="checkbox" id="settingCompressPhotos" checked>
+                      <span class="modern-toggle-slider"></span>
+                    </label>
+                  </div>
 
-                  <label class="settings-switch-row" style="border-top:1px solid var(--border-subtle); padding-top:0.85rem; margin-top:0.85rem;">
+                  <div class="settings-switch-row" style="border-top:1px solid var(--border-subtle); padding-top:0.85rem; margin-top:0.85rem;">
                     <div class="settings-switch-text">
                       <div class="settings-switch-title">
                         <i class="fa-solid fa-shield-virus" style="color:var(--accent-amber); margin-right:0.35rem;"></i>
@@ -2161,8 +2178,11 @@
                       </div>
                       <div class="settings-switch-sub">Display top allergy alerts whenever student lunchboxes contain potential peanut, dairy, or gluten allergens.</div>
                     </div>
-                    <input type="checkbox" id="settingAllergenShield" class="custom-checkbox" checked>
-                  </label>
+                    <label class="modern-toggle-switch">
+                      <input type="checkbox" id="settingAllergenShield" checked>
+                      <span class="modern-toggle-slider"></span>
+                    </label>
+                  </div>
                 </div>
 
                 <div class="settings-form-actions">
@@ -2183,16 +2203,41 @@
                   </div>
                 </div>
 
-                <!-- Theme Toggle Segmented Control -->
+                <!-- Theme Visual Mockup Preview Tiles -->
                 <div class="form-group" style="margin-bottom:1.5rem;">
-                  <label class="form-label" style="margin-bottom:0.4rem; font-weight:700; display:flex; align-items:center; justify-content:space-between;">
+                  <label class="form-label" style="margin-bottom:0.5rem; font-weight:700; display:flex; align-items:center; justify-content:space-between;">
                     <span>Color Theme</span>
                     <span style="font-size:0.75rem; color:var(--text-muted); font-weight:500;">Persistent Across Sessions</span>
                   </label>
-                  <div class="theme-segmented-control" id="themeSegmentedControl" style="max-width:380px;">
-                    <div class="theme-slider-pill" id="themeSliderPill"></div>
-                    <button type="button" class="theme-segment-btn" id="btnThemeLight"><i class="fa-solid fa-sun"></i> Light Theme</button>
-                    <button type="button" class="theme-segment-btn" id="btnThemeDark"><i class="fa-solid fa-moon"></i> Dark Theme</button>
+                  
+                  <div class="settings-theme-preview-grid">
+                    <button type="button" class="settings-theme-tile" id="btnThemeLight">
+                      <div class="theme-preview-mockup light-preview">
+                        <div class="mockup-sidebar"></div>
+                        <div class="mockup-body">
+                          <div class="mockup-topbar"></div>
+                          <div class="mockup-card"></div>
+                        </div>
+                      </div>
+                      <div class="theme-tile-label">
+                        <i class="fa-solid fa-sun" style="color:#F59E0B;"></i>
+                        <span>Light Theme</span>
+                      </div>
+                    </button>
+
+                    <button type="button" class="settings-theme-tile active" id="btnThemeDark">
+                      <div class="theme-preview-mockup dark-preview">
+                        <div class="mockup-sidebar"></div>
+                        <div class="mockup-body">
+                          <div class="mockup-topbar"></div>
+                          <div class="mockup-card"></div>
+                        </div>
+                      </div>
+                      <div class="theme-tile-label">
+                        <i class="fa-solid fa-moon" style="color:#60A5FA;"></i>
+                        <span>Dark Theme</span>
+                      </div>
+                    </button>
                   </div>
                 </div>
 
@@ -2259,8 +2304,11 @@
                   </div>
 
                   <div class="settings-timer-row">
-                    <div style="display:flex; align-items:flex-start; gap:0.65rem; flex:1;">
-                      <input type="checkbox" id="settingMorningReminder" class="custom-checkbox" checked style="margin-top:0.25rem;">
+                    <div style="display:flex; align-items:flex-start; gap:0.75rem; flex:1;">
+                      <label class="modern-toggle-switch" style="margin-top:2px;">
+                        <input type="checkbox" id="settingMorningReminder" checked>
+                        <span class="modern-toggle-slider"></span>
+                      </label>
                       <div>
                         <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Morning Pack-Lunch Reminder</div>
                         <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.3;">Notifies parents to verify and photograph prepared lunchbox.</div>
@@ -2270,8 +2318,11 @@
                   </div>
 
                   <div class="settings-timer-row" style="border-top:1px solid var(--border-subtle); padding-top:0.85rem; margin-top:0.85rem;">
-                    <div style="display:flex; align-items:flex-start; gap:0.65rem; flex:1;">
-                      <input type="checkbox" id="settingAfternoonReminder" class="custom-checkbox" checked style="margin-top:0.25rem;">
+                    <div style="display:flex; align-items:flex-start; gap:0.75rem; flex:1;">
+                      <label class="modern-toggle-switch" style="margin-top:2px;">
+                        <input type="checkbox" id="settingAfternoonReminder" checked>
+                        <span class="modern-toggle-slider"></span>
+                      </label>
                       <div>
                         <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Afternoon Leftover Audit Reminder</div>
                         <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.3;">Prompts teachers to conduct post-meal leftover inspection.</div>
@@ -2281,27 +2332,33 @@
                   </div>
                 </div>
 
-                <!-- Live Sync & Message Alerts -->
+                <!-- Live Connectivity -->
                 <div class="settings-box-card" style="margin-bottom:1.25rem;">
                   <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.85rem; display:flex; align-items:center; gap:0.45rem;">
                     <i class="fa-solid fa-rotate" style="color:var(--primary);"></i> Live Connectivity
                   </div>
 
-                  <label class="settings-switch-row">
+                  <div class="settings-switch-row">
                     <div class="settings-switch-text">
                       <div class="settings-switch-title"><i class="fa-solid fa-bell" style="color:var(--primary); margin-right:0.35rem;"></i> In-App Message Alerts</div>
                       <div class="settings-switch-sub">Instant notifications when teachers or parents send direct inquiries.</div>
                     </div>
-                    <input type="checkbox" id="settingMsgAlerts" class="custom-checkbox" checked>
-                  </label>
+                    <label class="modern-toggle-switch">
+                      <input type="checkbox" id="settingMsgAlerts" checked>
+                      <span class="modern-toggle-slider"></span>
+                    </label>
+                  </div>
 
-                  <label class="settings-switch-row" style="border-top:1px solid var(--border-subtle); padding-top:0.85rem; margin-top:0.85rem;">
+                  <div class="settings-switch-row" style="border-top:1px solid var(--border-subtle); padding-top:0.85rem; margin-top:0.85rem;">
                     <div class="settings-switch-text">
                       <div class="settings-switch-title"><i class="fa-solid fa-bolt" style="color:var(--accent-teal); margin-right:0.35rem;"></i> Real-Time Live Sync (5s)</div>
                       <div class="settings-switch-sub">Background polling to reflect attendance and meal audits across devices.</div>
                     </div>
-                    <input type="checkbox" id="settingAutoRefresh" class="custom-checkbox" checked>
-                  </label>
+                    <label class="modern-toggle-switch">
+                      <input type="checkbox" id="settingAutoRefresh" checked>
+                      <span class="modern-toggle-slider"></span>
+                    </label>
+                  </div>
                 </div>
 
                 <!-- Technical Gateway URL (Admin Only) -->
@@ -2314,9 +2371,9 @@
                 <div class="settings-box-card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
                   <div>
                     <div style="font-size:0.85rem; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:0.4rem;">
-                      <i class="fa-solid fa-broom" style="color:var(--accent-rose);"></i> Clear Application Cache
+                      <i class="fa-solid fa-broom" style="color:var(--text-secondary);"></i> Offline Application Cache
                     </div>
-                    <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Purge temporary cached lunchbox thumbnails, AI predictions, and session media.</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Purge temporary cached lunchbox previews, AI detections, and session media.</div>
                   </div>
                   <button type="button" class="btn-clear-cache" id="btnClearMediaCache">
                     <i class="fa-solid fa-trash-can"></i> Purge Offline Cache

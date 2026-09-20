@@ -8311,6 +8311,293 @@ select option:checked {
   border-top: 1px solid var(--border-subtle);
 }
 
+/* ───────────────────────────────────────────────────────────────────
+   MODERN TOGGLE SWITCH (REPLACES OUTDATED CHECKBOXES)
+   ─────────────────────────────────────────────────────────────────── */
+.modern-toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.modern-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.modern-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--border-subtle);
+  border-radius: 24px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modern-toggle-slider::before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background-color: #FFFFFF;
+  border-radius: 50%;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.modern-toggle-switch input:checked + .modern-toggle-slider {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.modern-toggle-switch input:checked + .modern-toggle-slider::before {
+  transform: translateX(20px);
+}
+
+/* ───────────────────────────────────────────────────────────────────
+   HORIZONTAL 3-COLUMN THRESHOLD CARDS (NO VERTICAL CROWDING)
+   ─────────────────────────────────────────────────────────────────── */
+.settings-threshold-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
+}
+
+@media (max-width: 680px) {
+  .settings-threshold-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.settings-threshold-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.15rem 1.25rem;
+  background: var(--bg-page);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-threshold-card:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.settings-threshold-card.active {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.08);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.threshold-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.threshold-card-pct {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-family: monospace;
+}
+
+.threshold-card-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+}
+
+.settings-threshold-card.active .threshold-card-tag {
+  background: var(--primary);
+  color: #FFFFFF;
+}
+
+.threshold-card-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.threshold-card-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+/* ───────────────────────────────────────────────────────────────────
+   VISUAL THEME PREVIEW TILES (LIGHT VS DARK MOCKUPS)
+   ─────────────────────────────────────────────────────────────────── */
+.settings-theme-preview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  max-width: 440px;
+}
+
+.settings-theme-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--bg-page);
+  border: 2px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.settings-theme-tile:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.settings-theme-tile.active {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.06);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.theme-preview-mockup {
+  width: 100%;
+  height: 68px;
+  border-radius: var(--r-sm);
+  display: flex;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+
+.light-preview {
+  background: #F8FAFC;
+}
+
+.light-preview .mockup-sidebar {
+  width: 28%;
+  background: #E2E8F0;
+  border-right: 1px solid #CBD5E1;
+}
+
+.light-preview .mockup-body {
+  flex: 1;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.light-preview .mockup-topbar {
+  height: 8px;
+  background: #E2E8F0;
+  border-radius: 2px;
+}
+
+.light-preview .mockup-card {
+  flex: 1;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 3px;
+}
+
+.dark-preview {
+  background: #0B0F19;
+}
+
+.dark-preview .mockup-sidebar {
+  width: 28%;
+  background: #111827;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dark-preview .mockup-body {
+  flex: 1;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dark-preview .mockup-topbar {
+  height: 8px;
+  background: #1F2937;
+  border-radius: 2px;
+}
+
+.dark-preview .mockup-card {
+  flex: 1;
+  background: #151D2F;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+
+.theme-tile-label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ───────────────────────────────────────────────────────────────────
+   FIXED TIME INPUT (NO MORE TRUNCATION)
+   ─────────────────────────────────────────────────────────────────── */
+.settings-time-input {
+  width: 135px !important;
+  min-width: 135px !important;
+  padding: 0.45rem 0.75rem !important;
+  font-family: inherit !important;
+  font-size: 0.9rem !important;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: var(--r-sm) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ───────────────────────────────────────────────────────────────────
+   CLEAN DE-EMPHASIZED CACHE BUTTON
+   ─────────────────────────────────────────────────────────────────── */
+.btn-clear-cache {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid var(--border-subtle) !important;
+  color: var(--text-secondary) !important;
+  padding: 0.55rem 1rem !important;
+  border-radius: var(--r-md) !important;
+  font-size: 0.825rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-clear-cache:hover {
+  background: rgba(244, 63, 94, 0.08) !important;
+  color: var(--accent-rose) !important;
+  border-color: rgba(244, 63, 94, 0.35) !important;
+}
+
 /* ==========================================================================
    CUSTOM MODERN DARK DATEPICKER & CLASSROOM DATE TOOLBAR
    ========================================================================== */
