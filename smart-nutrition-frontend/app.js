@@ -1253,8 +1253,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnVerifyAndRegister) {
       btnVerifyAndRegister.addEventListener('click', async () => {
         const enteredCode = Array.from(document.querySelectorAll('.otp-digit-cell')).map(c => c.value).join('').trim();
-        if (!enteredCode || enteredCode.length < 6) {
-          showToast("Please enter the complete verification code.", "error");
+        if (!enteredCode || enteredCode.length !== totalOtpBoxes) {
+          showToast(`Please enter all ${totalOtpBoxes} digits of the verification code.`, "error");
           document.querySelector('.otp-digit-cell[data-idx="0"]')?.focus();
           return;
         }
