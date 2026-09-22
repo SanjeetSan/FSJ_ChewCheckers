@@ -1642,34 +1642,71 @@
             </div>
           </div>
 
-          <!-- SECTION 2 & 3: STUDENTS REQUIRING ATTENTION & NUTRITION HIGHLIGHTS (2-COLUMN GRID - Matching Parent Reports Template) -->
-          <div class="dashboard-insights-grid" style="margin-bottom:1.5rem;">
-            <!-- Card 1: Students Requiring Attention -->
-            <div class="card attention-card">
-              <div class="insight-card-header">
-                <div class="insight-card-title">
-                  <span class="insight-title-badge" style="width:26px; height:26px; border-radius:6px; background:rgba(255,255,255,0.05); color:var(--text-secondary); border:1px solid rgba(255,255,255,0.08); display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem;"><i class="fa-solid fa-user-clock"></i></span>
-                  <span>Students Requiring Attention</span>
-                  <span id="teacherAttentionBadge" style="font-size:0.7rem; font-weight:600; padding:1px 7px; border-radius:999px; background:rgba(244,63,94,0.1); color:#FDA4AF; border:1px solid rgba(244,63,94,0.2); margin-left:0.35rem;">0 Flagged</span>
+          <!-- SECTION 2 & 3: INNOVATIVE STUDENT MEAL TRIAGE & NUTRITION RADAR (2-COLUMN BENTO GRID) -->
+          <div class="teacher-triage-grid" style="margin-bottom:1.5rem;">
+            <!-- Card 1: Student Meal Triage & Attention Hub -->
+            <div class="teacher-triage-card">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
+                <div>
+                  <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <span style="width:28px; height:28px; border-radius:8px; background:rgba(244,63,94,0.1); color:#FB7185; border:1px solid rgba(244,63,94,0.2); display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem;">
+                      <i class="fa-solid fa-bell-concierge"></i>
+                    </span>
+                    <span style="font-size:1.05rem; font-weight:800; color:var(--text-primary); font-family:'Outfit',sans-serif;">Student Meal Triage</span>
+                    <span id="teacherAttentionBadge" style="font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:999px; background:rgba(244,63,94,0.12); color:#FDA4AF; border:1px solid rgba(244,63,94,0.25);">0 Flagged</span>
+                  </div>
+                  <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:2px;" id="teacherAttentionSubtitle">Real-time clearance verification and low consumption triage</div>
                 </div>
-                <span class="insight-subtitle" id="teacherAttentionSubtitle">Low intake or pending clearance</span>
+
+                <!-- Live Class Status Indicator -->
+                <div style="display:inline-flex; align-items:center; gap:6px; font-size:0.72rem; font-weight:600; padding:3px 8px; border-radius:6px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:var(--text-muted);" id="triageLiveTimeTag">
+                  <i class="fa-solid fa-circle-dot" style="color:#10B981; font-size:0.55rem; animation: pulse 2s infinite;"></i> Today's Lunch
+                </div>
               </div>
-              <div id="teacherActionStudentsList" class="insight-bullet-list">
-                <div style="font-size:0.85rem; color:var(--text-secondary);">Checking student clearance statuses...</div>
+
+              <!-- Interactive Triage Filter Pills Toolbar -->
+              <div class="triage-pills-bar" id="teacherTriageFilterBar">
+                <button type="button" class="triage-filter-pill active" data-triage-filter="all">
+                  <span>All Students</span> <span class="triage-pill-count" id="triagePillCountAll">0</span>
+                </button>
+                <button type="button" class="triage-filter-pill" data-triage-filter="pending">
+                  <i class="fa-solid fa-clock" style="color:#F59E0B;"></i> <span>Pending Clearance</span> <span class="triage-pill-count" id="triagePillCountPending">0</span>
+                </button>
+                <button type="button" class="triage-filter-pill" data-triage-filter="low">
+                  <i class="fa-solid fa-triangle-exclamation" style="color:#F43F5E;"></i> <span>Low Intake</span> <span class="triage-pill-count" id="triagePillCountLow">0</span>
+                </button>
+                <button type="button" class="triage-filter-pill" data-triage-filter="clean">
+                  <i class="fa-solid fa-circle-check" style="color:#10B981;"></i> <span>Clean Plate</span> <span class="triage-pill-count" id="triagePillCountClean">0</span>
+                </button>
+              </div>
+
+              <!-- Dynamic Triage Student List Container -->
+              <div id="teacherActionStudentsList" class="triage-student-list">
+                <div style="font-size:0.85rem; color:var(--text-secondary); padding:1rem 0; text-align:center;">Checking real-time meal telemetry...</div>
               </div>
             </div>
 
-            <!-- Card 2: Nutrition Highlights -->
-            <div class="card strength-card">
-              <div class="insight-card-header">
-                <div class="insight-card-title">
-                  <span class="insight-title-badge" style="width:26px; height:26px; border-radius:6px; background:rgba(255,255,255,0.05); color:var(--text-secondary); border:1px solid rgba(255,255,255,0.08); display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem;"><i class="fa-solid fa-chart-pie"></i></span>
-                  <span>Nutrition Highlights</span>
+            <!-- Card 2: Classroom Nutrition Radar & Appetite Intelligence -->
+            <div class="teacher-radar-card">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap; margin-bottom:1rem;">
+                <div>
+                  <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <span style="width:28px; height:28px; border-radius:8px; background:rgba(16,185,129,0.1); color:#34D399; border:1px solid rgba(16,185,129,0.2); display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem;">
+                      <i class="fa-solid fa-chart-pie"></i>
+                    </span>
+                    <span style="font-size:1.05rem; font-weight:800; color:var(--text-primary); font-family:'Outfit',sans-serif;">Nutrition Radar</span>
+                  </div>
+                  <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:2px;">Plate clearance velocity, waste metrics &amp; category breakdown</div>
                 </div>
-                <span class="insight-subtitle">Classroom trends &amp; clearance</span>
+
+                <span style="font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:999px; background:rgba(16,185,129,0.1); color:#34D399; border:1px solid rgba(16,185,129,0.2);">
+                  <i class="fa-solid fa-sparkles"></i> AI Appetite Telemetry
+                </span>
               </div>
-              <div id="teacherActionAiInsightsList" class="insight-bullet-list">
-                <div style="font-size:0.85rem; color:var(--text-secondary);">Analyzing classroom meal data...</div>
+
+              <!-- Dynamic Radar Telemetry Container -->
+              <div id="teacherActionAiInsightsList" class="radar-telemetry-container">
+                <div style="font-size:0.85rem; color:var(--text-secondary); padding:1rem 0; text-align:center;">Calculating classroom appetite telemetry...</div>
               </div>
             </div>
           </div>

@@ -9867,6 +9867,663 @@ body.dark-theme .attention-student-actions {
   }
 }
 
+/* ==========================================================================
+   INNOVATIVE TEACHER COMMAND CENTER: TRIAGE & NUTRITION RADAR REDESIGN
+   ========================================================================== */
+.teacher-triage-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 1.35rem;
+  margin-bottom: 1.5rem;
+  align-items: stretch;
+}
+
+@media (max-width: 1080px) {
+  .teacher-triage-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+}
+
+.teacher-triage-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-xl);
+  padding: 1.4rem 1.6rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.teacher-triage-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #F43F5E 0%, #F59E0B 50%, #6366F1 100%);
+  opacity: 0.85;
+}
+
+.teacher-radar-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-xl);
+  padding: 1.4rem 1.6rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.teacher-radar-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #10B981 0%, #3B82F6 50%, #8B5CF6 100%);
+  opacity: 0.85;
+}
+
+/* Filter pills toolbar */
+.triage-pills-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.85rem 0 1rem 0;
+  flex-wrap: wrap;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.triage-filter-pill {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.18s ease;
+}
+
+.triage-filter-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.triage-filter-pill.active {
+  background: var(--primary);
+  color: #FFFFFF;
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+}
+
+.triage-pill-count {
+  font-size: 0.68rem;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.2);
+  font-weight: 700;
+}
+
+.triage-filter-pill.active .triage-pill-count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+}
+
+/* High-tech student triage card */
+.triage-student-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.triage-item-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.95rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--r-lg);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.triage-item-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.triage-item-card.is-pending {
+  border-left: 3.5px solid #F59E0B;
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+}
+
+.triage-item-card.is-low-intake {
+  border-left: 3.5px solid #F43F5E;
+  background: linear-gradient(90deg, rgba(244, 63, 94, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+}
+
+.triage-item-card.is-clean-plate {
+  border-left: 3.5px solid #10B981;
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+}
+
+/* Avatar badge */
+.triage-avatar-wrap {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+}
+
+.triage-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.triage-avatar-wrap:hover .triage-avatar {
+  transform: scale(1.06);
+}
+
+.triage-avatar-status-dot {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  color: #FFFFFF;
+}
+
+.triage-avatar-status-dot.pending {
+  background: #F59E0B;
+}
+
+.triage-avatar-status-dot.low {
+  background: #F43F5E;
+}
+
+.triage-avatar-status-dot.clean {
+  background: #10B981;
+}
+
+/* Student info column */
+.triage-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.triage-header-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.triage-student-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+  cursor: pointer;
+}
+
+.triage-student-name:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.triage-code-chip {
+  font-size: 0.7rem;
+  font-family: monospace;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.triage-status-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.triage-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.triage-status-pill.pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #FCD34D;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.triage-status-pill.danger {
+  background: rgba(244, 63, 94, 0.12);
+  color: #FDA4AF;
+  border: 1px solid rgba(244, 63, 94, 0.25);
+}
+
+.triage-status-pill.clean {
+  background: rgba(16, 185, 129, 0.12);
+  color: #6EE7B7;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+/* Visual mini-bar */
+.triage-meter-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+}
+
+.triage-meter-track {
+  width: 90px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.triage-meter-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.triage-meter-fill.danger {
+  background: linear-gradient(90deg, #F43F5E, #FB7185);
+}
+
+.triage-meter-fill.pending {
+  background: linear-gradient(90deg, #F59E0B, #FBBF24);
+}
+
+.triage-meter-fill.clean {
+  background: linear-gradient(90deg, #10B981, #34D399);
+}
+
+.triage-meter-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* Action dock */
+.triage-action-dock {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.btn-triage-primary {
+  height: 32px;
+  padding: 0 0.85rem;
+  border-radius: var(--r-md);
+  background: var(--primary);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.76rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.25);
+}
+
+.btn-triage-primary:hover {
+  background: var(--primary-hover, #4F46E5);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.35);
+}
+
+.btn-triage-primary.action-verify {
+  background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+}
+
+.btn-triage-primary.action-verify:hover {
+  background: linear-gradient(135deg, #047857 0%, #059669 100%);
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.35);
+}
+
+.btn-triage-secondary {
+  height: 32px;
+  padding: 0 0.75rem;
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.76rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.btn-triage-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.btn-triage-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-triage-icon:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   RADAR TELEMETRY CARD (RIGHT COLUMN)
+   ========================================================================== */
+.radar-telemetry-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  flex: 1;
+}
+
+/* Hero Radial Clearance Row */
+.radar-hero-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 1.1rem 1.25rem;
+  border-radius: var(--r-lg);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(99, 102, 241, 0.06) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.radar-radial-wrap {
+  position: relative;
+  width: 82px;
+  height: 82px;
+  flex-shrink: 0;
+}
+
+.radar-radial-wrap svg {
+  transform: rotate(-90deg);
+  width: 82px;
+  height: 82px;
+}
+
+.radar-radial-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 7;
+}
+
+.radar-radial-fill {
+  fill: none;
+  stroke: url(#radarGrad);
+  stroke-width: 7;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.radar-radial-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.radar-radial-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  font-family: 'Outfit', sans-serif;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.radar-radial-sub {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 1px;
+}
+
+.radar-hero-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+
+.radar-hero-title {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.radar-hero-desc {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.radar-stat-chips-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.radar-stat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Category Intake Spectrum */
+.radar-spectrum-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--r-md);
+  padding: 0.85rem 1rem;
+}
+
+.radar-spectrum-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+}
+
+.radar-spectrum-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.radar-spectrum-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.74rem;
+}
+
+.radar-spectrum-cat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.radar-spectrum-val {
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+}
+
+.radar-spectrum-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.radar-spectrum-bar {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Classroom Trends Callout */
+.radar-trends-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 600px) {
+  .radar-trends-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.radar-trend-card {
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.radar-trend-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.radar-trend-val {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.radar-trend-sub {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  line-height: 1.25;
+}
+
+@media (max-width: 640px) {
+  .triage-item-card {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+  .triage-action-dock {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
 
 
 
