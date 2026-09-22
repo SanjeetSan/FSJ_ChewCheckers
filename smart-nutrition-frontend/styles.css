@@ -9885,30 +9885,7 @@ body.dark-theme .attention-student-actions {
   }
 }
 
-.teacher-triage-card {
-  position: relative;
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--r-xl);
-  padding: 1.4rem 1.6rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.teacher-triage-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #F43F5E 0%, #F59E0B 50%, #6366F1 100%);
-  opacity: 0.85;
-}
-
+.teacher-triage-card,
 .teacher-radar-card {
   position: relative;
   background: var(--bg-card);
@@ -9922,15 +9899,16 @@ body.dark-theme .attention-student-actions {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.teacher-triage-card::before,
 .teacher-radar-card::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #10B981 0%, #3B82F6 50%, #8B5CF6 100%);
-  opacity: 0.85;
+  height: 2.5px;
+  background: var(--primary);
+  opacity: 0.6;
 }
 
 /* Filter pills toolbar */
@@ -9941,15 +9919,15 @@ body.dark-theme .attention-student-actions {
   margin: 0.85rem 0 1rem 0;
   flex-wrap: wrap;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .triage-filter-pill {
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-subtle);
   background: rgba(255, 255, 255, 0.03);
   color: var(--text-secondary);
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: var(--r-md, 8px);
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
@@ -9960,7 +9938,7 @@ body.dark-theme .attention-student-actions {
 }
 
 .triage-filter-pill:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
   color: var(--text-primary);
   border-color: rgba(255, 255, 255, 0.15);
 }
@@ -9969,7 +9947,7 @@ body.dark-theme .attention-student-actions {
   background: var(--primary);
   color: #FFFFFF;
   border-color: var(--primary);
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
 }
 
 .triage-pill-count {
@@ -9978,6 +9956,7 @@ body.dark-theme .attention-student-actions {
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.2);
   font-weight: 700;
+  color: var(--text-muted);
 }
 
 .triage-filter-pill.active .triage-pill-count {
@@ -10001,30 +9980,27 @@ body.dark-theme .attention-student-actions {
   padding: 0.85rem 1rem;
   border-radius: var(--r-lg);
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--border-subtle);
+  transition: all 0.2s ease;
 }
 
 .triage-item-card:hover {
   background: rgba(255, 255, 255, 0.04);
   border-color: rgba(255, 255, 255, 0.12);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .triage-item-card.is-pending {
-  border-left: 3.5px solid #F59E0B;
-  background: linear-gradient(90deg, rgba(245, 158, 11, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border-left: 3px solid rgba(245, 158, 11, 0.6);
 }
 
 .triage-item-card.is-low-intake {
-  border-left: 3.5px solid #F43F5E;
-  background: linear-gradient(90deg, rgba(244, 63, 94, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border-left: 3px solid rgba(244, 63, 94, 0.6);
 }
 
 .triage-item-card.is-clean-plate {
-  border-left: 3.5px solid #10B981;
-  background: linear-gradient(90deg, rgba(16, 185, 129, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border-left: 3px solid rgba(16, 185, 129, 0.6);
 }
 
 /* Avatar badge */
@@ -10230,22 +10206,22 @@ body.dark-theme .attention-student-actions {
 }
 
 .btn-triage-primary.action-verify {
-  background: linear-gradient(135deg, #059669 0%, #10B981 100%);
-  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+  background: var(--primary);
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.2);
 }
 
 .btn-triage-primary.action-verify:hover {
-  background: linear-gradient(135deg, #047857 0%, #059669 100%);
-  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.35);
+  background: var(--primary-hover, #4F46E5);
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
 }
 
 .btn-triage-secondary {
   height: 32px;
   padding: 0 0.75rem;
   border-radius: var(--r-md);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
   color: var(--text-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-subtle);
   font-size: 0.76rem;
   font-weight: 600;
   display: inline-flex;
@@ -10257,9 +10233,9 @@ body.dark-theme .attention-student-actions {
 }
 
 .btn-triage-secondary:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .btn-triage-icon {
@@ -10268,7 +10244,7 @@ body.dark-theme .attention-student-actions {
   border-radius: var(--r-md);
   background: rgba(255, 255, 255, 0.03);
   color: var(--text-muted);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -10299,8 +10275,8 @@ body.dark-theme .attention-student-actions {
   gap: 1.25rem;
   padding: 1.1rem 1.25rem;
   border-radius: var(--r-lg);
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(99, 102, 241, 0.06) 100%);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
 }
 
 .radar-radial-wrap {

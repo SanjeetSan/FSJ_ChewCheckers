@@ -1771,18 +1771,18 @@
               <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap;">
                 <div>
                   <div style="display:flex; align-items:center; gap:0.5rem;">
-                    <span style="width:28px; height:28px; border-radius:8px; background:rgba(244,63,94,0.1); color:#FB7185; border:1px solid rgba(244,63,94,0.2); display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem;">
+                    <span style="width:28px; height:28px; border-radius:8px; background:rgba(99,102,241,0.08); color:var(--primary); border:1px solid rgba(99,102,241,0.2); display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem;">
                       <i class="fa-solid fa-bell-concierge"></i>
                     </span>
                     <span style="font-size:1.05rem; font-weight:800; color:var(--text-primary); font-family:'Outfit',sans-serif;">Student Meal Triage</span>
-                    <span id="teacherAttentionBadge" style="font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:999px; background:rgba(244,63,94,0.12); color:#FDA4AF; border:1px solid rgba(244,63,94,0.25);">0 Flagged</span>
+                    <span id="teacherAttentionBadge" style="font-size:0.7rem; font-weight:600; padding:2px 8px; border-radius:999px; background:rgba(255,255,255,0.05); color:var(--text-secondary); border:1px solid var(--border-subtle);">0 Flagged</span>
                   </div>
                   <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:2px;" id="teacherAttentionSubtitle">Real-time clearance verification and low consumption triage</div>
                 </div>
 
                 <!-- Live Class Status Indicator -->
-                <div style="display:inline-flex; align-items:center; gap:6px; font-size:0.72rem; font-weight:600; padding:3px 8px; border-radius:6px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:var(--text-muted);" id="triageLiveTimeTag">
-                  <i class="fa-solid fa-circle-dot" style="color:#10B981; font-size:0.55rem; animation: pulse 2s infinite;"></i> Today's Lunch
+                <div style="display:inline-flex; align-items:center; gap:6px; font-size:0.72rem; font-weight:600; padding:3px 8px; border-radius:6px; background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); color:var(--text-muted);" id="triageLiveTimeTag">
+                  <i class="fa-solid fa-clock" style="font-size:0.65rem; color:var(--text-muted);"></i> Today's Lunch
                 </div>
               </div>
 
@@ -1792,13 +1792,13 @@
                   <span>All Students</span> <span class="triage-pill-count" id="triagePillCountAll">0</span>
                 </button>
                 <button type="button" class="triage-filter-pill" data-triage-filter="pending">
-                  <i class="fa-solid fa-clock" style="color:#F59E0B;"></i> <span>Pending Clearance</span> <span class="triage-pill-count" id="triagePillCountPending">0</span>
+                  <i class="fa-solid fa-clock"></i> <span>Pending Clearance</span> <span class="triage-pill-count" id="triagePillCountPending">0</span>
                 </button>
                 <button type="button" class="triage-filter-pill" data-triage-filter="low">
-                  <i class="fa-solid fa-triangle-exclamation" style="color:#F43F5E;"></i> <span>Low Intake</span> <span class="triage-pill-count" id="triagePillCountLow">0</span>
+                  <i class="fa-solid fa-triangle-exclamation"></i> <span>Low Intake</span> <span class="triage-pill-count" id="triagePillCountLow">0</span>
                 </button>
                 <button type="button" class="triage-filter-pill" data-triage-filter="clean">
-                  <i class="fa-solid fa-circle-check" style="color:#10B981;"></i> <span>Clean Plate</span> <span class="triage-pill-count" id="triagePillCountClean">0</span>
+                  <i class="fa-solid fa-circle-check"></i> <span>Clean Plate</span> <span class="triage-pill-count" id="triagePillCountClean">0</span>
                 </button>
               </div>
 
@@ -1813,7 +1813,7 @@
               <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; flex-wrap:wrap; margin-bottom:1rem;">
                 <div>
                   <div style="display:flex; align-items:center; gap:0.5rem;">
-                    <span style="width:28px; height:28px; border-radius:8px; background:rgba(16,185,129,0.1); color:#34D399; border:1px solid rgba(16,185,129,0.2); display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem;">
+                    <span style="width:28px; height:28px; border-radius:8px; background:rgba(99,102,241,0.08); color:var(--primary); border:1px solid rgba(99,102,241,0.2); display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem;">
                       <i class="fa-solid fa-chart-pie"></i>
                     </span>
                     <span style="font-size:1.05rem; font-weight:800; color:var(--text-primary); font-family:'Outfit',sans-serif;">Nutrition Radar</span>
@@ -1821,8 +1821,8 @@
                   <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:2px;">Plate clearance velocity, waste metrics &amp; category breakdown</div>
                 </div>
 
-                <span style="font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:999px; background:rgba(16,185,129,0.1); color:#34D399; border:1px solid rgba(16,185,129,0.2);">
-                  <i class="fa-solid fa-sparkles"></i> AI Appetite Telemetry
+                <span style="font-size:0.7rem; font-weight:600; padding:2px 8px; border-radius:999px; background:rgba(255,255,255,0.04); color:var(--text-secondary); border:1px solid var(--border-subtle);">
+                  <i class="fa-solid fa-sparkles" style="color:var(--primary); font-size:0.65rem;"></i> AI Telemetry
                 </span>
               </div>
 

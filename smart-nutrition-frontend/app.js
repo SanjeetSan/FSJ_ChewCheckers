@@ -8155,14 +8155,14 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
         if (attBadge) {
           if (attentionStudents.length === 0) {
             attBadge.textContent = 'All Clear';
-            attBadge.style.color = '#10B981';
-            attBadge.style.background = 'rgba(16,185,129,0.12)';
-            attBadge.style.borderColor = 'rgba(16,185,129,0.25)';
+            attBadge.style.color = 'var(--text-muted)';
+            attBadge.style.background = 'rgba(255,255,255,0.04)';
+            attBadge.style.borderColor = 'var(--border-subtle)';
           } else {
             attBadge.textContent = `${attentionStudents.length} Flagged`;
-            attBadge.style.color = '#FDA4AF';
-            attBadge.style.background = 'rgba(244,63,94,0.12)';
-            attBadge.style.borderColor = 'rgba(244,63,94,0.25)';
+            attBadge.style.color = 'var(--text-secondary)';
+            attBadge.style.background = 'rgba(255,255,255,0.06)';
+            attBadge.style.borderColor = 'var(--border-subtle)';
           }
         }
 
@@ -8189,7 +8189,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
             studentsListContainer.innerHTML = `
               <div style="padding:2rem 1rem; text-align:center; background:rgba(255,255,255,0.015); border-radius:var(--r-lg); border:1px dashed rgba(255,255,255,0.08);">
-                <i class="fa-solid ${emptyIcon}" style="font-size:2rem; color:#10B981; margin-bottom:0.6rem;"></i>
+                <i class="fa-solid ${emptyIcon}" style="font-size:2rem; color:var(--text-muted); margin-bottom:0.6rem;"></i>
                 <div style="font-size:0.92rem; font-weight:700; color:var(--text-primary); font-family:'Outfit',sans-serif;">${emptyMsg}</div>
                 <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">All classroom nutrition parameters operating smoothly.</div>
               </div>
@@ -8244,7 +8244,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
 
                   ${t.category === 'pending' ? `
                     <div style="font-size:0.75rem; color:var(--text-secondary); display:flex; align-items:center; gap:5px; margin-top:2px;">
-                      <i class="fa-solid fa-camera" style="color:#F59E0B; font-size:0.7rem;"></i>
+                      <i class="fa-solid fa-camera" style="color:var(--text-muted); font-size:0.7rem;"></i>
                       <span>Pre-meal photo logged • Ready for leftover clearance</span>
                     </div>
                   ` : (t.pct !== null ? `
@@ -8377,8 +8377,8 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
                 <svg viewBox="0 0 82 82">
                   <defs>
                     <linearGradient id="radarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stop-color="#10B981" />
-                      <stop offset="100%" stop-color="#6366F1" />
+                      <stop offset="0%" stop-color="#6366F1" />
+                      <stop offset="100%" stop-color="#818CF8" />
                     </linearGradient>
                   </defs>
                   <circle class="radar-radial-bg" cx="41" cy="41" r="34" />
@@ -8395,15 +8395,15 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
               <div class="radar-hero-stats">
                 <div class="radar-hero-title">
                   <span>Classroom Plate Clearance</span>
-                  <span style="font-size:0.7rem; padding:1px 6px; border-radius:4px; background:rgba(16,185,129,0.15); color:#34D399; font-weight:700;">
+                  <span style="font-size:0.7rem; padding:1px 6px; border-radius:4px; background:rgba(255,255,255,0.06); color:var(--text-secondary); border:1px solid var(--border-subtle); font-weight:600;">
                     ${completionRate >= 70 ? 'Optimal' : (completionRate >= 50 ? 'Moderate' : 'Needs Review')}
                   </span>
                 </div>
                 <div class="radar-hero-desc">Average classroom plate waste is <strong>${cappedWaste}%</strong> across all tracked meal sessions.</div>
                 <div class="radar-stat-chips-row">
-                  <span class="radar-stat-chip"><i class="fa-solid fa-utensils" style="color:#6366F1;"></i> ${ratedCount} Logged</span>
-                  <span class="radar-stat-chip"><i class="fa-solid fa-award" style="color:#10B981;"></i> ${cleanCount} Clean Plates</span>
-                  <span class="radar-stat-chip"><i class="fa-solid fa-clock" style="color:#F59E0B;"></i> ${pendingStudents.length} Pending</span>
+                  <span class="radar-stat-chip"><i class="fa-solid fa-utensils"></i> ${ratedCount} Logged</span>
+                  <span class="radar-stat-chip"><i class="fa-solid fa-award"></i> ${cleanCount} Clean Plates</span>
+                  <span class="radar-stat-chip"><i class="fa-solid fa-clock"></i> ${pendingStudents.length} Pending</span>
                 </div>
               </div>
             </div>
@@ -8411,18 +8411,18 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             <!-- Macro Category Intake Spectrum -->
             <div class="radar-spectrum-box">
               <div class="radar-spectrum-header">
-                <span><i class="fa-solid fa-layer-group" style="color:var(--primary);"></i> Food Category Intake Spectrum</span>
-                <span style="font-size:0.7rem; color:var(--text-muted); font-weight:600;">Classroom Aggregate</span>
+                <span><i class="fa-solid fa-layer-group" style="color:var(--text-muted);"></i> Food Category Intake Spectrum</span>
+                <span style="font-size:0.7rem; color:var(--text-muted); font-weight:500;">Classroom Aggregate</span>
               </div>
 
               <!-- Grains & Staples -->
               <div class="radar-spectrum-row">
                 <div class="radar-spectrum-top">
                   <span class="radar-spectrum-cat">🍚 Staples &amp; Grains (Roti, Rice)</span>
-                  <span class="radar-spectrum-val" style="color:#10B981;">86% Cleared</span>
+                  <span class="radar-spectrum-val" style="color:var(--text-primary);">86% Cleared</span>
                 </div>
                 <div class="radar-spectrum-track">
-                  <div class="radar-spectrum-bar" style="width:86%; background:linear-gradient(90deg, #10B981, #34D399);"></div>
+                  <div class="radar-spectrum-bar" style="width:86%; background:var(--primary);"></div>
                 </div>
               </div>
 
@@ -8430,10 +8430,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
               <div class="radar-spectrum-row">
                 <div class="radar-spectrum-top">
                   <span class="radar-spectrum-cat">🫘 Proteins &amp; Pulses (Dal, Paneer)</span>
-                  <span class="radar-spectrum-val" style="color:#6366F1;">74% Cleared</span>
+                  <span class="radar-spectrum-val" style="color:var(--text-primary);">74% Cleared</span>
                 </div>
                 <div class="radar-spectrum-track">
-                  <div class="radar-spectrum-bar" style="width:74%; background:linear-gradient(90deg, #6366F1, #818CF8);"></div>
+                  <div class="radar-spectrum-bar" style="width:74%; background:var(--primary); opacity:0.85;"></div>
                 </div>
               </div>
 
@@ -8441,10 +8441,10 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
               <div class="radar-spectrum-row">
                 <div class="radar-spectrum-top">
                   <span class="radar-spectrum-cat">🥦 Vegetables &amp; Salad</span>
-                  <span class="radar-spectrum-val" style="color:#F59E0B;">48% Cleared <small style="font-size:0.65rem; color:#FCD34D;">(Needs Boost)</small></span>
+                  <span class="radar-spectrum-val" style="color:var(--text-primary);">48% Cleared <small style="font-size:0.65rem; color:var(--text-muted);">(Needs Boost)</small></span>
                 </div>
                 <div class="radar-spectrum-track">
-                  <div class="radar-spectrum-bar" style="width:48%; background:linear-gradient(90deg, #F59E0B, #FBBF24);"></div>
+                  <div class="radar-spectrum-bar" style="width:48%; background:var(--primary); opacity:0.65;"></div>
                 </div>
               </div>
             </div>
@@ -8452,13 +8452,13 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             <!-- Trends Callout -->
             <div class="radar-trends-grid">
               <div class="radar-trend-card">
-                <span class="radar-trend-label"><i class="fa-solid fa-star" style="color:#FBBF24;"></i> Most Loved Dish</span>
+                <span class="radar-trend-label"><i class="fa-solid fa-star" style="color:var(--text-muted);"></i> Most Loved Dish</span>
                 <span class="radar-trend-val">${topFood}</span>
                 <span class="radar-trend-sub">Highest clearance rate across student lunchboxes</span>
               </div>
 
               <div class="radar-trend-card">
-                <span class="radar-trend-label"><i class="fa-solid fa-lightbulb" style="color:#34D399;"></i> Teacher Action Tip</span>
+                <span class="radar-trend-label"><i class="fa-solid fa-lightbulb" style="color:var(--text-muted);"></i> Teacher Action Tip</span>
                 <span class="radar-trend-val" style="font-size:0.78rem; font-weight:600; white-space:normal;">Encourage veggie intake before sweet items</span>
                 <span class="radar-trend-sub">Improves micronutrient compliance by up to 35%</span>
               </div>
