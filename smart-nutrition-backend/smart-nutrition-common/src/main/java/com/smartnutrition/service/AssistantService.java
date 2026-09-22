@@ -22,7 +22,7 @@ public class AssistantService {
 
         try {
             RestTemplate restTemplate = new RestTemplate();
-            String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=" + apiKey;
+            String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=" + apiKey;
 
             Map<String, Object> requestBody = Map.of(
                 "contents", List.of(Map.of(

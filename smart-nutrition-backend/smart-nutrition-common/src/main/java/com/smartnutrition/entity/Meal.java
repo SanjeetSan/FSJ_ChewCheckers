@@ -19,7 +19,7 @@ public class Meal {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
-    private Student student;
+    private Student student;	
 
     @Column(name = "meal_date", nullable = false)
     private LocalDate mealDate;

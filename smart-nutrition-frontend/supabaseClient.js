@@ -1419,14 +1419,21 @@ export async function supabaseGetStudentsByClassCode(classCode) {
 export async function supabaseGetEligibleStudents(classCode, searchQuery = '') {
   try {
     const rawCode = (classCode || 'CLS-6070').trim().toUpperCase();
-    const codes = (rawCode === 'CLS-6070' || rawCode === 'CLS-3214') ? ['CLS-6070', 'CLS-3214'] : [rawCode];
-    const { data: cls } = await supabase
+    let { data: cls } = await supabase
       .from('classes')
       .select('id, class_name, section, class_code')
-      .in('class_code', codes)
-      .order('id', { ascending: true })
-      .limit(1)
+      .eq('class_code', rawCode)
       .maybeSingle();
+
+    if (!cls && (rawCode === 'CLS-6070' || rawCode === 'CLS-3214')) {
+      const { data: altCls } = await supabase
+        .from('classes')
+        .select('id, class_name, section, class_code')
+        .in('class_code', ['CLS-6070', 'CLS-3214'])
+        .limit(1)
+        .maybeSingle();
+      cls = altCls;
+    }
 
     const currentClassId = cls ? cls.id : null;
 
@@ -1439,7 +1446,16 @@ export async function supabaseGetEligibleStudents(classCode, searchQuery = '') {
     const { data: allStudents, error } = await query;
     if (error) throw error;
 
+    // Only include students who are linked to an active registered parent
+    const { data: parentLinks } = await supabase
+      .from('parent_student')
+      .select('student_id');
+    const linkedStudentIds = new Set((parentLinks || []).map(p => p.student_id));
+
     let eligible = (allStudents || []).filter(s => {
+      if (!linkedStudentIds.has(s.id)) {
+        return false;
+      }
       if (currentClassId && s.class_id === currentClassId) {
         return false;
       }

@@ -7,5 +7,31 @@
     "build": "npm --prefix smart-nutrition-frontend run build",
     "dev": "npm --prefix smart-nutrition-frontend run dev",
     "start": "npm --prefix smart-nutrition-frontend run preview"
-  }
+  },
+  "main": "cleanup_mysql_image_urls.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "dependencies": {
+    "adm-zip": "^0.6.0",
+    "docx": "^9.7.1",
+    "pdf-lib": "^1.17.1",
+    "pdf-parse": "^2.4.5",
+    "pptxgenjs": "^4.0.1",
+    "sax": "^1.6.1",
+    "xml2js": "^0.6.2",
+    "xmlbuilder": "^11.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SanjeetSan/FSJ_ChewCheckers.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/SanjeetSan/FSJ_ChewCheckers/issues"
+  },
+  "homepage": "https://github.com/SanjeetSan/FSJ_ChewCheckers#readme"
 }

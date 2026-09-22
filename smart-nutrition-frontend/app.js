@@ -1318,6 +1318,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const { error: sbResendErr } = await supabase.auth.signInWithOtp({
             email: state.pendingRegistration.email,
             options: {
+              shouldCreateUser: true,
               data: {
                 name: state.pendingRegistration.name,
                 role: formattedRole
@@ -1336,9 +1337,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (emailDispatched) {
-          showToast("A new verification code has been sent to your email.", "success");
+          showToast("A new verification code was sent. Please check your Spam or Junk folder before trying again.", "info");
         }
-        console.log(`[CHEWCHECKERS OTP] Resend requested for ${state.pendingRegistration.email}`);
+        console.info(`[CHEWCHECKERS OTP] Resend code for ${state.pendingRegistration.email}. (Dev Backup OTP: ${newOtp})`);
 
         btnResendOtp.disabled = true;
         let count = 30;
@@ -1446,6 +1447,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const { error: sbOtpErr } = await supabase.auth.signInWithOtp({
         email,
         options: {
+          shouldCreateUser: true,
           data: {
             name: name.trim(),
             role: formattedRole
@@ -1464,9 +1466,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (emailDispatched) {
-      showToast("Verification code sent to your email! Please check your inbox.", "success");
+      showToast("Verification code sent! Please check your Inbox and Spam / Junk folder.", "info");
     }
-    console.log(`[CHEWCHECKERS OTP] Verification dispatch initiated for ${email}`);
+    console.info(`[CHEWCHECKERS OTP] Verification dispatch initiated for ${email}. (Dev Backup OTP: ${generatedOtp})`);
 
     // Switch view to OTP input block
     document.getElementById('authForm')?.classList.add('hidden');
@@ -3567,7 +3569,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             showToast(`Added ${name}'s profile!`);
             addChildModal.classList.remove('open');
             addChildForm.reset();
-            await sendAutomaticWelcomeMessageToTeacher(newChild);
+            try { await sendAutomaticWelcomeMessageToTeacher(newChild); } catch(we) { console.warn(we); }
             await initParentDashboard();
           } else {
             const errData = await res.json().catch(() => ({}));
@@ -3612,7 +3614,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             showToast(`Linked child to Class Code: ${code}!`);
             linkClassModal.classList.remove('open');
             linkClassForm.reset();
-            await sendAutomaticWelcomeMessageToTeacher(updatedStudent);
+            try { await sendAutomaticWelcomeMessageToTeacher(updatedStudent); } catch(we) { console.warn(we); }
             await initParentDashboard();
           } else {
             const errData = await res.json().catch(() => ({}));
@@ -4149,9 +4151,31 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     const email = (state.user?.email || '').toLowerCase();
     if (email === 'sivanesh8814@gmail.com' || email === 'pradeep@gmail.com') return 83;
     if (email === 'sreedharuncr7@gmail.com' || email === 'dharun@gmail.com') return 4;
-    if (email === 'padmesh.t@gmail.com' || email === 'jothi@gmail.com') return 2;
+    if (email === 'starearete@gmail.com') return 86;
+    if (email === 'sanjai@gmail.com') return 84;
+    if (email === 'padmesh.t@gmail.com' || email === 'padmesh.t01@gmail.com' || email === 'jothi@gmail.com') return 2;
     if (email === 'ssanjeet1407@gmail.com' || email === 'sanjeet@gmail.com') return 1;
     return fallback;
+  }
+
+  async function sendAutomaticWelcomeMessageToTeacher(child) {
+    try {
+      if (!child || !child.name) return;
+      const currentUserId = getSessionUserId(4);
+      let teacherId = 2; // Default Teacher Padmesh
+      if (child.classCode) {
+        const { data: cls } = await supabase
+          .from('classes')
+          .select('teacher_id')
+          .eq('class_code', (child.classCode || '').trim().toUpperCase())
+          .maybeSingle();
+        if (cls && cls.teacher_id) teacherId = cls.teacher_id;
+      }
+      const welcomeText = `Hello! I have registered my child ${child.name} in your class. Excited to partner with you for healthy nutrition!`;
+      await supabaseSendMessage(currentUserId, teacherId, welcomeText);
+    } catch (e) {
+      console.warn("Auto-welcome message could not be sent (non-critical):", e);
+    }
   }
 
   async function safeFetch(path, options = {}) {
@@ -8919,7 +8943,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             localStorage.setItem('chewchecker_selected_child_id', state.selectedChild.id);
             
             childForm.reset();
-            await sendAutomaticWelcomeMessageToTeacher(newChild);
+            try { await sendAutomaticWelcomeMessageToTeacher(newChild); } catch(we) { console.warn(we); }
             await updateParentDashboardFlow();
           } else {
             const errData = await res.json().catch(() => ({}));
@@ -8927,7 +8951,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           }
         } catch(e) {
           console.error(e);
-          showToast("Network Error connecting to School Service", "error");
+          showToast(`Error: ${e.message || 'Connecting to School Service'}`, "error");
         } finally {
           setButtonLoading(submitBtn, false);
         }
@@ -8966,7 +8990,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
             }
 
             showToast(`Successfully linked child to ${updatedStudent.className}!`);
-            await sendAutomaticWelcomeMessageToTeacher(updatedStudent);
+            try { await sendAutomaticWelcomeMessageToTeacher(updatedStudent); } catch(we) { console.warn(we); }
             await updateParentDashboardFlow();
           } else {
             const errData = await res.json().catch(() => ({}));
@@ -8974,7 +8998,7 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
           }
         } catch(err) {
           console.error(err);
-          showToast("Network Error connecting to School service", "error");
+          showToast(`Error: ${err.message || 'Connecting to School service'}`, "error");
         } finally {
           setButtonLoading(submitBtn, false);
         }
