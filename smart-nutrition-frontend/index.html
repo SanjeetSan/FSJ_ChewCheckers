@@ -1232,6 +1232,128 @@
 
         <!-- PANE 5: TEACHER CLASS OVERVIEW (CLEAN SCHOOL ERP REFINEMENT) -->
         <div class="pane-container" id="pane-teacher-roster">
+
+          <!-- TEACHER ONBOARDING WIZARD (Displayed when new teacher has no active classroom) -->
+          <div id="teacherOnboardingWizard" class="hidden" style="margin-bottom:2rem;">
+            
+            <!-- Onboarding Steps Indicator -->
+            <div id="teacherOnboardingWizardHeader" class="onboarding-wizard" style="margin-bottom:1.5rem;">
+              <div class="onboarding-steps" style="max-width:480px;">
+                <div id="teacherOnboardingStepLineActive" class="onboarding-step-line-active" style="width: 0%;"></div>
+                <div class="onboarding-step active" id="teacherStepIndicator1">
+                  <div class="onboarding-step-num">1</div>
+                  <span class="onboarding-step-label">Classroom Setup</span>
+                </div>
+                <div class="onboarding-step" id="teacherStepIndicator2">
+                  <div class="onboarding-step-num">2</div>
+                  <span class="onboarding-step-label">Class Code &amp; Launch</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Onboarding Step 1: Classroom Setup Form -->
+            <div id="teacherOnboardingState1" class="card" style="margin-bottom:1.75rem; padding:2rem; border-top:4px solid var(--primary);">
+              <div class="onboarding-hero" style="text-align:center; margin-bottom:1.5rem;">
+                <div class="onboarding-hero-icon" style="color:var(--primary); font-size:2.2rem; margin-bottom:0.5rem;"><i class="fa-solid fa-chalkboard-user"></i></div>
+                <h3 style="font-size:1.5rem; font-weight:800; font-family:'Outfit', sans-serif; color:var(--text-primary); margin:0 0 0.35rem 0;">Welcome! Set Up Your Classroom</h3>
+                <p style="color:var(--text-secondary); max-width:620px; margin:0 auto; font-size:0.875rem; line-height:1.5;">
+                  Step 1 of 2: Define your grade, section, and academic year to generate your unique Classroom Join Code for parents.
+                </p>
+              </div>
+
+              <form id="teacherOnboardingClassForm" style="max-width:680px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:1.25rem;">
+                <div class="form-group" style="grid-column: span 2;">
+                  <label class="form-label" for="obTeacherSchool">School Name *</label>
+                  <input type="text" id="obTeacherSchool" class="form-input" value="Greenwood International School" required>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label" for="obTeacherGrade">Grade / Standard *</label>
+                  <select id="obTeacherGrade" class="form-input" required>
+                    <option value="Grade 1">Grade 1</option>
+                    <option value="Grade 2">Grade 2</option>
+                    <option value="Grade 3">Grade 3</option>
+                    <option value="Grade 4">Grade 4</option>
+                    <option value="Grade 5" selected>Grade 5</option>
+                    <option value="Grade 6">Grade 6</option>
+                    <option value="Grade 7">Grade 7</option>
+                    <option value="Grade 8">Grade 8</option>
+                    <option value="Grade 9">Grade 9</option>
+                    <option value="Grade 10">Grade 10</option>
+                    <option value="Grade 11">Grade 11</option>
+                    <option value="Grade 12">Grade 12</option>
+                    <option value="Kindergarten">Kindergarten</option>
+                    <option value="Pre-Primary">Pre-Primary</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="obTeacherSection">Section *</label>
+                  <select id="obTeacherSection" class="form-input" required>
+                    <option value="A">Section A</option>
+                    <option value="B" selected>Section B</option>
+                    <option value="C">Section C</option>
+                    <option value="D">Section D</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="obTeacherAcademicYear">Academic Year *</label>
+                  <input type="text" id="obTeacherAcademicYear" class="form-input" value="2025-2026" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="obTeacherRoom">Room / Description</label>
+                  <input type="text" id="obTeacherRoom" class="form-input" placeholder="e.g. Room 204 • Morning Session">
+                </div>
+
+                <div style="grid-column: span 2; margin-top:1rem;">
+                  <button type="submit" class="btn-action-primary" id="btnSubmitTeacherClass" style="width:100%; padding:0.85rem; font-size:0.95rem; font-weight:700;">
+                    <i class="fa-solid fa-arrow-right"></i> Create Classroom &amp; Generate Join Code
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Onboarding Step 2: Class Code Showcase & Launch -->
+            <div id="teacherOnboardingState2" class="card hidden" style="margin-bottom:1.75rem; padding:2rem; border-top:4px solid #10B981; text-align:center;">
+              <div class="onboarding-hero" style="margin-bottom:1.5rem;">
+                <div style="width:60px; height:60px; border-radius:50%; background:rgba(16,185,129,0.12); color:#10B981; border:2px solid rgba(16,185,129,0.25); display:inline-flex; align-items:center; justify-content:center; font-size:1.8rem; margin-bottom:0.75rem;">
+                  <i class="fa-solid fa-check"></i>
+                </div>
+                <h3 style="font-size:1.5rem; font-weight:800; font-family:'Outfit', sans-serif; color:var(--text-primary); margin:0 0 0.35rem 0;">Classroom Successfully Created!</h3>
+                <p style="color:var(--text-secondary); max-width:600px; margin:0 auto; font-size:0.875rem; line-height:1.5;">
+                  Step 2 of 2: Here is your official Classroom Join Code. Share this code with parents so they can register their children into your classroom roster.
+                </p>
+              </div>
+
+              <!-- Big Visual Code Card -->
+              <div style="max-width:520px; margin:0 auto 1.5rem auto; padding:1.5rem; border-radius:var(--r-lg); background:linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(16,185,129,0.08) 100%); border:1.5px solid rgba(99,102,241,0.25);">
+                <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.5rem;">Official Classroom Join Code</div>
+                <div id="obTeacherGeneratedCode" style="font-size:2.4rem; font-weight:900; color:var(--primary); font-family:monospace; letter-spacing:2px; margin-bottom:0.4rem;">CLS-5B-0000</div>
+                <div id="obTeacherClassSummary" style="font-size:0.875rem; font-weight:600; color:var(--text-secondary);">Grade 5 - Section B • Greenwood International School</div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div style="max-width:520px; margin:0 auto; display:flex; flex-direction:column; gap:0.75rem;">
+                <div style="display:flex; gap:0.65rem; flex-wrap:wrap;">
+                  <button type="button" class="btn-action-outline" id="btnCopyTeacherClassCode" style="flex:1; padding:0.75rem; font-size:0.85rem; font-weight:700; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
+                    <i class="fa-solid fa-copy"></i> Copy Code
+                  </button>
+                  <button type="button" class="btn-action-outline" id="btnCopyTeacherParentInvite" style="flex:1; padding:0.75rem; font-size:0.85rem; font-weight:700; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
+                    <i class="fa-solid fa-paper-plane"></i> Copy Parent Invite
+                  </button>
+                </div>
+                <button type="button" class="btn-action-primary" id="btnLaunchTeacherDashboard" style="width:100%; padding:0.85rem; font-size:0.95rem; font-weight:700; background:linear-gradient(135deg, #059669 0%, #10B981 100%); box-shadow:0 4px 14px rgba(16,185,129,0.3);">
+                  <i class="fa-solid fa-chalkboard-user"></i> Enter Classroom Dashboard &rarr;
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- TEACHER DASHBOARD ACTIVE CONTENT -->
+          <div id="teacherDashboardContent">
           
           <!-- 1. MODERN CONSISTENT CLASS HEADER CARD -->
           <div class="card mb-3" style="padding:1.15rem 1.5rem; border-top: 3px solid var(--primary); background: linear-gradient(135deg, var(--bg-card) 0%, rgba(99, 102, 241, 0.03) 100%); margin-bottom:1.25rem;">
@@ -1804,6 +1926,8 @@
                 </tbody>
               </table>
             </div>
+          </div>
+          <!-- END #teacherDashboardContent -->
           </div>
 
         </div>

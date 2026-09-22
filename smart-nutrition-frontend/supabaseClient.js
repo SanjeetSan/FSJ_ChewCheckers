@@ -1122,6 +1122,56 @@ export async function supabaseGetTeacherClasses(teacherId) {
 }
 
 /**
+ * Create Classroom for Teacher (Onboarding Wizard)
+ */
+export async function supabaseCreateTeacherClass(teacherId, classData) {
+  try {
+    const rawGrade = (classData.grade || classData.className || 'Grade 5').trim();
+    const rawSection = (classData.section || 'A').trim().toUpperCase();
+    const academicYear = classData.academicYear || '2025-2026';
+    const schoolId = classData.schoolId || 1;
+
+    // Generate readable, unique class code like CLS-5A-4821 or CLS-4B
+    const cleanNum = rawGrade.replace(/\D/g, '') || '5';
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const generatedCode = `CLS-${cleanNum}${rawSection}-${randomSuffix}`;
+
+    const payload = {
+      class_name: rawGrade,
+      section: rawSection,
+      class_code: generatedCode,
+      academic_year: academicYear,
+      school_id: schoolId,
+      teacher_id: teacherId,
+      is_active: true
+    };
+
+    const { data: newClass, error } = await supabase
+      .from('classes')
+      .insert([payload])
+      .select('*, school:schools(id, name)')
+      .single();
+
+    if (error) throw error;
+
+    return {
+      id: newClass.id,
+      name: `${newClass.class_name} - ${newClass.section}`,
+      className: newClass.class_name,
+      grade: newClass.class_name,
+      section: newClass.section,
+      joinCode: newClass.class_code,
+      classCode: newClass.class_code,
+      schoolName: newClass.school?.name || 'Greenwood International School',
+      students: []
+    };
+  } catch (err) {
+    console.error('Supabase create teacher class error:', err);
+    throw err;
+  }
+}
+
+/**
  * Fetch All Users for Admin
  */
 export async function supabaseGetUsers() {

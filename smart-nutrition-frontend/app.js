@@ -21,6 +21,7 @@ import {
   supabaseSaveMeal,
   supabaseSavePostMeal,
   supabaseGetTeacherClasses,
+  supabaseCreateTeacherClass,
   supabaseGetUsers,
   supabaseDeleteUser,
   supabaseUpdateUser,
@@ -172,6 +173,8 @@ document.addEventListener('DOMContentLoaded', () => {
     theme: localStorage.getItem('chewchecker_theme') || 'light',
 
     users: [],
+    classes: [],
+    activeClass: null,
     children: JSON.parse(localStorage.getItem('chewchecker_children') || '[]'),
     holidays: [],
     aiChatHistory: [],
@@ -1713,6 +1716,8 @@ document.addEventListener('DOMContentLoaded', () => {
     state.activePane = null;
     state.children = [];
     state.selectedChild = null;
+    state.classes = [];
+    state.activeClass = null;
     localStorage.removeItem('chewchecker_access_token');
     localStorage.removeItem('chewchecker_user_data');
     localStorage.removeItem('chewchecker_current_role');
@@ -4278,8 +4283,13 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       } else if (path === '/api/admin/holidays') {
         const holidays = await supabaseGetHolidays();
         return new Response(JSON.stringify(holidays || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      } else if (path === '/api/teacher/classes' && options.method === 'POST') {
+        const tId = state.user?.id || getSessionUserId(2);
+        const body = typeof options.body === 'string' ? JSON.parse(options.body) : (options.body || {});
+        const newClass = await supabaseCreateTeacherClass(tId, body);
+        return new Response(JSON.stringify(newClass), { status: 201, headers: { 'Content-Type': 'application/json' } });
       } else if (path === '/api/teacher/classes' || path.startsWith('/api/teacher/classes')) {
-        const tId = state.user?.id || 2;
+        const tId = state.user?.id || getSessionUserId(2);
         const classes = await supabaseGetTeacherClasses(tId);
         return new Response(JSON.stringify(classes || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       } else if (path.startsWith('/api/messages/history/')) {
@@ -5545,9 +5555,12 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
       });
       if (res.ok) {
         state.classes = await res.json();
-        console.log("teacher classes fetched:", state.classes.length);
-        if (state.classes.length > 0) {
+        console.log("teacher classes fetched:", (state.classes || []).length);
+        if (state.classes && state.classes.length > 0) {
           state.activeClass = state.classes[0];
+        } else {
+          state.classes = [];
+          state.activeClass = null;
         }
       }
     } catch (e) {
@@ -5556,16 +5569,195 @@ MANDATORY RULES FOR 30-SECOND SCANNABILITY:
     return state.activeClass;
   }
 
+  function updateTeacherDashboardFlow() {
+    const wizard = document.getElementById('teacherOnboardingWizard');
+    const wizardState1 = document.getElementById('teacherOnboardingState1');
+    const wizardState2 = document.getElementById('teacherOnboardingState2');
+    const stepLine = document.getElementById('teacherOnboardingStepLineActive');
+    const step1 = document.getElementById('teacherStepIndicator1');
+    const step2 = document.getElementById('teacherStepIndicator2');
+    const dashboardContent = document.getElementById('teacherDashboardContent');
+
+    const hasClasses = state.classes && state.classes.length > 0 && state.activeClass;
+
+    if (!hasClasses) {
+      if (wizard) wizard.classList.remove('hidden');
+      if (wizardState1) wizardState1.classList.remove('hidden');
+      if (wizardState2) wizardState2.classList.add('hidden');
+      if (step1) step1.className = 'onboarding-step active';
+      if (step2) step2.className = 'onboarding-step';
+      if (stepLine) stepLine.style.width = '0%';
+      if (dashboardContent) dashboardContent.classList.add('hidden');
+    } else {
+      if (wizard) wizard.classList.add('hidden');
+      if (dashboardContent) dashboardContent.classList.remove('hidden');
+    }
+  }
+
+  function setupTeacherOnboarding() {
+    // 1. Classroom Setup Form submission
+    const form = document.getElementById('teacherOnboardingClassForm');
+    if (form && !form.dataset.bound) {
+      form.dataset.bound = 'true';
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const grade = document.getElementById('obTeacherGrade')?.value || 'Grade 5';
+        const section = document.getElementById('obTeacherSection')?.value || 'A';
+        const academicYear = document.getElementById('obTeacherAcademicYear')?.value || '2025-2026';
+        const room = document.getElementById('obTeacherRoom')?.value || '';
+        const submitBtn = document.getElementById('btnSubmitTeacherClass');
+
+        const originalText = submitBtn ? submitBtn.innerHTML : '';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Creating Classroom...`;
+        }
+
+        try {
+          const res = await safeFetch('/api/teacher/classes', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${state.token}`
+            },
+            body: JSON.stringify({
+              grade,
+              section,
+              academicYear,
+              room,
+              schoolId: 1
+            })
+          });
+
+          if (res.ok) {
+            const newClass = await res.json();
+            if (!state.classes) state.classes = [];
+            state.classes.push(newClass);
+            state.activeClass = newClass;
+
+            // Transition to Step 2
+            const wizardState1 = document.getElementById('teacherOnboardingState1');
+            const wizardState2 = document.getElementById('teacherOnboardingState2');
+            const stepLine = document.getElementById('teacherOnboardingStepLineActive');
+            const step1 = document.getElementById('teacherStepIndicator1');
+            const step2 = document.getElementById('teacherStepIndicator2');
+
+            if (wizardState1) wizardState1.classList.add('hidden');
+            if (wizardState2) wizardState2.classList.remove('hidden');
+            if (step1) step1.className = 'onboarding-step completed';
+            if (step2) step2.className = 'onboarding-step active';
+            if (stepLine) stepLine.style.width = '100%';
+
+            const codeElem = document.getElementById('obTeacherGeneratedCode');
+            if (codeElem) codeElem.textContent = newClass.classCode || newClass.joinCode;
+
+            const summaryElem = document.getElementById('obTeacherClassSummary');
+            if (summaryElem) {
+              summaryElem.textContent = `${newClass.className || newClass.grade} - Section ${newClass.section} • ${newClass.schoolName || 'Greenwood International School'}`;
+            }
+
+            showToast('Classroom created successfully!', 'success');
+          } else {
+            const err = await res.json().catch(() => ({}));
+            showToast(err.message || 'Failed to create classroom', 'error');
+          }
+        } catch (err) {
+          console.error('Error creating teacher classroom:', err);
+          showToast('Error creating classroom. Please try again.', 'error');
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+          }
+        }
+      });
+    }
+
+    // 2. Copy Code button
+    const btnCopyCode = document.getElementById('btnCopyTeacherClassCode');
+    if (btnCopyCode && !btnCopyCode.dataset.bound) {
+      btnCopyCode.dataset.bound = 'true';
+      btnCopyCode.addEventListener('click', async () => {
+        const codeElem = document.getElementById('obTeacherGeneratedCode');
+        const code = (codeElem ? codeElem.textContent.trim() : '') || state.activeClass?.classCode || '';
+        if (!code) return;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(code);
+          } else {
+            const ta = document.createElement('textarea');
+            ta.value = code;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+          }
+          showToast('Classroom Join Code copied to clipboard!', 'success');
+        } catch (err) {
+          showToast('Failed to copy code', 'warning');
+        }
+      });
+    }
+
+    // 3. Copy Parent Invite button
+    const btnCopyInvite = document.getElementById('btnCopyTeacherParentInvite');
+    if (btnCopyInvite && !btnCopyInvite.dataset.bound) {
+      btnCopyInvite.dataset.bound = 'true';
+      btnCopyInvite.addEventListener('click', async () => {
+        const codeElem = document.getElementById('obTeacherGeneratedCode');
+        const code = (codeElem ? codeElem.textContent.trim() : '') || state.activeClass?.classCode || '';
+        const clsName = (state.activeClass?.className || 'Classroom') + (state.activeClass?.section ? ` - Section ${state.activeClass.section}` : '');
+        const school = state.activeClass?.schoolName || 'Greenwood International School';
+        const origin = window.location.origin;
+        const inviteMsg = `Dear Parents,\n\nPlease connect your child to our classroom (${clsName} at ${school}) using Classroom Join Code: ${code}\n\nRegister or login to ChewCheckers at:\n${origin}\n\nThank you!`;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(inviteMsg);
+          } else {
+            const ta = document.createElement('textarea');
+            ta.value = inviteMsg;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+          }
+          showToast('Parent invite message copied to clipboard!', 'success');
+        } catch (err) {
+          showToast('Failed to copy invite message', 'warning');
+        }
+      });
+    }
+
+    // 4. Enter Classroom Dashboard button
+    const btnLaunch = document.getElementById('btnLaunchTeacherDashboard');
+    if (btnLaunch && !btnLaunch.dataset.bound) {
+      btnLaunch.dataset.bound = 'true';
+      btnLaunch.addEventListener('click', () => {
+        const wizard = document.getElementById('teacherOnboardingWizard');
+        const dashboardContent = document.getElementById('teacherDashboardContent');
+        if (wizard) wizard.classList.add('hidden');
+        if (dashboardContent) dashboardContent.classList.remove('hidden');
+        initTeacherDashboard();
+      });
+    }
+  }
+
   async function initTeacherDashboard() {
     if (state.role !== 'TEACHER') return;
     console.log("initTeacherDashboard starting...");
 
+    setupTeacherOnboarding();
     await ensureTeacherActiveClassLoaded();
+    updateTeacherDashboardFlow();
     if (!state.activeClass) return;
 
     const activeClassCodeElem = document.getElementById('activeClassCode');
     if (activeClassCodeElem) {
       activeClassCodeElem.textContent = state.activeClass.classCode;
+    }
+    const headerClassCode = document.getElementById('teacherHeaderClassCode');
+    if (headerClassCode) {
+      headerClassCode.textContent = state.activeClass.classCode;
     }
 
     const classNameFull = `${state.activeClass.className} ${state.activeClass.section}`;
